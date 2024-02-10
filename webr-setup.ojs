@@ -1,0 +1,59 @@
+shelter = {
+  let { WebR, isRFunction, isRCall, isRObject } = await import('https://webr.r-wasm.org/latest/webr.mjs');
+  let webR = new WebR();
+  await webR.init();
+  const shelter = await new webR.Shelter();
+  await shelter.evalR(`webr::install("knitr"); library(knitr)`);
+
+  const webRScriptContent = document.querySelector("script[type=\"webr-contents\"]").textContent;
+  const webRBlocks = JSON.parse(atob(webRScriptContent)).blocks;
+  for (const block of webRBlocks) {
+    await shelter.evalR(block.source);
+  }
+  const objs = await webR.objs.globalEnv.toJs({ depth: -1 });
+
+  const asOjs = async (webRValue) => {
+    if (!isRObject(webRValue)) {
+        debugger;
+        return webRValue;
+    }
+    if (isRFunction(webRValue) || isRCall(webRValue)) {
+        return async (...args) => {
+            const webRResult = await webRValue.exec(...args);
+            const ojsResult = await asOjs(webRResult);
+            return ojsResult;
+        };
+    }
+    const val = webRValue._payload?.obj ?? webRValue;
+    switch (webRValue._payload.obj.type) {
+        case "null": return null;
+        // Symbol: TBD
+        case "logical":
+        case "double":
+        case "character":
+        case "raw":
+        case "integer": return await webRValue.toArray();
+
+        case "list":
+        case "environment":
+        case "pairlist": {
+            const result = {};
+            const shallow = await webRValue.toJs({ depth: -1 });
+            for (let i = 0; i < shallow.names.length; i++) {
+                result[shallow.names[i]] = await asOjs(shallow.values[i]);
+            }
+            return result;
+        };
+
+        default:
+            throw new Error(`Unsupported type: ${webRValue._payload.obj.type}`);
+
+    }
+  }
+  for (let i = 0; i < objs.names.length; i++) {
+    const key = objs.names[i];
+    const value = objs.values[i];
+    window._ojs.ojsConnector.define(key)(await asOjs(value));
+  }
+  return shelter;
+}
