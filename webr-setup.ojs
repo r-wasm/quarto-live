@@ -1,30 +1,58 @@
 shelter = {
-  let { WebR, isRFunction, isRCall, isRObject } = await import('https://webr.r-wasm.org/latest/webr.mjs');
+  let {
+    WebR,
+    isRFunction,
+    isRCall,
+    isRNull,
+    isRObject
+  } = await import('https://webr.r-wasm.org/latest/webr.mjs');
+
   let webR = new WebR();
   await webR.init();
   const shelter = await new webR.Shelter();
-  await shelter.evalR(`webr::install("knitr"); library(knitr)`);
+  await shelter.evalR(`
+    ojs_define <- function(...) {
+      args <- list(...)
+      names(args) <- quote(match.call(expand.dots=TRUE)[1:length(args) + 1])
+      list2env(LIST, envir = .GlobalEnv)
+    }
+  `);
 
   const webRScriptContent = document.querySelector("script[type=\"webr-contents\"]").textContent;
   const webRBlocks = JSON.parse(atob(webRScriptContent)).blocks;
   for (const block of webRBlocks) {
-    await shelter.evalR(block.source);
+    try {
+      await shelter.evalR(block.source);
+    } catch (e) {
+      console.error(e);
+    }
   }
+
   const objs = await webR.objs.globalEnv.toJs({ depth: -1 });
 
   const asOjs = async (webRValue) => {
+    if (webRValue instanceof ImageBitmap) {
+      const ctx = DOM.context2d(webRValue.width, webRValue.height, 1);
+      ctx.drawImage(webRValue, 0, 0, webRValue.width, webRValue.height);
+      webRValue.close();
+      ctx.canvas.style.width = "100%";
+      return ctx.canvas;
+    }
+
     if (!isRObject(webRValue)) {
-        debugger;
         return webRValue;
     }
+
     if (isRFunction(webRValue) || isRCall(webRValue)) {
         return async (...args) => {
-            const webRResult = await webRValue.exec(...args);
-            const ojsResult = await asOjs(webRResult);
-            return ojsResult;
+            const webRCapture = await webRValue.capture({ withAutoprint: true }, ...args);
+            if (webRCapture.images.length) {
+              return await asOjs(webRCapture.images[webRCapture.images.length - 1]);
+            }
+            return await asOjs(webRCapture.result);
         };
     }
-    const val = webRValue._payload?.obj ?? webRValue;
+
     switch (webRValue._payload.obj.type) {
         case "null": return null;
         // Symbol: TBD
@@ -34,7 +62,13 @@ shelter = {
         case "raw":
         case "integer": return await webRValue.toArray();
 
-        case "list":
+        case "list": {
+          const attrs = await webRValue.attrs();
+          const cls = await attrs.get('class');
+          if (!isRNull(cls) && (await cls.toArray()).includes('data.frame')) {
+            return await webRValue.toD3();
+          }
+        }
         case "environment":
         case "pairlist": {
             const result = {};
