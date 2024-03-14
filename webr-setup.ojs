@@ -34,11 +34,16 @@ shelter = {
 
     if (isRFunction(webRValue) || isRCall(webRValue)) {
         return async (...args) => {
-            const webRCapture = await webRValue.capture({ withAutoprint: true }, ...args);
-            if (webRCapture.images.length) {
-              return await asOjs(webRCapture.images[webRCapture.images.length - 1]);
+            try {
+              const webRCapture = await webRValue.capture({ withAutoprint: true }, ...args);
+              if (webRCapture.images.length) {
+                return await asOjs(webRCapture.images[webRCapture.images.length - 1]);
+              }
+              return await asOjs(webRCapture.result);
+            } finally {
+              shelter.purge();
+              webR.globalShelter.purge();
             }
-            return await asOjs(webRCapture.result);
         };
     }
 
