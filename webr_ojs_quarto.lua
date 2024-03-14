@@ -3,7 +3,7 @@ local ojs_definitions = {}
 
 local block_id = 0
 function CodeBlock(code)
-  if not code.classes:includes("{webr}") then
+  if not (code.classes:includes("{webr}") or code.classes:includes("webr")) then
     return
   end
 
