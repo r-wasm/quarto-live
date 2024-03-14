@@ -5,7 +5,7 @@ shelter = {
     isRCall,
     isRNull,
     isRObject
-  } = await import('https://webr.r-wasm.org/latest/webr.mjs');
+  } = await import('https://webr.r-wasm.org/v0.3.0-rc.0/webr.mjs');
 
   let webR = new WebR();
   await webR.init();
