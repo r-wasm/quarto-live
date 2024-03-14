@@ -9,6 +9,7 @@ shelter = {
 
   let webR = new WebR();
   await webR.init();
+  await webR.installPackages(['evaluate']);
   const shelter = await new webR.Shelter();
   await shelter.evalR(`
     ojs_define <- function(...) {
@@ -17,18 +18,6 @@ shelter = {
       list2env(LIST, envir = .GlobalEnv)
     }
   `);
-
-  const webRScriptContent = document.querySelector("script[type=\"webr-contents\"]").textContent;
-  const webRBlocks = JSON.parse(atob(webRScriptContent)).blocks;
-  for (const block of webRBlocks) {
-    try {
-      await shelter.evalR(block.source);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  const objs = await webR.objs.globalEnv.toJs({ depth: -1 });
 
   const asOjs = async (webRValue) => {
     if (webRValue instanceof ImageBitmap) {
@@ -84,6 +73,78 @@ shelter = {
 
     }
   }
+
+  const createSourceElement = (sourceLines) => {
+    const sourceDiv = document.createElement("div");
+    const sourcePre = document.createElement("pre");
+    const sourceCode = document.createElement("code");
+    sourceDiv.className = "sourceCode";
+    sourcePre.className = "sourceCode r";
+    sourceCode.className = "sourceCode r";
+
+    sourceLines.forEach((line) => {
+      const sourceSpan = document.createElement("span");
+      sourceSpan.innerHTML = line;
+      sourceCode.appendChild(sourceSpan);
+    });
+
+    sourcePre.appendChild(sourceCode);
+    sourceDiv.appendChild(sourcePre);
+    return sourceDiv;
+  }
+
+  const webRScriptContent = document.querySelector("script[type=\"webr-contents\"]").textContent;
+  const webRBlocks = JSON.parse(atob(webRScriptContent)).blocks;
+  for (const block of webRBlocks) {
+    await webR.objs.globalEnv.bind('code', block.source);
+    try {
+      const capture = await shelter.captureR('evaluate::evaluate(code)');
+      const result = await capture.result.toArray();
+      const sourceLines = [];
+
+      for (let i = 0; i < result.length; i++) {
+        const type = await result[i].type();
+        switch (type) {
+          case 'character': {
+            const sourceDiv = createSourceElement(sourceLines);
+            document.querySelector(`div#${block.cellName}`).appendChild(sourceDiv);
+            sourceLines.length = 0;
+
+            const outputDiv = document.createElement("div");
+            outputDiv.className = "cell-output cell-output-stdout";
+            outputDiv.innerHTML = `<pre><code>${await result[i].toString()}</code></pre>`;
+            document.querySelector(`div#${block.cellName}`).appendChild(outputDiv);
+            break;
+          }
+          case 'list': {
+            // Message condition
+            const message = await result[i].get("message");
+            if (!isRNull(message)) {
+              sourceLines.push(await message.toString());
+              break;
+            }
+            // Source code
+            const src = await result[i].get("src");
+            sourceLines.push(await src.toString());
+            break;
+          }
+          default:
+            throw new Error(`Unexpected list item type "${type}" in evaluation result`);
+        }
+      }
+      if (sourceLines.length > 0) {
+        const sourceDiv = createSourceElement(sourceLines);
+        document.querySelector(`div#${block.cellName}`).appendChild(sourceDiv);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      shelter.purge();
+      webR.globalShelter.purge();
+    }
+  }
+
+  const objs = await webR.objs.globalEnv.toJs({ depth: -1 });
   for (let i = 0; i < objs.names.length; i++) {
     const key = objs.names[i];
     const value = objs.values[i];
