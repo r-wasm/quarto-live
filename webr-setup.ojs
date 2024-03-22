@@ -1,21 +1,31 @@
-shelter = {
-  let {
-    WebR,
-    isRFunction,
-    isRCall,
-    isRNull,
-    isRObject
-  } = await import('https://webr.r-wasm.org/v0.3.0-rc.0/webr.mjs');
+webROjs = {
+  let { WebR, isRFunction, isRCall, isRNull, isRObject } = await import(
+    'https://webr.r-wasm.org/v0.3.0/webr.mjs'
+  );
 
   let webR = new WebR();
   await webR.init();
   await webR.installPackages(['evaluate']);
-  const shelter = await new webR.Shelter();
-  await shelter.evalR(`
+  await webR.evalRVoid(`
     ojs_define <- function(...) {
       args <- list(...)
       names(args) <- quote(match.call(expand.dots=TRUE)[1:length(args) + 1])
       list2env(LIST, envir = .GlobalEnv)
+    }
+    options(webr.fig.width = 7, webr.fig.height = 5)
+  `);
+
+  const shelter = await new webR.Shelter();
+  const evalCanvas = await shelter.evalR(`
+    function(fn, ...) {
+      webr::canvas(
+        width = 72 * getOption("webr.fig.width"),
+        height = 72 * getOption("webr.fig.height"),
+        capture = TRUE
+      )
+      capture_dev = dev.cur();
+      fn(...)
+      dev.off(capture_dev)
     }
   `);
 
@@ -24,27 +34,30 @@ shelter = {
       const ctx = DOM.context2d(webRValue.width, webRValue.height, 1);
       ctx.drawImage(webRValue, 0, 0, webRValue.width, webRValue.height);
       webRValue.close();
-      ctx.canvas.style.width = "100%";
+      ctx.canvas.style.width = `${2 * ctx.canvas.width / 3}px`;
       return ctx.canvas;
     }
 
     if (!isRObject(webRValue)) {
-        return webRValue;
+      return webRValue;
     }
 
     if (isRFunction(webRValue) || isRCall(webRValue)) {
-        return async (...args) => {
-            try {
-              const webRCapture = await webRValue.capture({ withAutoprint: true }, ...args);
-              if (webRCapture.images.length) {
-                return await asOjs(webRCapture.images[webRCapture.images.length - 1]);
-              }
-              return await asOjs(webRCapture.result);
-            } finally {
-              shelter.purge();
-              webR.globalShelter.purge();
+      return async (...args) => {
+          try {
+            const capture = await evalCanvas.capture(
+              { withAutoprint: true },
+              webRValue,
+              ...args
+            );
+            if (capture.images.length) {
+              return await asOjs(capture.images[capture.images.length - 1]);
             }
-        };
+            return await asOjs(capture.result);
+          } finally {
+            webR.globalShelter.purge();
+          }
+      };
     }
 
     switch (webRValue._payload.obj.type) {
@@ -75,85 +88,8 @@ shelter = {
 
         default:
             throw new Error(`Unsupported type: ${webRValue._payload.obj.type}`);
-
     }
   }
 
-  const createSourceElement = (sourceLines) => {
-    const sourceDiv = document.createElement("div");
-    const sourcePre = document.createElement("pre");
-    const sourceCode = document.createElement("code");
-    sourceDiv.className = "sourceCode";
-    sourcePre.className = "sourceCode r";
-    sourceCode.className = "sourceCode r";
-
-    sourceLines.forEach((line) => {
-      const sourceSpan = document.createElement("span");
-      sourceSpan.innerHTML = line;
-      sourceCode.appendChild(sourceSpan);
-    });
-
-    sourcePre.appendChild(sourceCode);
-    sourceDiv.appendChild(sourcePre);
-    return sourceDiv;
-  }
-
-  const webRScriptContent = document.querySelector("script[type=\"webr-contents\"]").textContent;
-  const webRBlocks = JSON.parse(atob(webRScriptContent)).blocks;
-  for (const block of webRBlocks) {
-    await webR.objs.globalEnv.bind('code', block.source);
-    try {
-      const capture = await shelter.captureR('evaluate::evaluate(code)');
-      const result = await capture.result.toArray();
-      const sourceLines = [];
-
-      for (let i = 0; i < result.length; i++) {
-        const type = await result[i].type();
-        switch (type) {
-          case 'character': {
-            const sourceDiv = createSourceElement(sourceLines);
-            document.querySelector(`div#${block.cellName}`).appendChild(sourceDiv);
-            sourceLines.length = 0;
-
-            const outputDiv = document.createElement("div");
-            outputDiv.className = "cell-output cell-output-stdout";
-            outputDiv.innerHTML = `<pre><code>${await result[i].toString()}</code></pre>`;
-            document.querySelector(`div#${block.cellName}`).appendChild(outputDiv);
-            break;
-          }
-          case 'list': {
-            // Message condition
-            const message = await result[i].get("message");
-            if (!isRNull(message)) {
-              sourceLines.push(await message.toString());
-              break;
-            }
-            // Source code
-            const src = await result[i].get("src");
-            sourceLines.push(await src.toString());
-            break;
-          }
-          default:
-            throw new Error(`Unexpected list item type "${type}" in evaluation result`);
-        }
-      }
-      if (sourceLines.length > 0) {
-        const sourceDiv = createSourceElement(sourceLines);
-        document.querySelector(`div#${block.cellName}`).appendChild(sourceDiv);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      shelter.purge();
-      webR.globalShelter.purge();
-    }
-  }
-
-  const objs = await webR.objs.globalEnv.toJs({ depth: -1 });
-  for (let i = 0; i < objs.names.length; i++) {
-    const key = objs.names[i];
-    const value = objs.values[i];
-    window._ojs.ojsConnector.define(key)(await asOjs(value));
-  }
-  return shelter;
+  return { webR, isRFunction, isRCall, isRNull, isRObject, asOjs, shelter, evalCanvas };
 }

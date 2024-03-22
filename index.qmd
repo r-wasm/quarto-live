@@ -1,18 +1,114 @@
 ---
 format: html
-engine: markdown
 filters:
   - webr_ojs_quarto.lua
 ---
 
-```{webr}
-bar <- list(x = c(1, 2, 3), y = c(4, 5, 6))
+# Introduction
+
+This is a standard Quarto R block. It is powered by `knitr`:
+
+```{r}
+x <- 1234
+y <- 4567
+x + y
+c("a", "b", "c")
 foo <- function (x) { 1 + sin(x); }
-foo2 <- function (x) { list(a = x, b = x * x ) }
+message("hi")
+warning("hi")
+hist(rnorm(100))
+```
+
+---
+
+Now, here is a client-side R block. The output should be similar, but this one is powered by webR:
+
+```{.webr}
+x <- 1234
+y <- 4567
+x + y
+c("a", "b", "c")
+foo <- function (x) { 1 + sin(x); }
+message("hi")
+warning("hi")
+hist(rnorm(100))
+```
+
+
+## Accessing R's global environment from Observable
+
+R objects defined in client-side webR blocks are accessible from Observable JS, Quarto dashboards, etc.
+
+```{ojs}
+x
+y
+foo([1, 2, 3, 4, 5])
+```
+
+Reactive inputs written in Observable JS can be used with the R objects provided by webR. You can write a function in R, then invoke it with reactive arguments.
+
+R objects are converted to and from the JS environment transparently.
+
+```{ojs}
+viewof n = Inputs.range([0, 10], {step: 0.1, label: "Some n value:"})
+res = foo(n)
+"sin(n) = " + res[0]
+```
+
+## Converting Observable data frames to R `data.frame`
+
+Observable JS data frames are converted into an R `data.frame` when passed as a function argument:
+
+```{.webr}
+get_class <- \(x) { class(x) }
+do_mean <- \(x) { mean(x[,2]) }
 ```
 
 ```{ojs}
-foo(3)
-foo([1,2,3])
-foo2(5)
+get_class(alphabet)
+do_mean(alphabet)
 ```
+
+---
+
+Errors from R are converted into OJS errors:
+
+```{ojs}
+foo("abc")
+```
+
+
+## Using R `data.frames` in Observable
+
+```{.webr}
+data(mtcars)
+```
+
+```{ojs}
+Plot.plot({
+  grid: true,
+  x: {label: "Economy (mpg)"},
+  y: {label: "Power (hp)"},
+  marks: [ Plot.dot(mtcars, { x: "mpg", y: "hp"}) ]
+})
+```
+
+
+## Plotting from R
+
+We can write an R function that plots some result.
+
+```{.webr}
+do_hist <- function(n) {
+  hist(rnorm(n))
+}
+```
+
+Then, call that R function reactively from Observable JS:
+
+```{ojs}
+viewof m = Inputs.range([10, 1000], {step: 1})
+do_hist(m)
+```
+
+This gives very responsive interactivity with just a few lines of glue code.
