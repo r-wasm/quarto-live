@@ -1,123 +1,19 @@
 {
   const block_id = "{{block_id}}";
-  const output = document.createElement('div');
   const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
   const code = atob(scriptContent);
-
+  
+  // Evaluate the provided R code in the global environment
+  const envir = webROjs.webR.objs.globalEnv;
+  const evaluator = await new webROjs.WebREvaluator(envir);
   try {
-    // Use {evaluate} package to eval R source
-    const capture = await webROjs.webR.globalShelter.captureR(
-      'evaluate::evaluate(code, envir = globalenv())',
-      { env: { code } }
-    );
-    const result = await capture.result.toArray();
-    const sourceLines = [];
-  
-    const createSourceElement = (sourceLines) => {
-      const sourceDiv = document.createElement("div");
-      const sourcePre = document.createElement("pre");
-      const sourceCode = document.createElement("code");
-      sourceDiv.className = "sourceCode";
-      sourcePre.className = "sourceCode r";
-      sourceCode.className = "sourceCode r";
-      
-      sourceLines.forEach((line) => {
-        const sourceSpan = document.createElement("span");
-        sourceSpan.innerHTML = line;
-        sourceCode.appendChild(sourceSpan);
-      });
-      
-      sourcePre.appendChild(sourceCode);
-      sourceDiv.appendChild(sourcePre);
-      return sourceDiv;
-    }
-  
-    const outputSource = () => {
-      if (sourceLines.length) {
-        const sourceDiv = createSourceElement(sourceLines);
-        output.appendChild(sourceDiv);
-        sourceLines.length = 0;
-      }
-    };
-  
-    const createOutputElement = (content) => {
-      const outputDiv = document.createElement("div");
-      outputDiv.className = "cell-output cell-output-stdout";
-      outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
-      outputSource();
-      output.appendChild(outputDiv);
-    };
-  
-    const createPlotElement = (image) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = image.width;
-      canvas.height = image.height;
-      canvas.className = "img-fluid figure-img";
-      canvas.style.width = `${2 * image.width / 3}px`;
-      canvas.getContext('bitmaprenderer')?.transferFromImageBitmap(image);
-      
-      const outputDiv = document.createElement("div");
-      outputDiv.className = "cell-output-display";
-      outputDiv.appendChild(canvas);
-      outputSource();
-      output.appendChild(outputDiv);
-    };
-    
-    // Print interleaved source and printed output from {evaluate}, match knitr
-    for (let i = 0; i < result.length; i++) {
-      const type = await result[i].type();
-      switch (type) {
-        case 'character': {
-          createOutputElement(await result[i].toString());
-          break;
-        }
-        case 'list': {
-          const attrs = await result[i].attrs();
-          const classList = await (await attrs.get('class')).toArray();
-          
-          // Conditions
-          if (classList.includes('warning')) {
-            const message = await result[i].get("message");
-            createOutputElement(`Warning: ${await message.toString()}`);
-          } else if (classList.includes('error')) {
-            const message = await result[i].get("message");
-            createOutputElement(`Error: ${await message.toString()}`);
-          } else if (classList.includes('condition')) {
-            const message = await result[i].get("message");
-            createOutputElement(await message.toString());
-          }
-
-          // Source code - concatenated
-          if (classList.includes('source')) {
-            const src = await result[i].get("src");
-            sourceLines.push(await src.toString());
-          }
-          
-          // Plot
-          if (classList.includes('recordedplot')) {
-            const capturePlot = await webROjs.evalCanvas.capture(
-              {},
-              webROjs.webR.globalShelter.evalR(`recordplot`),
-              result[i]
-            );
-            createPlotElement(capturePlot.images[0]);
-          }
-          break;
-        }
-        default:
-          throw new Error(`Unexpected list item type "${type}" in evaluation result`);
-      }
-    }
-    outputSource();
-  } catch (e) {
-    console.error(e);
-    throw e;
+    await evaluator.evaluate(code);
   } finally {
-    webROjs.webR.globalShelter.purge();
+    evaluator.purge();
   }
 
-  // Define objects in R globalenv() as ojs values
-  const objs = await webROjs.webR.objs.globalEnv.toJs({ depth: -1 });
+  // Define objects inthe global environment as OJS values
+  const objs = await envir.toJs({ depth: -1 });
   for (let i = 0; i < objs.names.length; i++) {
     const key = objs.names[i];
     const value = objs.values[i];
@@ -129,5 +25,6 @@
     }
   }
 
-  return output;
+  // Return formatted output from `WebREvaluator`
+  return evaluator.output;
 }

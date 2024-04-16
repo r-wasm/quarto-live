@@ -1,11 +1,13 @@
 webROjs = {
   let { WebR, isRFunction, isRCall, isRNull, isRObject } = await import(
-    'https://webr.r-wasm.org/v0.3.0/webr.mjs'
+    'https://webr.r-wasm.org/v0.3.2/webr.mjs'
   );
 
+  // Initialise webR and setup for R code evaluation
   let webR = new WebR();
   await webR.init();
   await webR.installPackages(['evaluate']);
+  await webR.evalRVoid(`webr::shim_install()`);
   await webR.evalRVoid(`
     ojs_define <- function(...) {
       args <- list(...)
@@ -15,20 +17,7 @@ webROjs = {
     options(webr.fig.width = 7, webr.fig.height = 5)
   `);
 
-  const shelter = await new webR.Shelter();
-  const evalCanvas = await shelter.evalR(`
-    function(fn, ...) {
-      webr::canvas(
-        width = 72 * getOption("webr.fig.width"),
-        height = 72 * getOption("webr.fig.height"),
-        capture = TRUE
-      )
-      capture_dev = dev.cur();
-      fn(...)
-      dev.off(capture_dev)
-    }
-  `);
-
+  // Convert webR R object reference to OJS value
   const asOjs = async (webRValue) => {
     if (webRValue instanceof ImageBitmap) {
       const ctx = DOM.context2d(webRValue.width, webRValue.height, 1);
@@ -45,11 +34,19 @@ webROjs = {
     if (isRFunction(webRValue) || isRCall(webRValue)) {
       return async (...args) => {
           try {
-            const capture = await evalCanvas.capture(
-              { withAutoprint: true },
-              webRValue,
+            const width = await webR.evalRNumber('72 * getOption("webr.fig.width")');
+            const height = await webR.evalRNumber('72 * getOption("webr.fig.height")');
+            const capture = await webRValue.capture(
+              {
+                withAutoprint: true,
+                captureGraphics: { width, height },
+              },
               ...args
             );
+            
+            // If there are images, return the final captured plot back to OJS.
+            // Otherwise, return the captured R result value.
+            // TODO: Handle returning result and (multiple) plots to OJS
             if (capture.images.length) {
               return await asOjs(capture.images[capture.images.length - 1]);
             }
@@ -61,15 +58,19 @@ webROjs = {
     }
 
     switch (webRValue._payload.obj.type) {
-        case "null": return null;
-        // Symbol: TBD
+        // TODO: "symbol"
+        case "null":
+          return null;
+
         case "logical":
         case "double":
         case "character":
         case "raw":
-        case "integer": return await webRValue.toArray();
+        case "integer":
+          return await webRValue.toArray();
 
         case "list": {
+          // Convert a `data.frame` to D3 format, otherwise fall through.
           const attrs = await webRValue.attrs();
           const cls = await attrs.get('class');
           if (!isRNull(cls) && (await cls.toArray()).includes('data.frame')) {
@@ -91,5 +92,137 @@ webROjs = {
     }
   }
 
-  return { webR, isRFunction, isRCall, isRNull, isRObject, asOjs, shelter, evalCanvas };
+  // Build interleaved source code and HTML output
+  // Use {evaluate}, so as to match {knitr} output
+  class WebREvaluator {
+    constructor(envir = webR.objs.globalEnv) {
+      this.output = document.createElement('div');
+      this.sourceLines = [];
+      this.shelter = new webR.Shelter();
+      this.envir = envir;
+    }
+
+    async purge() {
+      const shelter = await this.shelter;
+      shelter.purge();
+    }
+    
+    async evaluate(code) {
+      const shelter = await this.shelter;
+      const envir = await this.envir;
+
+      const capture = await shelter.captureR(
+        'evaluate::evaluate(code, envir = envir)',
+        { env: { code, envir } }
+      );
+
+      const result = await capture.result.toArray();
+      for (let i = 0; i < result.length; i++) {
+        const type = await result[i].type();
+        switch (type) {
+          case 'character': {
+            this.appendStdout(await result[i].toString());
+            break;
+          }
+          case 'list': {
+            const attrs = await result[i].attrs();
+            const classList = await (await attrs.get('class')).toArray();
+            
+            // Conditions
+            if (classList.includes('warning')) {
+              const message = await result[i].get("message");
+              this.appendStderr(`Warning: ${await message.toString()}`);
+            } else if (classList.includes('error')) {
+              const message = await result[i].get("message");
+              const call = await result[i].get("call");
+              const callInfo = await call.type() === "null" ? '' : ` in \`${await call.deparse()}\`: `;
+              this.appendStderr(`Error${callInfo}${await message.toString()}`);
+            } else if (classList.includes('condition')) {
+              const message = await result[i].get("message");
+              this.appendStderr(await message.toString());
+            }
+  
+            // Source code - save for concatenation
+            if (classList.includes('source')) {
+              const src = await result[i].get("src");
+              this.sourceLines.push(await src.toString());
+            }
+            
+            // Plot image
+            if (classList.includes('recordedplot')) {
+              const width = await webR.evalRNumber('72 * getOption("webr.fig.width")');
+              const height = await webR.evalRNumber('72 * getOption("webr.fig.height")');
+              const capturePlot = await shelter.captureR("replayPlot(plot)", {
+                captureGraphics: { width, height },
+                env: { plot: result[i] },
+              });
+              this.appendImage(capturePlot.images[0]);
+            }
+            break;
+          }
+          default:
+            throw new Error(`Unexpected list item type "${type}" in evaluation result`);
+        }
+      }
+      this.appendSource();
+    }
+    
+    appendSource() {
+      if (this.sourceLines.length) {
+        const sourceDiv = document.createElement("div");
+        const sourcePre = document.createElement("pre");
+        const sourceCode = document.createElement("code");
+        sourceDiv.className = "sourceCode";
+        sourcePre.className = "sourceCode r";
+        sourceCode.className = "sourceCode r";
+        
+        this.sourceLines.forEach((line) => {
+          const sourceSpan = document.createElement("span");
+          sourceSpan.textContent = line;
+          sourceCode.appendChild(sourceSpan);
+        });
+        this.sourceLines.length = 0;
+        
+        sourcePre.appendChild(sourceCode);
+        sourceDiv.appendChild(sourcePre);
+        this.output.appendChild(sourceDiv);
+      }
+    }
+    
+    appendStdout(content) {
+      const outputDiv = document.createElement("div");
+      outputDiv.className = "cell-output cell-output-stdout";
+      outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
+
+      this.appendSource();
+      this.output.appendChild(outputDiv);
+    }
+    
+    appendStderr(content) {
+      const outputDiv = document.createElement("div");
+      outputDiv.className = "cell-output cell-output-stderr";
+      outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
+
+      this.appendSource();
+      this.output.appendChild(outputDiv);
+    }
+    
+    appendImage(image) {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      canvas.className = "img-fluid figure-img";
+      canvas.style.width = `${2 * image.width / 3}px`;
+      canvas.getContext('bitmaprenderer').transferFromImageBitmap(image);
+      
+      const outputDiv = document.createElement("div");
+      outputDiv.className = "cell-output-display";
+      outputDiv.appendChild(canvas);
+
+      this.appendSource();
+      this.output.appendChild(outputDiv);
+    }
+  }
+
+  return { webR, asOjs, WebREvaluator };
 }
