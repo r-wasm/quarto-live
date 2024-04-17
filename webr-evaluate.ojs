@@ -2,7 +2,7 @@
   const block_id = "{{block_id}}";
   const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
   const code = atob(scriptContent);
-  
+
   // Evaluate the provided R code in the global environment
   const envir = webROjs.webR.objs.globalEnv;
   const evaluator = await new webROjs.WebREvaluator(envir);
@@ -12,7 +12,7 @@
     evaluator.purge();
   }
 
-  // Define objects inthe global environment as OJS values
+  // Define objects in the global environment as OJS values
   const objs = await envir.toJs({ depth: -1 });
   for (let i = 0; i < objs.names.length; i++) {
     const key = objs.names[i];

@@ -12,7 +12,7 @@ webROjs = {
     ojs_define <- function(...) {
       args <- list(...)
       names(args) <- quote(match.call(expand.dots=TRUE)[1:length(args) + 1])
-      list2env(LIST, envir = .GlobalEnv)
+      invisible(list2env(args, envir = .GlobalEnv))
     }
     options(webr.fig.width = 7, webr.fig.height = 5)
   `);
@@ -48,7 +48,9 @@ webROjs = {
             // Otherwise, return the captured R result value.
             // TODO: Handle returning result and (multiple) plots to OJS
             if (capture.images.length) {
-              return await asOjs(capture.images[capture.images.length - 1]);
+              const el = await asOjs(capture.images[capture.images.length - 1]);
+              el.value = await asOjs(capture.result);
+              return el;
             }
             return await asOjs(capture.result);
           } finally {
