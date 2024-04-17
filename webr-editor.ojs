@@ -4,3 +4,4 @@ viewof _webr_editor_{{block_id}} = {
   const code = atob(scriptContent);
   return webROjs.editor(code);
 }
+webROjs.evaluate(_webr_editor_{{block_id}});

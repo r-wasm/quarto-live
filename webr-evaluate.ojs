@@ -4,27 +4,5 @@
   const code = atob(scriptContent);
 
   // Evaluate the provided R code in the global environment
-  const envir = webROjs.webR.objs.globalEnv;
-  const evaluator = await new webROjs.WebREvaluator(envir);
-  try {
-    await evaluator.evaluate(code);
-  } finally {
-    evaluator.purge();
-  }
-
-  // Define objects in the global environment as OJS values
-  const objs = await envir.toJs({ depth: -1 });
-  for (let i = 0; i < objs.names.length; i++) {
-    const key = objs.names[i];
-    const value = objs.values[i];
-    const jsValue = await webROjs.asOjs(value);
-    if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
-      window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
-    } else {
-      window._ojs.ojsConnector.define(key)(jsValue);
-    }
-  }
-
-  // Return formatted output from `WebREvaluator`
-  return evaluator.output;
+  return webROjs.evaluate(code, webROjs.webR.objs.globalEnv);
 }

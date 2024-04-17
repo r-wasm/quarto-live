@@ -6,7 +6,7 @@ filters:
 ---
 
 <!-- TODO: To be included in Quarto/knitR itself -->
-```{r}
+```{r echo=FALSE}
 knitr::knit_engines$set(webr = function(options) {
   knitr:::one_string(c(
     paste0("```{.", options$original.params.src ,"}"),
