@@ -1,0 +1,6 @@
+viewof _webr_editor_{{block_id}} = {
+  const block_id = "{{block_id}}";
+  const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
+  const code = atob(scriptContent);
+  return webROjs.editor(code);
+}

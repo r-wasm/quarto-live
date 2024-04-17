@@ -14,10 +14,36 @@ function CodeBlock(code)
     return
   end
 
+  local attr = code.attributes
+  local param_lines = {}
+  local code_lines = {}
+  for line in code.text:gmatch("([^\r\n]*)[\r\n]?") do
+    local param_line = string.find(line, "^#|")
+    if (param_line ~= nil) then
+      table.insert(param_lines, string.sub(line, 4))
+    else
+      table.insert(code_lines, line)
+    end
+  end
+  local r_code = table.concat(code_lines, "\n")
+  local param_yaml = table.concat(param_lines, "\n")
+
+  -- TODO: Parse yaml parameters more robustly
+  for k, v in pairs(param_lines) do
+    for k, v in v:gmatch("(%w+): (%w+)") do
+      attr[k] = v
+    end
+  end
+
   webr_definitions:insert(code.text)
   block_id = block_id + 1
 
-  local file = io.open("webr-evaluate.ojs", "r")
+  local ojs_source = "webr-evaluate.ojs"
+  if (attr["edit"]) then
+    ojs_source = "webr-editor.ojs"
+  end
+
+  local file = io.open(ojs_source, "r")
   assert(file)
   local content = file:read("*a")
   table.insert(ojs_definitions.contents, {
@@ -31,7 +57,8 @@ function CodeBlock(code)
     pandoc.Div({}, pandoc.Attr("webr-" .. block_id)),
     pandoc.RawBlock(
       "html",
-      "<script type=\"webr-" .. block_id .. "-contents\">\n" .. quarto.base64.encode(code.text) .. "\n</script>"
+      "<script type=\"webr-" .. block_id .. "-contents\">\n" ..
+      quarto.base64.encode(r_code) .. "\n</script>"
     )
   })
 end
@@ -47,7 +74,16 @@ function Pandoc(doc)
     source = content
   })
   doc.blocks:insert(pandoc.RawBlock(
-    "html", "<script type=\"ojs-module-contents\">\n" .. json_as_b64(ojs_definitions) .. "\n</script>"))
+    "html", "<script type=\"ojs-module-contents\">\n" ..
+    json_as_b64(ojs_definitions) .. "\n</script>"))
+
+  quarto.doc.add_html_dependency({
+    name = 'webr-ojs-codemirror',
+    resources = {
+      "resources/codemirror/dist/webr-ojs-codemirror.js"
+    }
+  })
+
   return doc
 end
 

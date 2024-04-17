@@ -1,0 +1,23 @@
+{
+  "name": "webr-ojs-codemirror",
+  "type": "module",
+  "version": "0.0.1",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/webr-ojs-codemirror.js",
+  "private": true,
+  "license": "mit",
+  "scripts": {
+    "build": "npx esbuild src/main.ts --bundle --platform=neutral --minify --outfile=dist/webr-ojs-codemirror.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.2"
+  },
+  "dependencies": {
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.26.3",
+    "codemirror": "^6.0.1",
+    "codemirror-lang-r": "^0.1.0-2"
+  }
+}
