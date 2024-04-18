@@ -43,8 +43,14 @@ function CodeBlock(code)
   }
   block_id = block_id + 1
 
+  if (attr.output == "asis") then
+    quarto.log.warning(
+      "Execution option `output: asis` is unsupported for `webr` code blocks."
+    )
+  end
+
   local ojs_source = "webr-evaluate.ojs"
-  if (attr["edit"]) then
+  if (attr.edit) then
     ojs_source = "webr-editor.ojs"
   end
 
