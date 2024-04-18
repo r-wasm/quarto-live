@@ -57,7 +57,7 @@ function CodeBlock(code)
   local file = io.open(ojs_source, "r")
   assert(file)
   local content = file:read("*a")
-  table.insert(ojs_definitions.contents, {
+  table.insert(ojs_definitions.contents, 1, {
     methodName = "interpret",
     cellName = "webr-" .. block_id,
     inline = false,
