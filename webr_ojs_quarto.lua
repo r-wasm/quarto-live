@@ -29,7 +29,7 @@ function CodeBlock(code)
 
   -- TODO: Parse yaml parameters more robustly
   for k, v in pairs(code.attributes) do
-    attr[k] = v
+    attr[k] = tostring(v)
   end
   for k, v in pairs(param_lines) do
     for k, v in v:gmatch("(%w+): (%w+)") do

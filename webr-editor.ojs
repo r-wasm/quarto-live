@@ -11,7 +11,7 @@ viewof _webr_editor_{{block_id}} = {
 
   // Parse block attributes
   Object.entries(block.attr).forEach(([k, v]) => {
-    options[k] = v == 'true';
+    options[k] = String(v).toLowerCase() == 'true';
   });
 
   return webROjs.editor(block.code, options);

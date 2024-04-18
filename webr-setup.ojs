@@ -115,6 +115,7 @@ webROjs = {
           warning: true,
           error: true,
           include: true,
+          output: true,
         },
         options
       );
@@ -234,8 +235,10 @@ webROjs = {
       outputDiv.className = "cell-output cell-output-stdout";
       outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
-      this.appendSource();
-      this.output.appendChild(outputDiv);
+      if (this.options.output) {
+        this.appendSource();
+        this.output.appendChild(outputDiv);
+      }
     }
     
     appendStderr(content) {
@@ -243,8 +246,10 @@ webROjs = {
       outputDiv.className = "cell-output cell-output-stderr";
       outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
-      this.appendSource();
-      this.output.appendChild(outputDiv);
+      if (this.options.output) {
+        this.appendSource();
+        this.output.appendChild(outputDiv);
+      }
     }
     
     appendImage(image) {
@@ -259,8 +264,10 @@ webROjs = {
       outputDiv.className = "cell-output-display";
       outputDiv.appendChild(canvas);
 
-      this.appendSource();
-      this.output.appendChild(outputDiv);
+      if (this.options.output) {
+        this.appendSource();
+        this.output.appendChild(outputDiv);
+      }
     }
   }
 
