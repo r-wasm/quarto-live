@@ -10,17 +10,22 @@ export type EditorConfig = {
 export class CodeMirrorEditor {
   state: EditorState;
   view: EditorView;
+  options: { [key:string]: any };
   reactiveViewof = [
     EditorView.updateListener.of((update: ViewUpdate) => {
       if (!update.docChanged) return;
       const dom = update.view.dom as HTMLElement & { value: any };
-      dom.value = update.state.doc.toString();
+      dom.value = {
+        code: update.state.doc.toString(),
+        options: this.options,
+      }
       dom.dispatchEvent(new CustomEvent('input'));
     }),
   ];
-  constructor(config: EditorConfig) {
+  constructor(code: string, options: { [key:string]: any }) {
+    this.options = options;
     this.state = EditorState.create({
-      doc: config.doc,
+      doc: code,
       extensions: [
         basicSetup,
         this.reactiveViewof,

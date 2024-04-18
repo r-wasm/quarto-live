@@ -265,17 +265,17 @@ webROjs = {
   }
 
   // Create an interactive R code editor
-  const editor = (code) => {
+  const editor = (code, options) => {
     if (typeof code !== "string") {
       throw new Error("Can't create editor, `code` must be a string.");
     }
 
-    const editor = new CodeMirrorEditor({
-      doc: code,
-    });
-
+    const editor = new CodeMirrorEditor(code, options);
     const el = editor.view.dom;
-    el.value = editor.view.state.doc.toString();
+    el.value = {
+      code: editor.view.state.doc.toString(),
+      options,
+    }
     return el;
   }
 

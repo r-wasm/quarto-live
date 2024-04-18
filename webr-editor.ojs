@@ -2,6 +2,18 @@ viewof _webr_editor_{{block_id}} = {
   const block_id = "{{block_id}}";
   const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
   const block = JSON.parse(atob(scriptContent));
-  return webROjs.editor(block.code);
+
+  // Evaluate in global environment, default to not echoing source
+  const options = {
+    envir: webROjs.webR.objs.globalEnv,
+    echo: false,
+  }
+
+  // Parse block attributes
+  Object.entries(block.attr).forEach(([k, v]) => {
+    options[k] = v == 'true';
+  });
+
+  return webROjs.editor(block.code, options);
 }
-webROjs.evaluate(_webr_editor_{{block_id}});
+webROjs.evaluate(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
