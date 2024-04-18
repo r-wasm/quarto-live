@@ -1,8 +1,15 @@
 {
   const block_id = "{{block_id}}";
   const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
-  const code = atob(scriptContent);
+  const block = JSON.parse(atob(scriptContent));
 
   // Evaluate the provided R code in the global environment
-  return webROjs.evaluate(code, webROjs.webR.objs.globalEnv);
+  const options = { envir: webROjs.webR.objs.globalEnv }
+
+  // Parse block attributes
+  Object.entries(block.attr).forEach(([k, v]) => {
+    options[k] = v == 'true';
+  });
+
+  return webROjs.evaluate(block.code, options);
 }

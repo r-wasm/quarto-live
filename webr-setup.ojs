@@ -101,11 +101,23 @@ webROjs = {
   // Build interleaved source code and HTML output
   // Use {evaluate}, so as to match {knitr} output
   class WebREvaluator {
-    constructor(envir = webR.objs.globalEnv) {
+    constructor(options = {}) {
       this.output = document.createElement('div');
       this.sourceLines = [];
       this.shelter = new webR.Shelter();
-      this.envir = envir;
+
+      // Fallback default options
+      this.options = Object.assign(
+        {
+          envir: webR.objs.globalEnv,
+          eval: true,
+          echo: true,
+          warning: true,
+          error: true,
+          include: true,
+        },
+        options
+      );
     }
 
     async purge() {
@@ -114,12 +126,34 @@ webROjs = {
     }
     
     async evaluate(code) {
-      const shelter = await this.shelter;
-      const envir = await this.envir;
+      // Early returns if we're not actually evaluating
+      if (!this.options.include) {
+        return;
+      }
 
+      if (!this.options.eval) {
+        this.sourceLines.push(code);
+        this.appendSource();
+        return;
+      }
+
+      const shelter = await this.shelter;
       const capture = await shelter.captureR(
-        'evaluate::evaluate(code, envir = envir)',
-        { env: { code, envir } }
+        `evaluate::evaluate(
+          code,
+          envir = envir,
+          keep_message = warning,
+          keep_warning = warning,
+          stop_on_error = error
+        )`,
+        {
+          env: {
+            code,
+            envir: this.options.envir,
+            warning: this.options.warning,
+            error: this.options.error ? 0 : 1,
+          }
+        }
       );
 
       const result = await capture.result.toArray();
@@ -174,7 +208,7 @@ webROjs = {
     }
     
     appendSource() {
-      if (this.sourceLines.length) {
+      if (this.options.echo && this.sourceLines.length) {
         const sourceDiv = document.createElement("div");
         const sourcePre = document.createElement("pre");
         const sourceCode = document.createElement("code");
@@ -187,12 +221,12 @@ webROjs = {
           sourceSpan.textContent = line;
           sourceCode.appendChild(sourceSpan);
         });
-        this.sourceLines.length = 0;
-        
+
         sourcePre.appendChild(sourceCode);
         sourceDiv.appendChild(sourcePre);
         this.output.appendChild(sourceDiv);
       }
+      this.sourceLines.length = 0;
     }
     
     appendStdout(content) {
@@ -246,8 +280,8 @@ webROjs = {
   }
 
   // Evaluate the provided R code in the given environment
-  const evaluate = async (code, envir = webR.objs.globalEnv) => {
-    const evaluator = new WebREvaluator(envir);
+  const evaluate = async (code, options) => {
+    const evaluator = new WebREvaluator(options);
     try {
       await evaluator.evaluate(code);
     } finally {
@@ -255,7 +289,7 @@ webROjs = {
     }
 
     // Define objects in the global environment as OJS values
-    const objs = await envir.toJs({ depth: -1 });
+    const objs = await options.envir.toJs({ depth: -1 });
     for (let i = 0; i < objs.names.length; i++) {
       const key = objs.names[i];
       const value = objs.values[i];

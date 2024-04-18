@@ -1,4 +1,3 @@
-local webr_definitions = pandoc.List({})
 local ojs_definitions = {
   contents = {},
 }
@@ -14,7 +13,7 @@ function CodeBlock(code)
     return
   end
 
-  local attr = code.attributes
+  local attr = {}
   local param_lines = {}
   local code_lines = {}
   for line in code.text:gmatch("([^\r\n]*)[\r\n]?") do
@@ -29,13 +28,19 @@ function CodeBlock(code)
   local param_yaml = table.concat(param_lines, "\n")
 
   -- TODO: Parse yaml parameters more robustly
+  for k, v in pairs(code.attributes) do
+    attr[k] = v
+  end
   for k, v in pairs(param_lines) do
     for k, v in v:gmatch("(%w+): (%w+)") do
       attr[k] = v
     end
   end
 
-  webr_definitions:insert(code.text)
+  local block = {
+    code = r_code,
+    attr = attr
+  }
   block_id = block_id + 1
 
   local ojs_source = "webr-evaluate.ojs"
@@ -58,7 +63,7 @@ function CodeBlock(code)
     pandoc.RawBlock(
       "html",
       "<script type=\"webr-" .. block_id .. "-contents\">\n" ..
-      quarto.base64.encode(r_code) .. "\n</script>"
+      json_as_b64(block) .. "\n</script>"
     )
   })
 end
