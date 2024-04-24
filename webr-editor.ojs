@@ -3,9 +3,9 @@ viewof _webr_editor_{{block_id}} = {
   const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
   const block = JSON.parse(atob(scriptContent));
 
-  // Evaluate in global environment, default to not echoing source
+  // Evaluate in personal environment, default to not echoing source
   const options = {
-    envir: webROjs.webR.objs.globalEnv,
+    envir: await webROjs.webR.evalR(`new.env(parent = globalenv())`),
     echo: false,
   }
 

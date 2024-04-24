@@ -1,6 +1,6 @@
 webROjs = {
   let { WebR, isRFunction, isRCall, isRNull, isRObject } = await import(
-    'https://webr.r-wasm.org/v0.3.2/webr.mjs'
+    'https://webr.r-wasm.org/latest/webr.mjs'
   );
 
   let { CodeMirrorEditor } = await import(
@@ -10,7 +10,7 @@ webROjs = {
   // Initialise webR and setup for R code evaluation
   let webR = new WebR();
   await webR.init();
-  await webR.installPackages(['evaluate']);
+  await webR.installPackages(['evaluate', 'knitr']);
   await webR.evalRVoid(`webr::shim_install()`);
   await webR.evalRVoid(`
     ojs_define <- function(...) {
@@ -35,7 +35,16 @@ webROjs = {
       return webRValue;
     }
 
+    // We have an R object, so grab knitr output to support asis, e.g. HTML.
+    const capture = await webR.globalShelter.captureR(`
+      knitr::knit_print(webRValue, options = list(screenshot.force = FALSE))
+    `, { env: { webRValue } });
+    webRValue = capture.result;
+
     if (isRFunction(webRValue) || isRCall(webRValue)) {
+      // If there are images, return the final captured plot back to OJS.
+      // Otherwise, return the captured R result value.
+      // TODO: Handle returning result and (multiple) plots to OJS
       return async (...args) => {
           try {
             const width = await webR.evalRNumber('72 * getOption("webr.fig.width")');
@@ -47,10 +56,6 @@ webROjs = {
               },
               ...args
             );
-            
-            // If there are images, return the final captured plot back to OJS.
-            // Otherwise, return the captured R result value.
-            // TODO: Handle returning result and (multiple) plots to OJS
             if (capture.images.length) {
               const el = await asOjs(capture.images[capture.images.length - 1]);
               el.value = await asOjs(capture.result);
@@ -68,9 +73,16 @@ webROjs = {
         case "null":
           return null;
 
+        case "character": {
+          const classes = await (await webRValue.class()).toArray();
+          if (classes.includes('knit_asis')) {
+            var container = document.createElement('div');
+            container.innerHTML = await webRValue.toString();
+            return container.firstElementChild;
+          }
+        }
         case "logical":
         case "double":
-        case "character":
         case "raw":
         case "integer":
           return await webRValue.toArray();
@@ -87,8 +99,9 @@ webROjs = {
         case "pairlist": {
             const result = {};
             const shallow = await webRValue.toJs({ depth: -1 });
-            for (let i = 0; i < shallow.names.length; i++) {
-                result[shallow.names[i]] = await asOjs(shallow.values[i]);
+            for (let i = 0; i < shallow.values.length; i++) {
+              const key = shallow.names ? shallow.names[i] : i;
+              result[key] = await asOjs(shallow.values[i]);
             }
             return result;
         };
@@ -145,7 +158,13 @@ webROjs = {
           envir = envir,
           keep_message = warning,
           keep_warning = warning,
-          stop_on_error = error
+          stop_on_error = error,
+          output_handler = evaluate::new_output_handler(
+            value = function(x) {
+              res <- withVisible(knitr::knit_print(x, options = list(screenshot.force = FALSE)))
+              if (res$visible) res$value else invisible(res$value)
+            }
+          )
         )`,
         {
           env: {
@@ -162,7 +181,13 @@ webROjs = {
         const type = await result[i].type();
         switch (type) {
           case 'character': {
-            this.appendStdout(await result[i].toString());
+            const classes = await (await result[i].class()).toArray();
+            const output = await result[i].toString();
+            if (classes.includes('knit_asis')) {
+              this.appendHtml(await result[i].toString());
+            } else {
+              this.appendStdout(await result[i].toString());
+            }
             break;
           }
           case 'list': {
@@ -245,6 +270,17 @@ webROjs = {
       const outputDiv = document.createElement("div");
       outputDiv.className = "cell-output cell-output-stderr";
       outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
+
+      if (this.options.output) {
+        this.appendSource();
+        this.output.appendChild(outputDiv);
+      }
+    }
+
+    appendHtml(content) {
+      const outputDiv = document.createElement("div");
+      outputDiv.className = "cell-output";
+      outputDiv.innerHTML = content;
 
       if (this.options.output) {
         this.appendSource();
