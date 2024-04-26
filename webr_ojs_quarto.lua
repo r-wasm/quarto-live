@@ -89,9 +89,9 @@ function Pandoc(doc)
     json_as_b64(ojs_definitions) .. "\n</script>"))
 
   quarto.doc.add_html_dependency({
-    name = 'webr-ojs-codemirror',
+    name = 'webr-ojs-runtime',
     resources = {
-      "resources/codemirror/dist/webr-ojs-codemirror.js"
+      "resources/webr-ojs-runtime/dist/webr-ojs-runtime.js"
     }
   })
 

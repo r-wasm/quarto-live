@@ -1,15 +1,15 @@
 {
-  "name": "webr-ojs-codemirror",
+  "name": "webr-ojs-runtime",
   "type": "module",
   "version": "0.0.1",
   "files": [
     "dist"
   ],
-  "main": "./dist/webr-ojs-codemirror.js",
+  "main": "./dist/webr-ojs-runtime.js",
   "private": true,
   "license": "mit",
   "scripts": {
-    "build": "npx esbuild src/main.ts --bundle --platform=neutral --minify --outfile=dist/webr-ojs-codemirror.js"
+    "build": "npx esbuild src/main.ts --bundle --platform=neutral --minify --outfile=dist/webr-ojs-runtime.js"
   },
   "devDependencies": {
     "esbuild": "^0.20.2"

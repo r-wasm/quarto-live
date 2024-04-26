@@ -3,27 +3,21 @@ import { EditorView, ViewUpdate } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { r } from 'codemirror-lang-r'
 
-export type EditorConfig = {
-  doc?: string;
-}
+export type OJSElement = HTMLElement & { value: any };
 
-export class CodeMirrorEditor {
+export class ExerciseEditor {
   state: EditorState;
   view: EditorView;
-  options: { [key:string]: any };
+  container: OJSElement;
   reactiveViewof = [
     EditorView.updateListener.of((update: ViewUpdate) => {
       if (!update.docChanged) return;
-      const dom = update.view.dom as HTMLElement & { value: any };
-      dom.value = {
-        code: update.state.doc.toString(),
-        options: this.options,
-      }
-      dom.dispatchEvent(new CustomEvent('input'));
+      this.container.value.code = update.state.doc.toString();
+      this.container.dispatchEvent(new CustomEvent('input'));
     }),
   ];
-  constructor(code: string, options: { [key:string]: any }) {
-    this.options = options;
+  constructor(container: OJSElement, code: string) {
+    this.container = container;
     this.state = EditorState.create({
       doc: code,
       extensions: [
@@ -39,4 +33,4 @@ export class CodeMirrorEditor {
   }
 }
 
-export default { EditorView, EditorState, CodeMirrorEditor };
+export default { ExerciseEditor };

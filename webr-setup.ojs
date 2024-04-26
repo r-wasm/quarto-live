@@ -3,8 +3,8 @@ webROjs = {
     'https://webr.r-wasm.org/latest/webr.mjs'
   );
 
-  let { CodeMirrorEditor } = await import(
-    '../quarto-contrib/webr-ojs-codemirror/webr-ojs-codemirror.js'
+  let { ExerciseEditor } = await import(
+    '../quarto-contrib/webr-ojs-runtime/webr-ojs-runtime.js'
   );
 
   // Initialise webR and setup for R code evaluation
@@ -337,13 +337,15 @@ webROjs = {
       throw new Error("Can't create editor, `code` must be a string.");
     }
 
-    const editor = new CodeMirrorEditor(code, options);
-    const el = editor.view.dom;
-    el.value = {
+    const card = document.createElement("div");
+    const editor = new ExerciseEditor(card, code);
+    card.appendChild(editor.view.dom);
+
+    card.value = {
       code: editor.view.state.doc.toString(),
       options,
     }
-    return el;
+    return card;
   }
 
   return { webR, asOjs, WebREvaluator, editor };
