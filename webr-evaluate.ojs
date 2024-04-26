@@ -11,5 +11,5 @@
     options[k] = String(v).toLowerCase() == 'true';
   });
 
-  return webROjs.evaluate(block.code, options);
+  return webROjs.WebREvaluator.process(block.code, options);
 }

@@ -134,6 +134,30 @@ webROjs = {
       );
     }
 
+    static async process(code, options) {
+      const evaluator = new WebREvaluator(options);
+      try {
+        await evaluator.evaluate(code);
+      } finally {
+        evaluator.purge();
+      }
+
+      // Define objects in the evaluator environment as OJS values
+      const objs = await options.envir.toJs({ depth: -1 });
+      for (let i = 0; i < objs.names.length; i++) {
+        const key = objs.names[i];
+        const value = objs.values[i];
+        const jsValue = await asOjs(value);
+        if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
+          window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
+        } else {
+          window._ojs.ojsConnector.define(key)(jsValue);
+        }
+      }
+
+      return evaluator.output;
+    }
+
     async purge() {
       const shelter = await this.shelter;
       shelter.purge();
@@ -322,30 +346,5 @@ webROjs = {
     return el;
   }
 
-  // Evaluate the provided R code in the given environment
-  const evaluate = async (code, options) => {
-    const evaluator = new WebREvaluator(options);
-    try {
-      await evaluator.evaluate(code);
-    } finally {
-      evaluator.purge();
-    }
-
-    // Define objects in the global environment as OJS values
-    const objs = await options.envir.toJs({ depth: -1 });
-    for (let i = 0; i < objs.names.length; i++) {
-      const key = objs.names[i];
-      const value = objs.values[i];
-      const jsValue = await asOjs(value);
-      if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
-        window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
-      } else {
-        window._ojs.ojsConnector.define(key)(jsValue);
-      }
-    }
-
-    return evaluator.output;
-  }
-
-  return { webR, asOjs, WebREvaluator, editor, evaluate };
+  return { webR, asOjs, WebREvaluator, editor };
 }

@@ -16,4 +16,4 @@ viewof _webr_editor_{{block_id}} = {
 
   return webROjs.editor(block.code, options);
 }
-webROjs.evaluate(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
+webROjs.WebREvaluator.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
