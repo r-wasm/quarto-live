@@ -15,6 +15,7 @@ type ExerciseButtonSpec = {
 
 export class ExerciseEditor {
   code: string
+  initialCode: string
   state: EditorState;
   view: EditorView;
   container: OJSElement;
@@ -22,8 +23,11 @@ export class ExerciseEditor {
   reactiveViewof = [
     EditorView.updateListener.of((update: ViewUpdate) => {
       if (!update.docChanged) return;
-      this.container.value.code = update.state.doc.toString();
-      this.container.dispatchEvent(new CustomEvent('input'));
+      this.code = update.state.doc.toString();
+      this.container.value.code = this.code;
+      this.container.dispatchEvent(new CustomEvent('input', {
+        detail: { manual: false }
+      }));
     }),
   ];
 
@@ -33,7 +37,7 @@ export class ExerciseEditor {
     }
 
     this.container = container;
-    this.code = code;
+    this.code = this.initialCode = code;
     this.options = options;
     this.state = EditorState.create({
       doc: code,
@@ -51,6 +55,15 @@ export class ExerciseEditor {
     const dom = this.render();
     this.container.appendChild(dom);
     this.container.value = { code, options };
+
+    // Prevent input Event when code autorun is disabled
+    this.container.oninput = ((ev: CustomEvent) => {
+      if (ev.detail.manual || this.options.autorun === 'true') {
+        return;
+      }
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+    }) as EventListener;
   }
 
   renderButton(spec: ExerciseButtonSpec) {
@@ -101,7 +114,7 @@ export class ExerciseEditor {
             changes: {
               from: 0,
               to: this.view.state.doc.length,
-              insert: this.code,
+              insert: this.initialCode,
             }
           });
         }
@@ -121,14 +134,30 @@ export class ExerciseEditor {
     let right = document.createElement("div");
     right.className = "d-flex align-items-center gap-2";
 
+    const rightButtons: (HTMLButtonElement | HTMLAnchorElement)[] = [];
+    if (this.options.autorun !== 'true') {
+      rightButtons.push(this.renderButton({
+        text: "Run Code",
+        icon: "play",
+        type: "primary",
+        onclick: () => {
+          this.container.value.code = this.code;
+          this.container.dispatchEvent(new CustomEvent('input', {
+            detail: { manual: true }
+          }));
+        }
+      }));
+    }
+
     if (false) {
       right.appendChild(this.renderSpinner());
-      right.appendChild(this.renderButtonGroup([
-        this.renderButton({ text: "Run Code", icon: "arrow-repeat", type: "primary" }),
+      rightButtons.push(
         this.renderButton({ text: "Submit Answer", icon: "lightbulb", type: "primary" }),
-      ]));
-      header.appendChild(right);
+      );
     }
+    right.appendChild(this.renderButtonGroup(rightButtons));
+
+    header.appendChild(right);
     card.appendChild(header);
 
     body.appendChild(this.view.dom);

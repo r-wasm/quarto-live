@@ -3,12 +3,13 @@ viewof _webr_editor_{{block_id}} = {
   const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
   const block = JSON.parse(atob(scriptContent));
 
-  // Evaluate in personal environment, default to not echoing source
+  // Default editor configuration
   const options = Object.assign(
     {
       envir: await webROjs.webR.evalR(`new.env(parent = globalenv())`),
       echo: 'false',
       startover: 'false',
+      autorun: 'true',
       caption: 'R Code',
     },
     block.attr
