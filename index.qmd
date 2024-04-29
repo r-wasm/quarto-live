@@ -22,6 +22,7 @@ knitr::knit_engines$set(webr = function(options) {
 This is a standard Quarto R block. It is powered by `knitr`:
 
 ```{r}
+#| error: true
 x <- 1234
 y <- 4567
 x + y
@@ -29,6 +30,7 @@ c("a", "b", "c")
 foo <- function (x) { 1 + sin(x); }
 message("hi")
 warning("hi")
+stop("a")
 hist(rnorm(100))
 ```
 
@@ -44,7 +46,6 @@ c("a", "b", "c")
 foo <- function (x) { 1 + sin(x); }
 message("hi")
 warning("hi")
-stop("a")
 hist(rnorm(100))
 ```
 
@@ -101,16 +102,12 @@ do_mean(alphabet)
 ## Converting R `data.frames` to Observable
 
 ```{webr}
-data(mtcars)
-head(mtcars)
+#| output: false
+install.packages("dplyr")
 ```
 
----
-
 ```{webr}
-install.packages("dplyr", quiet = TRUE)
-library(dplyr)
-filtered_cars <- mtcars |> filter(hp > 123)
+filtered_cars <- mtcars |> dplyr::filter(hp > 123)
 ```
 
 ```{ojs}
@@ -122,12 +119,11 @@ Plot.plot({
 })
 ```
 
-
 ## Plotting from R
 
 We can write an R function outputs a plot and returns some result.
 
-```{.webr}
+```{webr}
 do_hist <- function(n) {
   x <- rnorm(n)
   hist(x)
@@ -144,3 +140,20 @@ val
 ```
 
 This gives very responsive interactivity with just a few lines of glue code.
+
+## Editable R code blocks
+
+```{webr}
+#| edit: true
+edit_cars <- mtcars |> dplyr::filter(hp < 80)
+head(edit_cars, n = 5)
+hist(edit_cars$wt)
+```
+
+```{ojs}
+Plot.plot({
+  x: {label: "Economy (mpg)"},
+  y: {label: "Power (hp)"},
+  marks: [ Plot.dot(edit_cars, { x: "mpg", y: "hp"}) ]
+})
+```
