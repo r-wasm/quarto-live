@@ -123,12 +123,12 @@ webROjs = {
       this.options = Object.assign(
         {
           envir: webR.objs.globalEnv,
-          eval: true,
-          echo: true,
-          warning: true,
-          error: true,
-          include: true,
-          output: true,
+          eval: 'true',
+          echo: 'true',
+          warning: 'true',
+          error: 'true',
+          include: 'true',
+          output: 'true',
         },
         options
       );
@@ -165,11 +165,11 @@ webROjs = {
     
     async evaluate(code) {
       // Early returns if we're not actually evaluating
-      if (!this.options.include) {
+      if (this.options.include !== 'true') {
         return;
       }
 
-      if (!this.options.eval) {
+      if (this.options.eval !== 'true') {
         this.sourceLines.push(code);
         this.appendSource();
         return;
@@ -194,8 +194,8 @@ webROjs = {
           env: {
             code,
             envir: this.options.envir,
-            warning: this.options.warning,
-            error: this.options.error ? 0 : 1,
+            warning: this.options.warning === 'true',
+            error: this.options.error === 'true' ? 0 : 1,
           }
         }
       );
@@ -258,7 +258,7 @@ webROjs = {
     }
     
     appendSource() {
-      if (this.options.echo && this.sourceLines.length) {
+      if (this.options.echo === 'true' && this.sourceLines.length) {
         const sourceDiv = document.createElement("div");
         const sourcePre = document.createElement("pre");
         const sourceCode = document.createElement("code");
@@ -284,7 +284,7 @@ webROjs = {
       outputDiv.className = "cell-output cell-output-stdout";
       outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
-      if (this.options.output) {
+      if (this.options.output === 'true') {
         this.appendSource();
         this.output.appendChild(outputDiv);
       }
@@ -295,7 +295,7 @@ webROjs = {
       outputDiv.className = "cell-output cell-output-stderr";
       outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
-      if (this.options.output) {
+      if (this.options.output == 'true') {
         this.appendSource();
         this.output.appendChild(outputDiv);
       }
@@ -306,7 +306,7 @@ webROjs = {
       outputDiv.className = "cell-output";
       outputDiv.innerHTML = content;
 
-      if (this.options.output) {
+      if (this.options.output === 'true') {
         this.appendSource();
         this.output.appendChild(outputDiv);
       }
@@ -324,29 +324,12 @@ webROjs = {
       outputDiv.className = "cell-output-display";
       outputDiv.appendChild(canvas);
 
-      if (this.options.output) {
+      if (this.options.output === 'true') {
         this.appendSource();
         this.output.appendChild(outputDiv);
       }
     }
   }
 
-  // Create an interactive R code editor
-  const editor = (code, options) => {
-    if (typeof code !== "string") {
-      throw new Error("Can't create editor, `code` must be a string.");
-    }
-
-    const card = document.createElement("div");
-    const editor = new ExerciseEditor(card, code);
-    card.appendChild(editor.view.dom);
-
-    card.value = {
-      code: editor.view.state.doc.toString(),
-      options,
-    }
-    return card;
-  }
-
-  return { webR, asOjs, WebREvaluator, editor };
+  return { webR, asOjs, WebREvaluator, ExerciseEditor };
 }

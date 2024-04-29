@@ -4,12 +4,9 @@
   const block = JSON.parse(atob(scriptContent));
 
   // Evaluate the provided R code in the global environment
-  const options = { envir: webROjs.webR.objs.globalEnv }
-
-  // Parse block attributes
-  Object.entries(block.attr).forEach(([k, v]) => {
-    options[k] = String(v).toLowerCase() == 'true';
-  });
-
+  const options = Object.assign(
+    { envir: webROjs.webR.objs.globalEnv },
+    block.attr
+  );
   return webROjs.WebREvaluator.process(block.code, options);
 }

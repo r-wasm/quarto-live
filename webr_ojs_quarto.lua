@@ -32,7 +32,7 @@ function CodeBlock(code)
     attr[k] = tostring(v)
   end
   for k, v in pairs(param_lines) do
-    for k, v in v:gmatch("(%w+): (%w+)") do
+    for k, v in v:gmatch("([^:]+): (.+)") do
       attr[k] = v
     end
   end

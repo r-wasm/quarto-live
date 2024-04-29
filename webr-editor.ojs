@@ -4,16 +4,18 @@ viewof _webr_editor_{{block_id}} = {
   const block = JSON.parse(atob(scriptContent));
 
   // Evaluate in personal environment, default to not echoing source
-  const options = {
-    envir: await webROjs.webR.evalR(`new.env(parent = globalenv())`),
-    echo: false,
-  }
+  const options = Object.assign(
+    {
+      envir: await webROjs.webR.evalR(`new.env(parent = globalenv())`),
+      echo: 'false',
+      startover: 'false',
+      caption: 'R Code',
+    },
+    block.attr
+  );
 
-  // Parse block attributes
-  Object.entries(block.attr).forEach(([k, v]) => {
-    options[k] = String(v).toLowerCase() == 'true';
-  });
-
-  return webROjs.editor(block.code, options);
+  const container = document.createElement("div");
+  new webROjs.ExerciseEditor(container, block.code, options);
+  return container;
 }
 webROjs.WebREvaluator.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
