@@ -84,7 +84,7 @@ export class ExerciseEditor {
 
   renderSpinner() {
     const dom = document.createElement("div");
-    dom.className = "spinner-grow spinner-grow-sm";
+    dom.className = "webr-eval-indicator d-none spinner-grow spinner-grow-sm";
     dom.setAttribute("role", "status");
     return dom;
   }
@@ -149,8 +149,9 @@ export class ExerciseEditor {
       }));
     }
 
+    right.appendChild(this.renderSpinner());
+
     if (false) {
-      right.appendChild(this.renderSpinner());
       rightButtons.push(
         this.renderButton({ text: "Submit Answer", icon: "lightbulb", type: "primary" }),
       );

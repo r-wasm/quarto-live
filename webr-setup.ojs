@@ -21,6 +21,15 @@ webROjs = {
     options(webr.fig.width = 7, webr.fig.height = 5)
   `);
 
+  // Evaluation indicators
+  const setRunning = () => Array.from(
+    document.getElementsByClassName('webr-eval-indicator')
+  ).forEach((el) => el.classList.remove('d-none'));
+
+  const setIdle = () => Array.from(
+    document.getElementsByClassName('webr-eval-indicator')
+  ).forEach((el) => el.classList.add('d-none'));
+
   // Convert webR R object reference to OJS value
   const asOjs = async (webRValue) => {
     if (webRValue instanceof ImageBitmap) {
@@ -36,10 +45,12 @@ webROjs = {
     }
 
     // We have an R object, so grab knitr output to support asis, e.g. HTML.
+    setRunning();
     const capture = await webR.globalShelter.captureR(`
       knitr::knit_print(webRValue, options = list(screenshot.force = FALSE))
     `, { env: { webRValue } });
     webRValue = capture.result;
+    setIdle();
 
     if (isRFunction(webRValue) || isRCall(webRValue)) {
       // If there are images, return the final captured plot back to OJS.
@@ -49,6 +60,7 @@ webROjs = {
           try {
             const width = await webR.evalRNumber('72 * getOption("webr.fig.width")');
             const height = await webR.evalRNumber('72 * getOption("webr.fig.height")');
+            setRunning();
             const capture = await webRValue.capture(
               {
                 withAutoprint: true,
@@ -64,6 +76,7 @@ webROjs = {
             return await asOjs(capture.result);
           } finally {
             webR.globalShelter.purge();
+            setIdle();
           }
       };
     }
@@ -175,6 +188,7 @@ webROjs = {
         return;
       }
 
+      setRunning();
       const shelter = await this.shelter;
       const capture = await shelter.captureR(
         `evaluate::evaluate(
@@ -255,8 +269,9 @@ webROjs = {
         }
       }
       this.appendSource();
+      setIdle();
     }
-    
+
     appendSource() {
       if (this.options.echo === 'true' && this.sourceLines.length) {
         const sourceDiv = document.createElement("div");
