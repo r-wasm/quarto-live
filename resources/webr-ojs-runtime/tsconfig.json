@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "types": [ "node" ],
+    "target": "es2020",
+    "module": "es2022",
+  }
+}
