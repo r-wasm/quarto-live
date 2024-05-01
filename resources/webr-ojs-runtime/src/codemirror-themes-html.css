@@ -1,0 +1,67 @@
+/* Codemirror Editor */
+.content .cell .cm-editor {
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+}
+
+.content .cell .cm-content {
+  caret-color: var(--bs-body-color);
+}
+
+.content .cell .cm-cursor,
+.content .cell .cm-dropCursor {
+  border-left-color: var(--bs-body-color);
+}
+
+.content .cell .cm-focused .cm-selectionBackgroundm .cm-selectionBackground,
+.content .cell .cm-content ::selection {
+  background-color: rgba(var(--bs-default-rgb), 0.4);
+}
+
+.content .cell .cm-activeLine {
+  background-color: rgba(var(--bs-default-rgb), 0.4);
+}
+
+.content .cell .cm-gutters {
+  background-color: rgba(var(--bs-default-rgb), 0.2);
+  color: var(--bs-body-color);
+  border-right: 1px solid var(--quarto-border-color);
+}
+
+.content .cell .cm-activeLineGutter {
+  background-color: rgba(var(--bs-default-rgb), 0.8);
+}
+
+/* Syntax Highlighting */
+.content .cell .cm-editor {
+  --exercise-editor-hl-al: var(--quarto-hl-al-color);
+  --exercise-editor-hl-an: var(--quarto-hl-an-color);
+  --exercise-editor-hl-at: var(--quarto-hl-at-color);
+  --exercise-editor-hl-bn: var(--quarto-hl-bn-color);
+  --exercise-editor-hl-bu: var(--quarto-hl-bu-color);
+  --exercise-editor-hl-ch: var(--quarto-hl-ch-color);
+  --exercise-editor-hl-co: var(--quarto-hl-co-color);
+  --exercise-editor-hl-cv: var(--quarto-hl-cv-color);
+  --exercise-editor-hl-cn: var(--quarto-hl-cn-color);
+  --exercise-editor-hl-cf: var(--quarto-hl-cf-color);
+  --exercise-editor-hl-dt: var(--quarto-hl-dt-color);
+  --exercise-editor-hl-dv: var(--quarto-hl-dv-color);
+  --exercise-editor-hl-do: var(--quarto-hl-do-color);
+  --exercise-editor-hl-er: var(--quarto-hl-er-color);
+  --exercise-editor-hl-ex: var(--quarto-hl-ex-color);
+  --exercise-editor-hl-fl: var(--quarto-hl-fl-color);
+  --exercise-editor-hl-fu: var(--quarto-hl-fu-color);
+  --exercise-editor-hl-im: var(--quarto-hl-im-color);
+  --exercise-editor-hl-in: var(--quarto-hl-in-color);
+  --exercise-editor-hl-kw: var(--quarto-hl-kw-color);
+  --exercise-editor-hl-op: var(--quarto-hl-op-color);
+  --exercise-editor-hl-ot: var(--quarto-hl-ot-color);
+  --exercise-editor-hl-pp: var(--quarto-hl-pp-color);
+  --exercise-editor-hl-re: var(--quarto-hl-re-color);
+  --exercise-editor-hl-sc: var(--quarto-hl-sc-color);
+  --exercise-editor-hl-ss: var(--quarto-hl-ss-color);
+  --exercise-editor-hl-st: var(--quarto-hl-st-color);
+  --exercise-editor-hl-va: var(--quarto-hl-va-color);
+  --exercise-editor-hl-vs: var(--quarto-hl-vs-color);
+  --exercise-editor-hl-wa: var(--quarto-hl-wa-color);
+}

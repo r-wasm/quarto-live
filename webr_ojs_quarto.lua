@@ -92,6 +92,9 @@ function Pandoc(doc)
     name = 'webr-ojs-runtime',
     resources = {
       "resources/webr-ojs-runtime/dist/webr-ojs-runtime.js"
+    },
+    stylesheets = {
+      "resources/webr-ojs-runtime/dist/codemirror-themes-html.css"
     }
   })
 

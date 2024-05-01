@@ -1,6 +1,8 @@
 import { basicSetup } from 'codemirror'
 import { EditorView, ViewUpdate } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
+import { tags } from "@lezer/highlight"
 import { r } from 'codemirror-lang-r'
 
 export type OJSElement = HTMLElement & { value: any };
@@ -12,6 +14,28 @@ type ExerciseButtonSpec = {
   type: string;
   onclick?: ((ev: MouseEvent) => any);
 }
+
+const highlightStyle = HighlightStyle.define([
+  { tag: tags.keyword, color: "var(--exercise-editor-hl-kw)" },
+  { tag: tags.operator, color: "var(--exercise-editor-hl-op)" },
+  { tag: tags.attributeName, color: "var(--exercise-editor-hl-at)" },
+  { tag: tags.controlKeyword, color: "var(--exercise-editor-hl-cf)" },
+  { tag: tags.comment, color: "var(--exercise-editor-hl-co)" },
+  { tag: tags.string, color: "var(--exercise-editor-hl-st)" },
+  { tag: tags.regexp, color: "var(--exercise-editor-hl-ss)" },
+  { tag: tags.variableName, color: "var(--exercise-editor-hl-va)" },
+  { tag: [tags.number, tags.integer], color: "var(--exercise-editor-hl-dv)" },
+  {
+    tag: [
+      tags.className,
+      tags.definition(tags.propertyName),
+      tags.function(tags.variableName),
+      tags.definition(tags.typeName),
+      tags.labelName,
+    ],
+    color: "var(--exercise-editor-hl-fn)",
+  },
+]);
 
 export class ExerciseEditor {
   code: string
@@ -43,6 +67,7 @@ export class ExerciseEditor {
       doc: code,
       extensions: [
         basicSetup,
+        syntaxHighlighting(highlightStyle),
         this.reactiveViewof,
         r(),
       ],
