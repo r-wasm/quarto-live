@@ -217,9 +217,9 @@ webROjs = {
       const result = await capture.result.toArray();
       for (let i = 0; i < result.length; i++) {
         const type = await result[i].type();
+        const classes = await (await result[i].class()).toArray();
         switch (type) {
           case 'character': {
-            const classes = await (await result[i].class()).toArray();
             const output = await result[i].toString();
             if (classes.includes('knit_asis')) {
               this.appendHtml(await result[i].toString());
@@ -229,31 +229,28 @@ webROjs = {
             break;
           }
           case 'list': {
-            const attrs = await result[i].attrs();
-            const classList = await (await attrs.get('class')).toArray();
-            
             // Conditions
-            if (classList.includes('warning')) {
+            if (classes.includes('warning')) {
               const message = await result[i].get("message");
               this.appendStderr(`Warning: ${await message.toString()}`);
-            } else if (classList.includes('error')) {
+            } else if (classes.includes('error')) {
               const message = await result[i].get("message");
               const call = await result[i].get("call");
               const callInfo = await call.type() === "null" ? '' : ` in \`${await call.deparse()}\`: `;
               this.appendStderr(`Error${callInfo}${await message.toString()}`);
-            } else if (classList.includes('condition')) {
+            } else if (classes.includes('condition')) {
               const message = await result[i].get("message");
               this.appendStderr(await message.toString());
             }
   
             // Source code - save for concatenation
-            if (classList.includes('source')) {
+            if (classes.includes('source')) {
               const src = await result[i].get("src");
               this.sourceLines.push(await src.toString());
             }
             
             // Plot image
-            if (classList.includes('recordedplot')) {
+            if (classes.includes('recordedplot')) {
               const width = await webR.evalRNumber('72 * getOption("webr.fig.width")');
               const height = await webR.evalRNumber('72 * getOption("webr.fig.height")');
               const capturePlot = await shelter.captureR("replayPlot(plot)", {

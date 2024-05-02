@@ -15,6 +15,12 @@ type ExerciseButtonSpec = {
   onclick?: ((ev: MouseEvent) => any);
 }
 
+const icons = {
+  'arrow-repeat': require('./assets/arrow-repeat.svg') as string,
+  lightbulb: require('./assets/lightbulb.svg') as string,
+  play: require('./assets/play.svg') as string,
+}
+
 const highlightStyle = HighlightStyle.define([
   { tag: tags.keyword, color: "var(--exercise-editor-hl-kw)" },
   { tag: tags.operator, color: "var(--exercise-editor-hl-op)" },
@@ -24,17 +30,12 @@ const highlightStyle = HighlightStyle.define([
   { tag: tags.string, color: "var(--exercise-editor-hl-st)" },
   { tag: tags.regexp, color: "var(--exercise-editor-hl-ss)" },
   { tag: tags.variableName, color: "var(--exercise-editor-hl-va)" },
+  { tag: tags.bool, color: "var(--exercise-editor-hl-cn)" },
+  { tag: tags.separator, color: "var(--exercise-editor-hl-cn)" },
+  { tag: tags.literal, color: "var(--exercise-editor-hl-cn)" },
   { tag: [tags.number, tags.integer], color: "var(--exercise-editor-hl-dv)" },
-  {
-    tag: [
-      tags.className,
-      tags.definition(tags.propertyName),
-      tags.function(tags.variableName),
-      tags.definition(tags.typeName),
-      tags.labelName,
-    ],
-    color: "var(--exercise-editor-hl-fn)",
-  },
+  { tag: tags.function(tags.variableName), color: "var(--exercise-editor-hl-fu)" },
+  { tag: tags.function(tags.attributeName), color: "var(--exercise-editor-hl-at)" },
 ]);
 
 export class ExerciseEditor {
@@ -93,9 +94,11 @@ export class ExerciseEditor {
 
   renderButton(spec: ExerciseButtonSpec) {
     const dom = document.createElement("a");
-    dom.className = `btn btn-${spec.type} text-nowrap`;
-    dom.setAttribute("style", "--bs-btn-padding-y: .15rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;");
-    dom.innerHTML = `<i class="bi bi-${spec.icon}"></i> ${spec.text}`;
+    const label = document.createElement("span");
+    dom.className = `d-flex align-items-center gap-1 btn btn-${spec.type} text-nowrap`;
+    label.innerText = spec.text;
+    dom.innerHTML = icons[spec.icon];
+    dom.appendChild(label);
     dom.onclick = spec.onclick || null;
     return dom;
   }
@@ -118,12 +121,12 @@ export class ExerciseEditor {
     const card = document.createElement("div");
     const header = document.createElement("div");
     const body = document.createElement("div");
-    card.className = "card my-3";
+    card.className = "card editor-container my-3";
     header.className = "card-header d-flex justify-content-between";
     body.className = "card-body p-0";
 
     const left = document.createElement("div");
-    left.className = "d-flex align-items-center gap-2";
+    left.className = "d-flex align-items-center gap-3";
     const label = document.createElement("div");
     label.innerHTML = this.options.caption;
     left.appendChild(label);
@@ -133,7 +136,7 @@ export class ExerciseEditor {
       leftButtons.push(this.renderButton({
         text: "Start Over",
         icon: "arrow-repeat",
-        type: "secondary",
+        type: "outline-dark",
         onclick: () => {
           this.view.dispatch({
             changes: {
@@ -150,14 +153,14 @@ export class ExerciseEditor {
       leftButtons.push(this.renderButton({
         text: "Show Hint",
         icon: "lightbulb",
-        type: "secondary",
+        type: "outline-dark",
       }));
     }
     left.appendChild(this.renderButtonGroup(leftButtons));
     header.appendChild(left);
 
     let right = document.createElement("div");
-    right.className = "d-flex align-items-center gap-2";
+    right.className = "d-flex align-items-center gap-3";
 
     const rightButtons: (HTMLButtonElement | HTMLAnchorElement)[] = [];
     if (this.options.autorun !== 'true') {

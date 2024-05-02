@@ -1,39 +1,85 @@
+/* Colours: Bootstrap, revealjs, fallback */
+.quarto-light .card.editor-container {
+  --exercise-main-color: var(--bs-body-color, var(--r-main-color, #212529));
+  --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #ffffff));
+  --exercise-primary-rgb: var(--bs-primary-rgb, 13, 110, 253);
+  --exercise-default: var(--bs-default, #dee2e6);
+  --exercise-cap-bg: var(--bs-light-bg-subtle, #f8f8f8);
+  --exercise-line-bg: rgba(var(--exercise-primary-rgb), 0.05);
+  --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.1);
+}
+
+.quarto-dark .card.editor-container {
+  --exercise-main-color: var(--bs-body-color, var(--r-main-color, #ffffff));
+  --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #222222));
+  --exercise-primary-rgb: var(--bs-primary-rgb, 55, 90, 127);
+  --exercise-default: var(--bs-default, #434343);
+  --exercise-cap-bg: var(--bs-card-cap-bg, #505050);
+  --exercise-line-bg: rgba(var(--exercise-primary-rgb), 0.2);
+  --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.4);
+}
+
+/* Editor header buttons */
+.card.editor-container .card-header a.btn {
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-padding-y: 0.15rem;
+  --bs-btn-font-size: 0.75rem;
+}
+
+.quarto-dark .card.editor-container .card-header .btn.btn-outline-dark {
+  --bs-btn-color: #f8f8f8;
+  --bs-btn-border-color: #f8f8f8;
+  --bs-btn-hover-color: #000;
+  --bs-btn-hover-bg: #f8f8f8;
+  --bs-btn-hover-border-color: #f8f8f8;
+  --bs-btn-focus-shadow-rgb: 248, 248, 248;
+  --bs-btn-active-color: #000;
+  --bs-btn-active-bg: #f8f8f8;
+  --bs-btn-active-border-color: #f8f8f8;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #f8f8f8;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: #f8f8f8;
+  --bs-btn-bg: transparent;
+  --bs-gradient: none;
+}
+
 /* Codemirror Editor */
-.content .cell .cm-editor {
-  color: var(--bs-body-color);
-  background-color: var(--bs-body-bg);
+.card.editor-container .cm-editor {
+  color: var(--exercise-main-color);
+  background-color: var(--exercise-main-bg);
 }
 
-.content .cell .cm-content {
-  caret-color: var(--bs-body-color);
+.card.editor-container .cm-content {
+  caret-color: var(--exercise-main-color);
 }
 
-.content .cell .cm-cursor,
-.content .cell .cm-dropCursor {
-  border-left-color: var(--bs-body-color);
+.card.editor-container .cm-cursor,
+.card.editor-container .cm-dropCursor {
+  border-left-color: var(--exercise-main-color);
 }
 
-.content .cell .cm-focused .cm-selectionBackgroundm .cm-selectionBackground,
-.content .cell .cm-content ::selection {
-  background-color: rgba(var(--bs-default-rgb), 0.4);
+.card.editor-container .cm-focused .cm-selectionBackgroundm .cm-selectionBackground,
+.card.editor-container .cm-content ::selection {
+  background-color: rgba(var(--exercise-primary-rgb), 0.1);
 }
 
-.content .cell .cm-activeLine {
-  background-color: rgba(var(--bs-default-rgb), 0.4);
+.card.editor-container .cm-activeLine {
+  background-color: var(--exercise-line-bg);
 }
 
-.content .cell .cm-gutters {
-  background-color: rgba(var(--bs-default-rgb), 0.2);
-  color: var(--bs-body-color);
-  border-right: 1px solid var(--quarto-border-color);
+.card.editor-container .cm-activeLineGutter {
+  background-color: var(--exercise-line-gutter-bg);
 }
 
-.content .cell .cm-activeLineGutter {
-  background-color: rgba(var(--bs-default-rgb), 0.8);
+.card.editor-container .cm-gutters {
+  background-color: var(--exercise-cap-bg);
+  color: var(--exercise-main-color);
+  border-right: 1px solid var(--exercise-default);
 }
 
 /* Syntax Highlighting */
-.content .cell .cm-editor {
+.cm-editor {
   --exercise-editor-hl-al: var(--quarto-hl-al-color);
   --exercise-editor-hl-an: var(--quarto-hl-an-color);
   --exercise-editor-hl-at: var(--quarto-hl-at-color);
@@ -64,4 +110,140 @@
   --exercise-editor-hl-va: var(--quarto-hl-va-color);
   --exercise-editor-hl-vs: var(--quarto-hl-vs-color);
   --exercise-editor-hl-wa: var(--quarto-hl-wa-color);
+}
+
+/* Revealjs (to match editor with bootstrap) */
+/* Container card */
+.reveal .card.editor-container .d-flex {
+  display: flex !important;
+}
+
+.reveal .card.editor-container .justify-content-between {
+  justify-content: space-between !important;
+}
+
+.reveal .card.editor-container .align-items-center {
+  align-items: center !important;
+}
+
+.reveal .card.editor-container .gap-1 {
+  gap: .25rem !important;
+}
+
+.reveal .card.editor-container .gap-2 {
+  gap: .5rem !important;
+}
+
+.reveal .card.editor-container .gap-3 {
+  gap: .75rem !important;
+}
+
+.reveal .card.editor-container {
+  border: 1px solid rgba(0, 0, 0, 0.175);
+  border-radius: 0.375rem;
+  font-size: .55em;
+  overflow: hidden;
+}
+
+.reveal .card.editor-container .card-header {
+  padding: 0.5rem 1rem;
+  background-color: var(--exercise-cap-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.175);
+}
+
+/* Button styling */
+.quarto-light .reveal .card.editor-container .btn.btn-primary {
+  --exercise-btn-bg: var(--bs-btn-bg, #0d6efd);
+  --exercise-btn-color: var(--bs-btn-color, #ffffff);
+  --exercise-btn-border-color: var(--bs-btn-border-color, #0d6efd);
+  --exercise-btn-hover-border-color: var(--bs-btn-hover-border-color, #0b5ed7);
+  --exercise-btn-hover-bg: var(--bs-btn-hover-bg, #0b5ed7);
+  --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
+}
+
+.quarto-dark .reveal .card.editor-container .btn.btn-primary {
+  --exercise-btn-bg: var(--bs-btn-bg, #375a7f);
+  --exercise-btn-color: var(--bs-btn-color, #ffffff);
+  --exercise-btn-border-color: var(--bs-btn-border-color, #375a7f);
+  --exercise-btn-hover-border-color: var(--bs-btn-hover-border-color, #2c4866);
+  --exercise-btn-hover-bg: var(--bs-btn-hover-bg, #2c4866);
+  --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
+}
+
+.quarto-light .reveal .card.editor-container .btn.btn-outline-dark {
+  --exercise-btn-bg: var(--bs-btn-bg, transparent);
+  --exercise-btn-color: var(--bs-btn-color, #333);
+  --exercise-btn-border-color: var(--bs-btn-border-color, #333);
+  --exercise-btn-hover-border-color: var(--bs-btn-hover-border-color, #333);
+  --exercise-btn-hover-bg: var(--bs-btn-hover-bg, #333);
+  --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
+}
+
+.quarto-dark .reveal .card.editor-container .btn.btn-outline-dark {
+  --exercise-btn-bg: var(--bs-btn-bg, transparent);
+  --exercise-btn-color: var(--bs-btn-color, #f8f8f8);
+  --exercise-btn-border-color: var(--bs-btn-border-color, #f8f8f8);
+  --exercise-btn-hover-border-color: var(--bs-btn-hover-border-color, #f8f8f8);
+  --exercise-btn-hover-bg: var(--bs-btn-hover-bg, #f8f8f8);
+  --exercise-btn-hover-color: var(--bs-btn-hover-color, #000000);
+}
+
+.reveal .card.editor-container .btn-group {
+  border-radius: .375rem;
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.reveal .card.editor-container .btn-group>.btn {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.reveal .card.editor-container .btn-group>:not(.btn-check:first-child)+.btn,
+.reveal .card.editor-container .btn-group>.btn-group:not(:first-child) {
+  margin-left: calc(1px*-1)
+}
+
+.reveal .card.editor-container .btn-group>.btn:not(:last-child):not(.dropdown-toggle),
+.reveal .card.editor-container .btn-group>.btn.dropdown-toggle-split:first-child,
+.reveal .card.editor-container .btn-group>.btn-group:not(:last-child)>.btn {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0
+}
+
+.reveal .card.editor-container .btn-group>.btn:nth-child(n+3),
+.reveal .card.editor-container .btn-group>:not(.btn-check)+.btn,
+.reveal .card.editor-container .btn-group>.btn-group:not(:first-child)>.btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0
+}
+
+.reveal .card.editor-container .btn {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 1rem;
+  color: var(--exercise-btn-color);
+  background-color: var(--exercise-btn-bg);
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid var(--exercise-btn-border-color);
+  border-radius: 0.375rem;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.reveal .card.editor-container .btn:hover {
+  color: var(--exercise-btn-hover-color);
+  background-color: var(--exercise-btn-hover-bg);
+  border-color: var(--exercise-btn-hover-border-color);
+}
+
+.reveal .card.editor-container.btn:disabled,
+.reveal .card.editor-container.btn.disabled,
+.reveal .card.editor-container fieldset:disabled .btn {
+  pointer-events: none;
+  opacity: 0.65;
 }
