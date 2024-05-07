@@ -236,7 +236,7 @@ webROjs = {
             } else if (classes.includes('error')) {
               const message = await result[i].get("message");
               const call = await result[i].get("call");
-              const callInfo = await call.type() === "null" ? '' : ` in \`${await call.deparse()}\`: `;
+              const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\`: `;
               this.appendStderr(`Error${callInfo}${await message.toString()}`);
             } else if (classes.includes('condition')) {
               const message = await result[i].get("message");
