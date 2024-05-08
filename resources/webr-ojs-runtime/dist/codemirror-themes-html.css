@@ -114,6 +114,10 @@
 
 /* Revealjs (to match editor with bootstrap) */
 /* Container card */
+.reveal .card.editor-container .d-none {
+  display: none !important;
+}
+
 .reveal .card.editor-container .d-flex {
   display: flex !important;
 }
@@ -246,4 +250,27 @@
 .reveal .card.editor-container fieldset:disabled .btn {
   pointer-events: none;
   opacity: 0.65;
+}
+
+/* Spinner */
+.reveal .card.editor-container .spinner-grow {
+  background-color: currentcolor;
+  opacity: 0;
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  vertical-align: -0.125em;
+  border-radius: 50%;
+  animation: 0.75s linear infinite spinner-grow;
+}
+
+@keyframes spinner-grow {
+  0% {
+    transform: scale(0)
+  }
+
+  50% {
+    opacity: 1;
+    transform: none
+  }
 }
