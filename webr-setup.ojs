@@ -18,7 +18,7 @@ webROjs = {
       names(args) <- quote(match.call(expand.dots=TRUE)[1:length(args) + 1])
       invisible(list2env(args, envir = .GlobalEnv))
     }
-    options(webr.fig.width = 7, webr.fig.height = 5)
+    options(webr.fig.width = 7, webr.fig.height = 5, knitr.table.format = "html")
   `);
 
   // Evaluation indicators
