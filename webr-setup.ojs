@@ -3,7 +3,7 @@ webROjs = {
     'https://webr.r-wasm.org/latest/webr.mjs'
   );
 
-  let { ExerciseEditor } = await import(
+  let { ExerciseEditor, highlightR } = await import(
     '../quarto-contrib/webr-ojs-runtime/webr-ojs-runtime.js'
   );
 
@@ -273,17 +273,10 @@ webROjs = {
       if (this.options.echo === 'true' && this.sourceLines.length) {
         const sourceDiv = document.createElement("div");
         const sourcePre = document.createElement("pre");
-        const sourceCode = document.createElement("code");
         sourceDiv.className = "sourceCode";
         sourcePre.className = "sourceCode r";
+        const sourceCode = highlightR(this.sourceLines.join(''));
         sourceCode.className = "sourceCode r";
-        
-        this.sourceLines.forEach((line) => {
-          const sourceSpan = document.createElement("span");
-          sourceSpan.textContent = line;
-          sourceCode.appendChild(sourceSpan);
-        });
-
         sourcePre.appendChild(sourceCode);
         sourceDiv.appendChild(sourcePre);
         this.output.appendChild(sourceDiv);

@@ -79,7 +79,7 @@
 }
 
 /* Syntax Highlighting */
-.cm-editor {
+:root {
   --exercise-editor-hl-al: var(--quarto-hl-al-color);
   --exercise-editor-hl-an: var(--quarto-hl-an-color);
   --exercise-editor-hl-at: var(--quarto-hl-at-color);
@@ -110,6 +110,69 @@
   --exercise-editor-hl-va: var(--quarto-hl-va-color);
   --exercise-editor-hl-vs: var(--quarto-hl-vs-color);
   --exercise-editor-hl-wa: var(--quarto-hl-wa-color);
+}
+
+pre > code.sourceCode > span.tok-keyword {
+  color: var(--exercise-editor-hl-kw);
+}
+
+pre > code.sourceCode > span.tok-operator {
+  color: var(--exercise-editor-hl-op);
+}
+
+pre > code.sourceCode > span.tok-attributeName {
+  color: var(--exercise-editor-hl-at);
+}
+
+pre > code.sourceCode > span.tok-controlKeyword {
+  color: var(--exercise-editor-hl-cf);
+}
+
+pre > code.sourceCode > span.tok-comment {
+  color: var(--exercise-editor-hl-co);
+}
+
+pre > code.sourceCode > span.tok-comment {
+  color: var(--exercise-editor-hl-co);
+}
+
+pre > code.sourceCode > span.tok-string {
+  color: var(--exercise-editor-hl-st);
+}
+
+pre > code.sourceCode > span.tok-string2 {
+  color: var(--exercise-editor-hl-ss);
+}
+
+pre > code.sourceCode > span.tok-variableName {
+  color: var(--exercise-editor-hl-va);
+}
+
+pre > code.sourceCode > span.tok-bool,
+pre > code.sourceCode > span.tok-literal,
+pre > code.sourceCode > span.tok-separator
+{
+  color: var(--exercise-editor-hl-cn);
+}
+
+pre > code.sourceCode > span.tok-bool,
+pre > code.sourceCode > span.tok-literal
+{
+  color: var(--exercise-editor-hl-cn);
+}
+
+pre > code.sourceCode > span.tok-number,
+pre > code.sourceCode > span.tok-integer
+{
+  color: var(--exercise-editor-hl-dv);
+}
+
+pre > code.sourceCode > span.tok-function-variableName {
+  color: var(--exercise-editor-hl-fu);
+}
+
+pre > code.sourceCode > span.tok-function-attributeName {
+  color: var(--exercise-editor-hl-at);
 }
 
 /* Revealjs (to match editor with bootstrap) */
