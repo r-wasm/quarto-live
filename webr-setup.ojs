@@ -19,6 +19,9 @@ webROjs = {
       invisible(list2env(args, envir = .GlobalEnv))
     }
     options(webr.fig.width = 7, webr.fig.height = 5, knitr.table.format = "html")
+    options(pager = function(files, ...) {
+      writeLines(gsub(".[\b]", "", readLines(files)))
+    })
   `);
 
   // Evaluation indicators
