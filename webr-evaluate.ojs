@@ -8,5 +8,5 @@
     { envir: webROjs.webR.objs.globalEnv },
     block.attr
   );
-  return webROjs.WebREvaluator.process(block.code, options);
+  return webROjs.process(block.code, options);
 }

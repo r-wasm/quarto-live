@@ -19,4 +19,4 @@ viewof _webr_editor_{{block_id}} = {
   new webROjs.ExerciseEditor(container, block.code, options);
   return container;
 }
-webROjs.WebREvaluator.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
+webROjs.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);

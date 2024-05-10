@@ -1,2 +1,5 @@
 export { ExerciseEditor } from './editor'
 export { highlightR } from './highlighter'
+export { WebREvaluator } from './evaluate'
+export { renderHtmlDependency } from './render'
+export * from 'webr'
