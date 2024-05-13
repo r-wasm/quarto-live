@@ -203,14 +203,6 @@ export class WebREvaluator {
           await renderHtmlDependency(this.webR, deps[i] as RObject);
         }
       }
-
-      // If HTMLWidgets is available, do a static render
-      // TODO: Why is this delay required? Can we remove it?
-      setTimeout(() => {
-        if (window.HTMLWidgets) {
-          window.HTMLWidgets.staticRender();
-        }
-      }, 100);
     }
   }
 

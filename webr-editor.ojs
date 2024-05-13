@@ -19,4 +19,9 @@ viewof _webr_editor_{{block_id}} = {
   new webROjs.ExerciseEditor(container, block.code, options);
   return container;
 }
-webROjs.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
+_webr_value_{{block_id}} = webROjs.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
+{
+  // Render any HTMLWidgets after HTML output has been added to the DOM
+  await _webr_value_{{block_id}};
+  if (window.HTMLWidgets) window.HTMLWidgets.staticRender();
+}
