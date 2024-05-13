@@ -1,5 +1,5 @@
 /* Colours: Bootstrap, revealjs, fallback */
-.quarto-light .card.editor-container {
+.quarto-light .card.exercise-editor-card {
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #212529));
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #ffffff));
   --exercise-primary-rgb: var(--bs-primary-rgb, 13, 110, 253);
@@ -9,7 +9,7 @@
   --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.1);
 }
 
-.quarto-dark .card.editor-container {
+.quarto-dark .card.exercise-editor-card {
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #ffffff));
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #222222));
   --exercise-primary-rgb: var(--bs-primary-rgb, 55, 90, 127);
@@ -20,13 +20,13 @@
 }
 
 /* Editor header buttons */
-.card.editor-container .card-header a.btn {
+.card.exercise-editor-card .card-header a.btn {
   --bs-btn-padding-x: 0.5rem;
   --bs-btn-padding-y: 0.15rem;
   --bs-btn-font-size: 0.75rem;
 }
 
-.quarto-dark .card.editor-container .card-header .btn.btn-outline-dark {
+.quarto-dark .card.exercise-editor-card .card-header .btn.btn-outline-dark {
   --bs-btn-color: #f8f8f8;
   --bs-btn-border-color: #f8f8f8;
   --bs-btn-hover-color: #000;
@@ -45,34 +45,34 @@
 }
 
 /* Codemirror Editor */
-.card.editor-container .cm-editor {
+.card.exercise-editor-card .cm-editor {
   color: var(--exercise-main-color);
   background-color: var(--exercise-main-bg);
 }
 
-.card.editor-container .cm-content {
+.card.exercise-editor-card .cm-content {
   caret-color: var(--exercise-main-color);
 }
 
-.card.editor-container .cm-cursor,
-.card.editor-container .cm-dropCursor {
+.card.exercise-editor-card .cm-cursor,
+.card.exercise-editor-card .cm-dropCursor {
   border-left-color: var(--exercise-main-color);
 }
 
-.card.editor-container .cm-focused .cm-selectionBackgroundm .cm-selectionBackground,
-.card.editor-container .cm-content ::selection {
+.card.exercise-editor-card .cm-focused .cm-selectionBackgroundm .cm-selectionBackground,
+.card.exercise-editor-card .cm-content ::selection {
   background-color: rgba(var(--exercise-primary-rgb), 0.1);
 }
 
-.card.editor-container .cm-activeLine {
+.card.exercise-editor-card .cm-activeLine {
   background-color: var(--exercise-line-bg);
 }
 
-.card.editor-container .cm-activeLineGutter {
+.card.exercise-editor-card .cm-activeLineGutter {
   background-color: var(--exercise-line-gutter-bg);
 }
 
-.card.editor-container .cm-gutters {
+.card.exercise-editor-card .cm-gutters {
   background-color: var(--exercise-cap-bg);
   color: var(--exercise-main-color);
   border-right: 1px solid var(--exercise-default);
@@ -177,49 +177,49 @@ pre > code.sourceCode > span.tok-function-attributeName {
 
 /* Revealjs (to match editor with bootstrap) */
 /* Container card */
-.reveal .card.editor-container .d-none {
+.reveal .card.exercise-editor-card .d-none {
   display: none !important;
 }
 
-.reveal .card.editor-container .d-flex {
+.reveal .card.exercise-editor-card .d-flex {
   display: flex !important;
 }
 
-.reveal .card.editor-container .justify-content-between {
+.reveal .card.exercise-editor-card .justify-content-between {
   justify-content: space-between !important;
 }
 
-.reveal .card.editor-container .align-items-center {
+.reveal .card.exercise-editor-card .align-items-center {
   align-items: center !important;
 }
 
-.reveal .card.editor-container .gap-1 {
+.reveal .card.exercise-editor-card .gap-1 {
   gap: .25rem !important;
 }
 
-.reveal .card.editor-container .gap-2 {
+.reveal .card.exercise-editor-card .gap-2 {
   gap: .5rem !important;
 }
 
-.reveal .card.editor-container .gap-3 {
+.reveal .card.exercise-editor-card .gap-3 {
   gap: .75rem !important;
 }
 
-.reveal .card.editor-container {
+.reveal .card.exercise-editor-card {
   border: 1px solid rgba(0, 0, 0, 0.175);
   border-radius: 0.375rem;
   font-size: .55em;
   overflow: hidden;
 }
 
-.reveal .card.editor-container .card-header {
+.reveal .card.exercise-editor-card .card-header {
   padding: 0.5rem 1rem;
   background-color: var(--exercise-cap-bg);
   border-bottom: 1px solid rgba(0, 0, 0, 0.175);
 }
 
 /* Button styling */
-.quarto-light .reveal .card.editor-container .btn.btn-primary {
+.quarto-light .reveal .card.exercise-editor-card .btn.btn-primary {
   --exercise-btn-bg: var(--bs-btn-bg, #0d6efd);
   --exercise-btn-color: var(--bs-btn-color, #ffffff);
   --exercise-btn-border-color: var(--bs-btn-border-color, #0d6efd);
@@ -228,7 +228,7 @@ pre > code.sourceCode > span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
 }
 
-.quarto-dark .reveal .card.editor-container .btn.btn-primary {
+.quarto-dark .reveal .card.exercise-editor-card .btn.btn-primary {
   --exercise-btn-bg: var(--bs-btn-bg, #375a7f);
   --exercise-btn-color: var(--bs-btn-color, #ffffff);
   --exercise-btn-border-color: var(--bs-btn-border-color, #375a7f);
@@ -237,7 +237,7 @@ pre > code.sourceCode > span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
 }
 
-.quarto-light .reveal .card.editor-container .btn.btn-outline-dark {
+.quarto-light .reveal .card.exercise-editor-card .btn.btn-outline-dark {
   --exercise-btn-bg: var(--bs-btn-bg, transparent);
   --exercise-btn-color: var(--bs-btn-color, #333);
   --exercise-btn-border-color: var(--bs-btn-border-color, #333);
@@ -246,7 +246,7 @@ pre > code.sourceCode > span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
 }
 
-.quarto-dark .reveal .card.editor-container .btn.btn-outline-dark {
+.quarto-dark .reveal .card.exercise-editor-card .btn.btn-outline-dark {
   --exercise-btn-bg: var(--bs-btn-bg, transparent);
   --exercise-btn-color: var(--bs-btn-color, #f8f8f8);
   --exercise-btn-border-color: var(--bs-btn-border-color, #f8f8f8);
@@ -255,38 +255,38 @@ pre > code.sourceCode > span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #000000);
 }
 
-.reveal .card.editor-container .btn-group {
+.reveal .card.exercise-editor-card .btn-group {
   border-radius: .375rem;
   position: relative;
   display: inline-flex;
   vertical-align: middle;
 }
 
-.reveal .card.editor-container .btn-group>.btn {
+.reveal .card.exercise-editor-card .btn-group>.btn {
   position: relative;
   flex: 1 1 auto;
 }
 
-.reveal .card.editor-container .btn-group>:not(.btn-check:first-child)+.btn,
-.reveal .card.editor-container .btn-group>.btn-group:not(:first-child) {
+.reveal .card.exercise-editor-card .btn-group>:not(.btn-check:first-child)+.btn,
+.reveal .card.exercise-editor-card .btn-group>.btn-group:not(:first-child) {
   margin-left: calc(1px*-1)
 }
 
-.reveal .card.editor-container .btn-group>.btn:not(:last-child):not(.dropdown-toggle),
-.reveal .card.editor-container .btn-group>.btn.dropdown-toggle-split:first-child,
-.reveal .card.editor-container .btn-group>.btn-group:not(:last-child)>.btn {
+.reveal .card.exercise-editor-card .btn-group>.btn:not(:last-child):not(.dropdown-toggle),
+.reveal .card.exercise-editor-card .btn-group>.btn.dropdown-toggle-split:first-child,
+.reveal .card.exercise-editor-card .btn-group>.btn-group:not(:last-child)>.btn {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0
 }
 
-.reveal .card.editor-container .btn-group>.btn:nth-child(n+3),
-.reveal .card.editor-container .btn-group>:not(.btn-check)+.btn,
-.reveal .card.editor-container .btn-group>.btn-group:not(:first-child)>.btn {
+.reveal .card.exercise-editor-card .btn-group>.btn:nth-child(n+3),
+.reveal .card.exercise-editor-card .btn-group>:not(.btn-check)+.btn,
+.reveal .card.exercise-editor-card .btn-group>.btn-group:not(:first-child)>.btn {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0
 }
 
-.reveal .card.editor-container .btn {
+.reveal .card.exercise-editor-card .btn {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   font-size: 1rem;
@@ -302,21 +302,21 @@ pre > code.sourceCode > span.tok-function-attributeName {
   transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
-.reveal .card.editor-container .btn:hover {
+.reveal .card.exercise-editor-card .btn:hover {
   color: var(--exercise-btn-hover-color);
   background-color: var(--exercise-btn-hover-bg);
   border-color: var(--exercise-btn-hover-border-color);
 }
 
-.reveal .card.editor-container.btn:disabled,
-.reveal .card.editor-container.btn.disabled,
-.reveal .card.editor-container fieldset:disabled .btn {
+.reveal .card.exercise-editor-card.btn:disabled,
+.reveal .card.exercise-editor-card.btn.disabled,
+.reveal .card.exercise-editor-card fieldset:disabled .btn {
   pointer-events: none;
   opacity: 0.65;
 }
 
 /* Spinner */
-.reveal .card.editor-container .spinner-grow {
+.reveal .card.exercise-editor-card .spinner-grow {
   background-color: currentcolor;
   opacity: 0;
   display: inline-block;

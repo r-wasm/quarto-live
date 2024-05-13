@@ -95,7 +95,7 @@ export class ExerciseEditor {
   renderButton(spec: ExerciseButtonSpec) {
     const dom = document.createElement("a");
     const label = document.createElement("span");
-    dom.className = `d-flex align-items-center gap-1 btn btn-${spec.type} text-nowrap`;
+    dom.className = `d-flex align-items-center gap-1 btn btn-exercise-editor btn-${spec.type} text-nowrap`;
     label.innerText = spec.text;
     dom.innerHTML = icons[spec.icon];
     dom.appendChild(label);
@@ -105,14 +105,14 @@ export class ExerciseEditor {
 
   renderButtonGroup(buttons: (HTMLButtonElement | HTMLAnchorElement)[]) {
     const group = document.createElement("div");
-    group.className = "btn-group btn-group-sm";
+    group.className = "btn-group btn-group-exercise-editor btn-group-sm";
     buttons.forEach((spec) => group.appendChild(spec));
     return group;
   }
 
   renderSpinner() {
     const dom = document.createElement("div");
-    dom.className = "webr-eval-indicator d-none spinner-grow spinner-grow-sm";
+    dom.className = "exercise-editor-eval-indicator d-none spinner-grow spinner-grow-sm";
     dom.setAttribute("role", "status");
     return dom;
   }
@@ -121,9 +121,9 @@ export class ExerciseEditor {
     const card = document.createElement("div");
     const header = document.createElement("div");
     const body = document.createElement("div");
-    card.className = "card editor-container my-3";
-    header.className = "card-header d-flex justify-content-between";
-    body.className = "card-body p-0";
+    card.className = "card exercise-editor-card my-3";
+    header.className = "card-header exercise-editor-header d-flex justify-content-between";
+    body.className = "card-body exercise-editor-body p-0";
 
     const left = document.createElement("div");
     left.className = "d-flex align-items-center gap-3";

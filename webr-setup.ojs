@@ -21,11 +21,11 @@ webROjs = {
 
   // Evaluation indicators
   const setRunning = () => Array.from(
-    document.getElementsByClassName('webr-eval-indicator')
+    document.getElementsByClassName('exercise-editor-eval-indicator')
   ).forEach((el) => el.classList.remove('d-none'));
 
   const setIdle = () => Array.from(
-    document.getElementsByClassName('webr-eval-indicator')
+    document.getElementsByClassName('exercise-editor-eval-indicator')
   ).forEach((el) => el.classList.add('d-none'));
 
   // Convert webR R object reference to OJS value
