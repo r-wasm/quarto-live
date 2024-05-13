@@ -90,7 +90,7 @@ function Pandoc(doc)
 
   quarto.doc.add_html_dependency({
     name = 'webr-ojs-runtime',
-    resources = {
+    scripts = {
       "resources/webr-ojs-runtime/dist/webr-ojs-runtime.js"
     },
     stylesheets = {

@@ -31,7 +31,7 @@ const options: BuildOptions = {
   outfile: './dist/webr-ojs-runtime.js',
   minify: true,
   loader: { '.svg': 'text' },
-  platform: 'neutral',
+  platform: 'browser',
   plugins: [ copyPlugin() ],
   logLevel: 'info',
 };

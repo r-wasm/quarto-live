@@ -1,11 +1,6 @@
 webROjs = {
-  let {
-    WebR,
-    isRFunction, isRCall, isRNull, isRObject,
-    ExerciseEditor, WebREvaluator
-  } = await import(
-    '../quarto-contrib/webr-ojs-runtime/webr-ojs-runtime.js'
-  );
+  let { ExerciseEditor, WebREvaluator} = window._webr_ojs_runtime;
+  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
 
   // Initialise webR and setup for R code evaluation
   let webR = new WebR();
