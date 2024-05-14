@@ -17,6 +17,11 @@ webROjs = {
     options(pager = function(files, ...) {
       writeLines(gsub(".[\b]", "", readLines(files)))
     })
+    options(device = function(...) {
+      args <- list(bg = "white", ...)
+      args <- args[!duplicated(names(args))]
+      do.call(webr::canvas, args)
+    })
   `);
 
   // Evaluation indicators
