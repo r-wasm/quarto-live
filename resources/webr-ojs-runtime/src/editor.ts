@@ -30,6 +30,8 @@ const icons = {
 const highlightStyle = HighlightStyle.define([
   { tag: tags.keyword, color: "var(--exercise-editor-hl-kw)" },
   { tag: tags.operator, color: "var(--exercise-editor-hl-op)" },
+  { tag: tags.definitionOperator, color: "var(--exercise-editor-hl-ot)" },
+  { tag: tags.compareOperator, color: "var(--exercise-editor-hl-sc)" },
   { tag: tags.attributeName, color: "var(--exercise-editor-hl-at)" },
   { tag: tags.controlKeyword, color: "var(--exercise-editor-hl-cf)" },
   { tag: tags.comment, color: "var(--exercise-editor-hl-co)" },

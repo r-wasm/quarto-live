@@ -4,6 +4,8 @@ import { highlightCode, tagHighlighter, tags } from "@lezer/highlight"
 const tagHighlighterR = tagHighlighter([
   { tag: tags.keyword, class: "tok-keyword" },
   { tag: tags.operator, class: "tok-operator" },
+  { tag: tags.definitionOperator, class: "tok-definitionOperator" },
+  { tag: tags.compareOperator, class: "tok-compareOperator" },
   { tag: tags.attributeName, class: "tok-attributeName"},
   { tag: tags.controlKeyword, class: "tok-controlKeyword" },
   { tag: tags.comment, class: "tok-comment" },

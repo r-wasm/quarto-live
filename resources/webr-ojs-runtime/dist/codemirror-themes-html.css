@@ -120,6 +120,14 @@ pre > code.sourceCode > span.tok-operator {
   color: var(--exercise-editor-hl-op);
 }
 
+pre > code.sourceCode > span.tok-definitionOperator {
+  color: var(--exercise-editor-hl-ot);
+}
+
+pre > code.sourceCode > span.tok-compareOperator {
+  color: var(--exercise-editor-hl-ot);
+}
+
 pre > code.sourceCode > span.tok-attributeName {
   color: var(--exercise-editor-hl-at);
 }
