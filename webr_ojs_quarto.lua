@@ -1,3 +1,5 @@
+local tinyyaml = require "resources/tinyyaml"
+
 local ojs_definitions = {
   contents = {},
 }
@@ -25,16 +27,13 @@ function CodeBlock(code)
     end
   end
   local r_code = table.concat(code_lines, "\n")
-  local param_yaml = table.concat(param_lines, "\n")
 
-  -- TODO: Parse yaml parameters more robustly
+  local param_yaml = table.concat(param_lines, "\n")
+  if (param_yaml ~= "") then
+    attr = tinyyaml.parse(param_yaml)
+  end
   for k, v in pairs(code.attributes) do
     attr[k] = tostring(v)
-  end
-  for k, v in pairs(param_lines) do
-    for k, v in v:gmatch("([^:]+): (.+)") do
-      attr[k] = v
-    end
   end
 
   local block = {
