@@ -109,6 +109,7 @@ function Pandoc(doc)
       "resources/webr-ojs-runtime/dist/webr-ojs-runtime.js"
     },
     stylesheets = {
+      "resources/webr-ojs-evaluate.css",
       "resources/webr-ojs-runtime/dist/codemirror-themes-html.css"
     }
   })
