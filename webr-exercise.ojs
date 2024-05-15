@@ -1,0 +1,34 @@
+viewof _webr_editor_{{block_id}} = {
+  const block_id = "{{block_id}}";
+  const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
+  const block = JSON.parse(atob(scriptContent));
+
+  // If required, register a new exercise environment
+  if (!(block.attr.exercise in webROjs.exerciseEnv)) {
+    const newEnv = webROjs.webR.evalR(`new.env(parent = globalenv())`);
+    webROjs.exerciseEnv[block.attr.exercise] = newEnv;
+  }
+
+  // Default exercise configuration
+  const options = Object.assign(
+    {
+      envir: await webROjs.exerciseEnv[block.attr.exercise],
+      echo: 'false',
+      startover: 'true',
+      autorun: 'false',
+      caption: 'Exercise',
+      output: block.attr.setup ? 'false' : 'true',
+    },
+    block.attr
+  );
+
+  options.container = document.createElement("div");
+  if (!options.setup) {
+    new webROjs.ExerciseEditor(block.code, options);
+  } else {
+    options.container.value = { code: block.code, options };
+  }
+
+  return options.container;
+}
+_webr_value_{{block_id}} = webROjs.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);

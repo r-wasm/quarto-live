@@ -9,8 +9,3 @@ _webr_value_{{block_id}} = {
   );
   return webROjs.process(block.code, options);
 }
-{
-  // Render any HTMLWidgets after HTML output has been added to the DOM
-  await _webr_value_{{block_id}};
-  if (window.HTMLWidgets) window.HTMLWidgets.staticRender();
-}

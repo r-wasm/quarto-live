@@ -1,0 +1,7 @@
+{
+  // Wait for output to be written to the DOM, then trigger staticRender()
+  await _webr_value_{{block_id}};
+  if (window.HTMLWidgets) {
+    window.HTMLWidgets.staticRender();
+  }
+}

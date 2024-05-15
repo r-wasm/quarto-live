@@ -6,7 +6,7 @@ viewof _webr_editor_{{block_id}} = {
   // Default editor configuration
   const options = Object.assign(
     {
-      envir: await webROjs.webR.evalR(`new.env(parent = globalenv())`),
+      envir: webROjs.webR.objs.globalEnv,
       echo: 'false',
       startover: 'false',
       autorun: 'true',
@@ -15,13 +15,8 @@ viewof _webr_editor_{{block_id}} = {
     block.attr
   );
 
-  const container = document.createElement("div");
-  new webROjs.ExerciseEditor(container, block.code, options);
-  return container;
+  options.container = document.createElement("div");
+  new webROjs.ExerciseEditor(block.code, options);
+  return options.container;
 }
 _webr_value_{{block_id}} = webROjs.process(_webr_editor_{{block_id}}.code, _webr_editor_{{block_id}}.options);
-{
-  // Render any HTMLWidgets after HTML output has been added to the DOM
-  await _webr_value_{{block_id}};
-  if (window.HTMLWidgets) window.HTMLWidgets.staticRender();
-}

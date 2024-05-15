@@ -1,4 +1,4 @@
-import type { WebR, Shelter, RObject, RList, RNull } from 'webr'
+import type { WebR, Shelter, RObject, RList, RNull, REnvironment } from 'webr'
 import { isRList } from 'webr';
 import { highlightR } from './highlighter'
 import { renderHtmlDependency } from './render'
@@ -11,6 +11,18 @@ declare global {
   }
 }
 
+type EvaluateOptions = {
+  envir: REnvironment,
+  eval: string,
+  echo: string,
+  warning: string,
+  error: string,
+  include: string,
+  output: string,
+  running: () => void,
+  idle: () => void,
+}
+
 // Build interleaved source code and HTML output
 // Use {evaluate}, so as to match {knitr} output
 export class WebREvaluator {
@@ -18,9 +30,7 @@ export class WebREvaluator {
   sourceLines: string[];
   webR: WebR;
   shelter: Promise<Shelter>;
-  options: { [key: string]: any };
-  running: () => void;
-  idle: () => void;
+  options: EvaluateOptions;
 
   constructor(webR: WebR, options = {}) {
     this.output = document.createElement('div');
@@ -43,9 +53,6 @@ export class WebREvaluator {
       },
       options
     );
-
-    this.running = this.options.running;
-    this.idle = this.options.idle;
   }
 
   async purge() {
@@ -55,7 +62,7 @@ export class WebREvaluator {
 
   async evaluate(code) {
     // Early returns if we're not actually evaluating
-    if (this.options.include !== 'true') {
+    if (!code || code === '' || this.options.include !== 'true') {
       return;
     }
 
@@ -65,7 +72,7 @@ export class WebREvaluator {
       return;
     }
 
-    this.running();
+    this.options.running();
     const shelter = await this.shelter;
     const capture = await shelter.captureR(
       `evaluate::evaluate(
@@ -143,7 +150,7 @@ export class WebREvaluator {
       }
     }
     this.appendSource();
-    this.idle();
+    this.options.idle();
   }
 
   appendSource() {

@@ -8,10 +8,11 @@ webROjs = {
   await webR.installPackages(['evaluate', 'knitr']);
   await webR.evalRVoid(`webr::shim_install()`);
   await webR.evalRVoid(`
+    .webr_ojs <- new.env()
     ojs_define <- function(...) {
       args <- list(...)
       names(args) <- quote(match.call(expand.dots=TRUE)[1:length(args) + 1])
-      invisible(list2env(args, envir = .GlobalEnv))
+      .webr_ojs <<- list2env(args, envir = .webr_ojs)
     }
     options(webr.fig.width = 7, webr.fig.height = 5, knitr.table.format = "html")
     options(pager = function(files, ...) {
@@ -25,13 +26,25 @@ webROjs = {
   `);
 
   // Evaluation indicators
-  const setRunning = () => Array.from(
-    document.getElementsByClassName('exercise-editor-eval-indicator')
-  ).forEach((el) => el.classList.remove('d-none'));
+  const setRunning = (container) => () => {
+    if (container) {
+      Array.from(
+        container.getElementsByClassName('exercise-editor-eval-indicator')
+      ).forEach((el) => el.classList.remove('d-none'));
+    }
+    Array.from(
+      document.getElementsByClassName('exercise-editor-btn-run-code')
+    ).forEach((el) => el.classList.add('disabled'));
+  }
 
-  const setIdle = () => Array.from(
-    document.getElementsByClassName('exercise-editor-eval-indicator')
-  ).forEach((el) => el.classList.add('d-none'));
+  const setIdle = (container) => () => {
+    Array.from(
+      document.getElementsByClassName('exercise-editor-eval-indicator')
+    ).forEach((el) => el.classList.add('d-none'));
+    Array.from(
+      document.getElementsByClassName('exercise-editor-btn-run-code')
+    ).forEach((el) => el.classList.remove('disabled'));
+  }
 
   // Convert webR R object reference to OJS value
   const asOjs = async (webRValue) => {
@@ -128,8 +141,8 @@ webROjs = {
   }
 
   const process = async (code, options) => {
-    options.running = setRunning;
-    options.idle = setIdle;
+    options.running = setRunning(options.container);
+    options.idle = setIdle(options.container);
 
     const evaluator = new WebREvaluator(webR, options);
     try {
@@ -139,7 +152,8 @@ webROjs = {
     }
 
     // Define objects in the evaluator environment as OJS values
-    const objs = await options.envir.toJs({ depth: -1 });
+    const ojs_envir = await webR.objs.globalEnv.get('.webr_ojs');
+    const objs = await ojs_envir.toJs({ depth: -1 });
     for (let i = 0; i < objs.names.length; i++) {
       const key = objs.names[i];
       const value = objs.values[i];
@@ -154,5 +168,10 @@ webROjs = {
     return evaluator.output;
   }
 
-  return { webR, asOjs, process, ExerciseEditor };
+  // Storage for shared exercise environments
+  const exerciseEnv = {
+    global: webR.objs.globalEnv,
+  }
+
+  return { webR, asOjs, process, ExerciseEditor, exerciseEnv };
 }

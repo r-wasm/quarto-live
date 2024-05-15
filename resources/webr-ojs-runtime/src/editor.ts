@@ -7,11 +7,17 @@ import { r } from 'codemirror-lang-r'
 
 export type OJSElement = HTMLElement & { value: any };
 
-type EditorOptions = { [key: string]: string };
+type EditorOptions = {
+  container: OJSElement;
+  autorun: string;
+  caption: string;
+  startover: string;
+}
+
 type ExerciseButtonSpec = {
   text: string;
   icon: string;
-  type: string;
+  className: string;
   onclick?: ((ev: MouseEvent) => any);
 }
 
@@ -56,12 +62,12 @@ export class ExerciseEditor {
     }),
   ];
 
-  constructor(container: OJSElement, code: string, options: EditorOptions) {
+  constructor(code: string, options: EditorOptions) {
     if (typeof code !== "string") {
       throw new Error("Can't create editor, `code` must be a string.");
     }
 
-    this.container = container;
+    this.container = options.container;
     this.code = this.initialCode = code;
     this.options = options;
     this.state = EditorState.create({
@@ -80,7 +86,10 @@ export class ExerciseEditor {
 
     const dom = this.render();
     this.container.appendChild(dom);
-    this.container.value = { code, options };
+    this.container.value = { options };
+    if (this.options.autorun === 'true') {
+      this.container.value.code = code;
+    }
 
     // Prevent input Event when code autorun is disabled
     this.container.oninput = ((ev: CustomEvent) => {
@@ -95,7 +104,7 @@ export class ExerciseEditor {
   renderButton(spec: ExerciseButtonSpec) {
     const dom = document.createElement("a");
     const label = document.createElement("span");
-    dom.className = `d-flex align-items-center gap-1 btn btn-exercise-editor btn-${spec.type} text-nowrap`;
+    dom.className = `d-flex align-items-center gap-1 btn btn-exercise-editor ${spec.className} text-nowrap`;
     label.innerText = spec.text;
     dom.innerHTML = icons[spec.icon];
     dom.appendChild(label);
@@ -136,7 +145,7 @@ export class ExerciseEditor {
       leftButtons.push(this.renderButton({
         text: "Start Over",
         icon: "arrow-repeat",
-        type: "outline-dark",
+        className: "btn-outline-dark",
         onclick: () => {
           this.view.dispatch({
             changes: {
@@ -153,7 +162,7 @@ export class ExerciseEditor {
       leftButtons.push(this.renderButton({
         text: "Show Hint",
         icon: "lightbulb",
-        type: "outline-dark",
+        className: "btn-outline-dark",
       }));
     }
 
@@ -170,7 +179,7 @@ export class ExerciseEditor {
       rightButtons.push(this.renderButton({
         text: "Run Code",
         icon: "play",
-        type: "primary",
+        className: "btn-primary disabled exercise-editor-btn-run-code",
         onclick: () => {
           this.container.value.code = this.code;
           this.container.dispatchEvent(new CustomEvent('input', {
@@ -184,7 +193,11 @@ export class ExerciseEditor {
 
     if (false) {
       rightButtons.push(
-        this.renderButton({ text: "Submit Answer", icon: "lightbulb", type: "primary" }),
+        this.renderButton({
+          text: "Submit Answer",
+          icon: "lightbulb",
+          className: "btn-primary"
+        }),
       );
     }
 

@@ -47,6 +47,7 @@ foo <- function (x) { 1 + sin(x); }
 message("hi")
 warning("hi")
 hist(rnorm(100))
+ojs_define(x, y, foo)
 ```
 
 
@@ -91,6 +92,7 @@ Observable JS data frames are converted into an R `data.frame` when passed as a 
 ```{webr}
 get_class <- function(x) { class(x) }
 do_mean <- function(x) { mean(x[,2]) }
+ojs_define(get_class, do_mean)
 ```
 
 ```{ojs}
@@ -108,6 +110,7 @@ install.packages("dplyr")
 
 ```{webr}
 filtered_cars <- mtcars |> dplyr::filter(hp > 123)
+ojs_define(filtered_cars)
 ```
 
 ```{ojs}
@@ -129,6 +132,7 @@ do_hist <- function(n) {
   hist(x)
   mean(x)
 }
+ojs_define(do_hist)
 ```
 
 Then, call that R function reactively from Observable JS:
@@ -148,6 +152,7 @@ This gives very responsive interactivity with just a few lines of glue code.
 edit_cars <- mtcars |> dplyr::filter(hp < 80)
 head(edit_cars, n = 5)
 hist(edit_cars$wt)
+ojs_define(edit_cars)
 ```
 
 ```{ojs}
