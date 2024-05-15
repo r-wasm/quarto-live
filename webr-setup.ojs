@@ -151,20 +151,35 @@ webROjs = {
       evaluator.purge();
     }
 
-    // Define objects in the evaluator environment as OJS values
+    // Grab objects from the webR OJS environment
     const ojs_envir = await webR.objs.globalEnv.get('.webr_ojs');
-    const objs = await ojs_envir.toJs({ depth: -1 });
-    for (let i = 0; i < objs.names.length; i++) {
-      const key = objs.names[i];
-      const value = objs.values[i];
-      const jsValue = await asOjs(value);
+    const objs = await ojs_envir.toObject({ depth: -1 });
+
+    // Grab objects from the evaluator environment
+    if (typeof options.define === 'string') {
+      objs[options.define] = await options.envir.get(options.define);
+    } else if (options.define) {
+      Object.assign(objs, Object.fromEntries(
+        await Promise.all(
+          options.define.map(async (name) => {
+            const obj = await options.envir.get(name);
+            return [name, obj];
+          })
+        )
+      ));
+    }
+
+    // Define the objects as OJS values
+    Object.keys(objs).forEach(async (key) => {
+      const jsValue = await asOjs(objs[key]);
       if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
         window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
       } else {
         window._ojs.ojsConnector.define(key)(jsValue);
       }
-    }
+    });
 
+    // Return HTML output from the evaluator
     return evaluator.output;
   }
 
