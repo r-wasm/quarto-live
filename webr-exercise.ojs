@@ -14,6 +14,7 @@ viewof _webr_editor_{{block_id}} = {
     {
       envir: await webROjs.exerciseEnv[block.attr.exercise],
       echo: 'false',
+      error: 'false',
       startover: 'true',
       autorun: 'false',
       caption: 'Exercise',
