@@ -22,6 +22,8 @@ type ExerciseButtonSpec = {
   onclick?: ((ev: MouseEvent) => any);
 }
 
+type ExerciseButton = HTMLButtonElement | HTMLAnchorElement;
+
 const icons = {
   'arrow-repeat': require('./assets/arrow-repeat.svg') as string,
   lightbulb: require('./assets/lightbulb.svg') as string,
@@ -115,7 +117,7 @@ export class ExerciseEditor {
     return dom;
   }
 
-  renderButtonGroup(buttons: (HTMLButtonElement | HTMLAnchorElement)[]) {
+  renderButtonGroup(buttons: ExerciseButton[]) {
     const group = document.createElement("div");
     group.className = "btn-group btn-group-exercise-editor btn-group-sm";
     buttons.forEach((spec) => group.appendChild(spec));
@@ -127,6 +129,31 @@ export class ExerciseEditor {
     dom.className = "exercise-editor-eval-indicator d-none spinner-grow spinner-grow-sm";
     dom.setAttribute("role", "status");
     return dom;
+  }
+
+  renderHints(): ExerciseButton | null {
+    const hints = document.querySelectorAll(`.d-none.hint[data-exercise="${this.options.exercise}"]`);
+    // Chain onclick handlers to reveal hints in order of appearance in DOM
+    return Array.from(hints).reduceRight<ExerciseButton | null>((current, hint) => {
+      if (!current) {
+        current = this.renderButton({
+          text: "Show Hint",
+          icon: "lightbulb",
+          className: "btn-outline-dark",
+          onclick: () => {
+            hint.classList.remove("d-none");
+            current.remove();
+          }
+        });
+      } else {
+        const next = current.onclick;
+        current.onclick = () => {
+          hint.classList.remove("d-none");
+          current.onclick = next;
+        }
+      }
+      return current;
+    }, null);
   }
 
   render() {
@@ -143,13 +170,14 @@ export class ExerciseEditor {
     label.innerHTML = this.options.caption;
     left.appendChild(label);
 
-    const leftButtons: (HTMLButtonElement | HTMLAnchorElement)[] = [];
+    const leftButtons: ExerciseButton[] = [];
     if (this.options.startover) {
       leftButtons.push(this.renderButton({
         text: "Start Over",
         icon: "arrow-repeat",
         className: "btn-outline-dark",
         onclick: () => {
+          // Reset code block contents to initial value
           this.view.dispatch({
             changes: {
               from: 0,
@@ -157,17 +185,20 @@ export class ExerciseEditor {
               insert: this.initialCode,
             }
           });
+
+          // Set blank output if code is run manually
+          if (!this.options.autorun) {
+            this.container.value.code = undefined;
+            this.container.dispatchEvent(new CustomEvent('input', {
+              detail: { manual: true }
+            }));
+          }
         }
       }));
     }
 
-    if (false) {
-      leftButtons.push(this.renderButton({
-        text: "Show Hint",
-        icon: "lightbulb",
-        className: "btn-outline-dark",
-      }));
-    }
+    const hintsButton = this.renderHints();
+    if (hintsButton) leftButtons.push(hintsButton);
 
     if (leftButtons.length > 0) {
       left.appendChild(this.renderButtonGroup(leftButtons));
@@ -177,7 +208,7 @@ export class ExerciseEditor {
     let right = document.createElement("div");
     right.className = "d-flex align-items-center gap-3";
 
-    const rightButtons: (HTMLButtonElement | HTMLAnchorElement)[] = [];
+    const rightButtons: ExerciseButton[] = [];
     if (!this.options.autorun) {
       rightButtons.push(this.renderButton({
         text: "Run Code",

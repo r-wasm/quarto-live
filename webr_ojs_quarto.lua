@@ -70,6 +70,22 @@ function CodeBlock(code)
     )
   end
 
+  -- If this is a hint return it as a non-interactive code block
+  if (attr.exercise and attr.hint) then
+    -- Build a simple code block from the R source
+    local block = pandoc.CodeBlock(r_code, pandoc.Attr('', {'r', 'cell-code'}))
+
+    -- Wrap code block in a div and process as a markdown exercise hint
+    local container = pandoc.Div(
+      {
+        pandoc.Strong({"Hint:"}),
+        pandoc.Div({block}, pandoc.Attr('', {'p-0'})),
+      },
+      pandoc.Attr('', {'hint'}, {exercise = attr.exercise})
+    )
+    return Div(container)
+  end
+
   -- Render appropriate OJS for the type of client-side block we're working with
   local ojs_source = "webr-evaluate.ojs"
   if (attr.edit) then
@@ -111,6 +127,14 @@ function CodeBlock(code)
   })
 end
 
+function Div(block)
+  -- Render exercise hints with display:none
+  if (block.classes:includes("hint") and block.attributes["exercise"] ~= nil) then
+    block.classes:insert("d-none")
+    return block
+  end
+end
+
 function Pandoc(doc)
   local file = io.open("webr-setup.ojs", "r")
   assert(file)
@@ -140,6 +164,7 @@ function Pandoc(doc)
 end
 
 return {
+  Div = Div,
   CodeBlock = CodeBlock,
   Pandoc = Pandoc
 }
