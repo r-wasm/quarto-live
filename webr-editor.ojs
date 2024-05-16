@@ -7,9 +7,9 @@ viewof _webr_editor_{{block_id}} = {
   const options = Object.assign(
     {
       envir: webROjs.webR.objs.globalEnv,
-      echo: 'false',
-      startover: 'false',
-      autorun: 'true',
+      echo: false,
+      startover: false,
+      autorun: true,
       caption: 'R Code',
     },
     block.attr

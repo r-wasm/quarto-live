@@ -9,9 +9,10 @@ export type OJSElement = HTMLElement & { value: any };
 
 type EditorOptions = {
   container: OJSElement;
-  autorun: string;
+  autorun: boolean;
   caption: string;
-  startover: string;
+  exercise: string;
+  startover: boolean;
 }
 
 type ExerciseButtonSpec = {
@@ -89,13 +90,13 @@ export class ExerciseEditor {
     const dom = this.render();
     this.container.appendChild(dom);
     this.container.value = { options };
-    if (this.options.autorun === 'true') {
+    if (this.options.autorun) {
       this.container.value.code = code;
     }
 
     // Prevent input Event when code autorun is disabled
     this.container.oninput = ((ev: CustomEvent) => {
-      if (ev.detail.manual || this.options.autorun === 'true') {
+      if (ev.detail.manual || this.options.autorun) {
         return;
       }
       ev.preventDefault();
@@ -143,7 +144,7 @@ export class ExerciseEditor {
     left.appendChild(label);
 
     const leftButtons: (HTMLButtonElement | HTMLAnchorElement)[] = [];
-    if (this.options.startover === 'true') {
+    if (this.options.startover) {
       leftButtons.push(this.renderButton({
         text: "Start Over",
         icon: "arrow-repeat",
@@ -177,7 +178,7 @@ export class ExerciseEditor {
     right.className = "d-flex align-items-center gap-3";
 
     const rightButtons: (HTMLButtonElement | HTMLAnchorElement)[] = [];
-    if (this.options.autorun !== 'true') {
+    if (!this.options.autorun) {
       rightButtons.push(this.renderButton({
         text: "Run Code",
         icon: "play",

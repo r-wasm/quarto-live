@@ -32,8 +32,30 @@ function CodeBlock(code)
   if (param_yaml ~= "") then
     attr = tinyyaml.parse(param_yaml)
   end
+
   for k, v in pairs(code.attributes) do
-    attr[k] = tostring(v)
+    local function toboolean(v)
+      return string.lower(v) == "true"
+    end
+
+    local convert = { 
+      autorun = toboolean,
+      echo = toboolean,
+      edit = toboolean,
+      error = toboolean,
+      eval = toboolean,
+      include = toboolean,
+      output = toboolean,
+      startover = toboolean,
+      warning = toboolean,
+      timelimit = tonumber,
+    }
+
+    if (convert[k]) then
+      attr[k] = convert[k](v)
+    else
+      attr[k] = v
+    end
   end
 
   local block = {

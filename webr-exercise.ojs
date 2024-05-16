@@ -13,12 +13,12 @@ viewof _webr_editor_{{block_id}} = {
   const options = Object.assign(
     {
       envir: await webROjs.exerciseEnv[block.attr.exercise],
-      echo: 'false',
-      error: 'false',
-      startover: 'true',
-      autorun: 'false',
+      echo: false,
+      error: false,
+      startover: true,
+      autorun: false,
       caption: 'Exercise',
-      output: block.attr.setup ? 'false' : 'true',
+      output: !block.attr.setup,
     },
     block.attr
   );

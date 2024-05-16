@@ -13,13 +13,14 @@ declare global {
 
 type EvaluateOptions = {
   envir: REnvironment,
-  eval: string,
-  echo: string,
-  warning: string,
-  error: string,
-  include: string,
-  output: string,
-  timelimit: string,
+  caption: string,
+  eval: boolean,
+  echo: boolean,
+  warning: boolean,
+  error: boolean,
+  include: boolean,
+  output: boolean,
+  timelimit: number,
   running: () => void,
   idle: () => void,
 }
@@ -43,13 +44,14 @@ export class WebREvaluator {
     this.options = Object.assign(
       {
         envir: webR.objs.globalEnv,
-        eval: 'true',
-        echo: 'true',
-        warning: 'true',
-        error: 'true',
-        include: 'true',
-        output: 'true',
-        timelimit: '30',
+        eval: true,
+        echo: true,
+        warning: true,
+        error: true,
+        include: true,
+        output: true,
+        timelimit: 30,
+        caption: 'Code',
         running: () => { },
         idle: () => { },
       },
@@ -64,11 +66,11 @@ export class WebREvaluator {
 
   async evaluate(code) {
     // Early returns if we're not actually evaluating
-    if (!code || code === '' || this.options.include !== 'true') {
+    if (!code || code === '' || !this.options.include) {
       return;
     }
 
-    if (this.options.eval !== 'true') {
+    if (!this.options.eval) {
       this.sourceLines.push(code);
       this.appendSource();
       return;
@@ -97,8 +99,8 @@ export class WebREvaluator {
           code,
           timelimit: Number(this.options.timelimit),
           envir: this.options.envir,
-          warning: this.options.warning === 'true',
-          error: this.options.error === 'true' ? 0 : 1,
+          warning: this.options.warning,
+          error: this.options.error ? 0 : 1,
         }
       }
     );
@@ -159,7 +161,7 @@ export class WebREvaluator {
   }
 
   appendSource() {
-    if (this.options.echo === 'true' && this.sourceLines.length) {
+    if (this.options.echo && this.sourceLines.length) {
       const sourceDiv = document.createElement("div");
       const sourcePre = document.createElement("pre");
       sourceDiv.className = "sourceCode";
@@ -178,7 +180,7 @@ export class WebREvaluator {
     outputDiv.className = "cell-output cell-output-stdout";
     outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
-    if (this.options.output === 'true') {
+    if (this.options.output) {
       this.appendSource();
       this.output.appendChild(outputDiv);
     }
@@ -189,14 +191,14 @@ export class WebREvaluator {
     outputDiv.className = "cell-output cell-output-stderr";
     outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
-    if (this.options.output == 'true') {
+    if (this.options.output) {
       this.appendSource();
       this.output.appendChild(outputDiv);
     }
   }
 
   async appendHtml(content: RObject) {
-    if (this.options.output === 'true') {
+    if (this.options.output) {
       const html = await content.toString();
       const meta = await (await content.attrs()).get("knit_meta") as RList | RNull;
 
@@ -230,7 +232,7 @@ export class WebREvaluator {
     outputDiv.className = "cell-output-display";
     outputDiv.appendChild(canvas);
 
-    if (this.options.output === 'true') {
+    if (this.options.output) {
       this.appendSource();
       this.output.appendChild(outputDiv);
     }
