@@ -19,6 +19,7 @@ type EvaluateOptions = {
   error: string,
   include: string,
   output: string,
+  timelimit: string,
   running: () => void,
   idle: () => void,
 }
@@ -48,6 +49,7 @@ export class WebREvaluator {
         error: 'true',
         include: 'true',
         output: 'true',
+        timelimit: '30',
         running: () => { },
         idle: () => { },
       },
@@ -74,8 +76,9 @@ export class WebREvaluator {
 
     this.options.running();
     const shelter = await this.shelter;
-    const capture = await shelter.captureR(
-      `evaluate::evaluate(
+    const capture = await shelter.captureR(`
+      setTimeLimit(elapsed = timelimit, transient = TRUE)
+      evaluate::evaluate(
           code,
           envir = envir,
           keep_message = warning,
@@ -87,10 +90,12 @@ export class WebREvaluator {
               if (res$visible) res$value else invisible(res$value)
             }
           )
-        )`,
+        )
+      `,
       {
         env: {
           code,
+          timelimit: Number(this.options.timelimit),
           envir: this.options.envir,
           warning: this.options.warning === 'true',
           error: this.options.error === 'true' ? 0 : 1,
