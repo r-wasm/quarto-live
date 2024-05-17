@@ -98,11 +98,15 @@ function CodeBlock(code)
   assert(file)
   local content = file:read("*a")
 
+  local input = "{" .. table.concat(attr.input or {}, ", ") .. "}"
+  local source = string.gsub(content, "{{block_id}}", block_id)
+  source = string.gsub(source, "{{block_input}}", input)
+
   table.insert(ojs_definitions.contents, 1, {
     methodName = "interpret",
     cellName = "webr-" .. block_id,
     inline = false,
-    source = string.gsub(content, "{{block_id}}", block_id),
+    source = source,
   })
 
   -- Render any HTMLWidgets after HTML output has been added to the DOM

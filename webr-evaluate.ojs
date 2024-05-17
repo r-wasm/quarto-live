@@ -7,5 +7,5 @@ _webr_value_{{block_id}} = {
     { envir: webROjs.webR.objs.globalEnv },
     block.attr
   );
-  return webROjs.process(block.code, options);
+  return webROjs.process(block.code, options, {{block_input}});
 }
