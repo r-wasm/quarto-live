@@ -5,7 +5,7 @@ webROjs = {
   // Initialise webR and setup for R code evaluation
   let webR = new WebR();
   await webR.init();
-  await webR.installPackages(['evaluate', 'knitr']);
+  await webR.installPackages(['evaluate', 'knitr', 'htmltools']);
   await webR.evalRVoid(`webr::shim_install()`);
   await webR.evalRVoid(`
     .webr_ojs <- new.env()

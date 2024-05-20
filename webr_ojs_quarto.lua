@@ -47,6 +47,7 @@ function CodeBlock(code)
       include = toboolean,
       output = toboolean,
       startover = toboolean,
+      solution = toboolean,
       warning = toboolean,
       timelimit = tonumber,
     }
@@ -71,25 +72,37 @@ function CodeBlock(code)
   end
 
   -- If this is a hint return it as a non-interactive code block
-  if (attr.exercise and attr.hint) then
+  if (attr.exercise and (attr.hint or attr.solution)) then
     -- Build a simple code block from the R source
     local block = pandoc.CodeBlock(r_code, pandoc.Attr('', {'r', 'cell-code'}))
 
-    -- Wrap code block in a div and process as a markdown exercise hint
-    local container = pandoc.Div(
-      {
-        pandoc.Strong({"Hint:"}),
+    if (attr.hint) then
+      -- Wrap code block in a div and process as a markdown exercise hint
+      local container = pandoc.Div(
+        {
+          pandoc.Strong({"Hint:"}),
+          pandoc.Div({block}, pandoc.Attr('', {'p-0'})),
+        },
+        pandoc.Attr('', {'hint'}, {exercise = attr.exercise})
+      )
+      return Div(container)
+    else
+      local container = pandoc.Div(
         pandoc.Div({block}, pandoc.Attr('', {'p-0'})),
-      },
-      pandoc.Attr('', {'hint'}, {exercise = attr.exercise})
-    )
-    return Div(container)
+        pandoc.Attr('', {'solution'}, {exercise = attr.exercise})
+      )
+      return Div(container)
+    end
   end
 
   -- Render appropriate OJS for the type of client-side block we're working with
   local ojs_source = "webr-evaluate.ojs"
   if (attr.edit) then
     ojs_source = "webr-editor.ojs"
+  elseif (attr.exercise and attr.check) then
+    ojs_source = "webr-exercise-check.ojs"
+  elseif (attr.exercise and attr.setup) then
+    ojs_source = "webr-exercise-setup.ojs"
   elseif (attr.exercise) then
     ojs_source = "webr-exercise.ojs"
   end
@@ -100,6 +113,9 @@ function CodeBlock(code)
 
   local input = "{" .. table.concat(attr.input or {}, ", ") .. "}"
   local source = string.gsub(content, "{{block_id}}", block_id)
+  if (attr.exercise) then
+    source = string.gsub(source, "{{exercise_id}}", attr.exercise)
+  end
   source = string.gsub(source, "{{block_input}}", input)
 
   table.insert(ojs_definitions.contents, 1, {
@@ -134,8 +150,30 @@ end
 function Div(block)
   -- Render exercise hints with display:none
   if (block.classes:includes("hint") and block.attributes["exercise"] ~= nil) then
+    block.classes:insert("webr-ojs-exercise")
+    block.classes:insert("exercise-hint")
     block.classes:insert("d-none")
     return block
+  end
+end
+
+function Proof(block)
+  -- Quarto wraps solution blocks in a Proof structure
+  -- Dig into the expected shape and look for our own exercise solutions
+  if(block["type"] == "Solution") then
+    local content = block["__quarto_custom_node"]
+    local container = content.c[1]
+    if (container) then
+      local solution = container.c[1]
+      if (solution) then
+        if (solution.attributes["exercise"] ~= nil) then
+          solution.classes:insert("webr-ojs-exercise")
+          solution.classes:insert("exercise-solution")
+          solution.classes:insert("d-none")
+          return solution
+        end
+      end
+    end
   end
 end
 
@@ -169,6 +207,7 @@ end
 
 return {
   Div = Div,
+  Proof = Proof,
   CodeBlock = CodeBlock,
   Pandoc = Pandoc
 }

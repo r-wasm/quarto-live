@@ -185,7 +185,8 @@ pre > code.sourceCode > span.tok-function-attributeName {
 
 /* Revealjs (to match editor with bootstrap) */
 /* Container card */
-.reveal .card.exercise-editor-card .d-none {
+.reveal .card.exercise-editor-card .d-none,
+.reveal .webr-ojs-exercise.d-none {
   display: none !important;
 }
 

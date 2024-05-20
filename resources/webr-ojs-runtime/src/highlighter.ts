@@ -22,6 +22,7 @@ const tagHighlighterR = tagHighlighter([
 
 export function highlightR(code: string) {
   let result = document.createElement("code");
+  result.className = "sourceCode r";
 
   function emit(text: string, classes: string) {
     let node: HTMLElement | Text = document.createTextNode(text);

@@ -15,19 +15,16 @@ viewof _webr_editor_{{block_id}} = {
       envir: await webROjs.exerciseEnv[block.attr.exercise],
       echo: false,
       error: false,
-      startover: true,
-      autorun: false,
-      caption: 'Exercise',
-      output: true,
+      output: false,
     },
     block.attr
   );
 
   options.container = document.createElement("div");
-  new webROjs.ExerciseEditor(block.code, options);
+  options.container.value = { code: block.code, options };
   return options.container;
 }
-viewof _webr_value_{{exercise_id}} = webROjs.process(
+viewof _webr_value_{{block_id}} = webROjs.process(
   _webr_editor_{{block_id}}.code,
   _webr_editor_{{block_id}}.options,
   {{block_input}}

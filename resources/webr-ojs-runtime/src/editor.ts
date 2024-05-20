@@ -1,11 +1,10 @@
+import type { OJSElement } from './evaluate';
 import { basicSetup } from 'codemirror'
 import { EditorView, ViewUpdate } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
 import { tags } from "@lezer/highlight"
 import { r } from 'codemirror-lang-r'
-
-export type OJSElement = HTMLElement & { value: any };
 
 type EditorOptions = {
   container: OJSElement;
@@ -26,6 +25,7 @@ type ExerciseButton = HTMLButtonElement | HTMLAnchorElement;
 
 const icons = {
   'arrow-repeat': require('./assets/arrow-repeat.svg') as string,
+  'exclamation-circle': require('./assets/exclamation-circle.svg') as string,
   lightbulb: require('./assets/lightbulb.svg') as string,
   play: require('./assets/play.svg') as string,
 }
@@ -132,7 +132,9 @@ export class ExerciseEditor {
   }
 
   renderHints(): ExerciseButton | null {
-    const hints = document.querySelectorAll(`.d-none.hint[data-exercise="${this.options.exercise}"]`);
+    const hints = document.querySelectorAll(
+      `.d-none.exercise-hint[data-exercise="${this.options.exercise}"]`
+    );
     // Chain onclick handlers to reveal hints in order of appearance in DOM
     return Array.from(hints).reduceRight<ExerciseButton | null>((current, hint) => {
       if (!current) {
@@ -154,6 +156,27 @@ export class ExerciseEditor {
       }
       return current;
     }, null);
+  }
+
+  renderSolution(): ExerciseButton | null {
+    const solutions = document.querySelectorAll(
+      `.d-none.exercise-solution[data-exercise="${this.options.exercise}"]`
+    );
+
+    if (solutions.length > 0) {
+      return this.renderButton({
+        text: "Show Solution",
+        icon: "exclamation-circle",
+        className: "btn-outline-dark",
+        onclick: function() {
+          Array.from(solutions).forEach((solution) => {
+            solution.classList.remove("d-none");
+          });
+          this.remove();
+        }
+      });
+    }
+    return null
   }
 
   render() {
@@ -199,6 +222,9 @@ export class ExerciseEditor {
 
     const hintsButton = this.renderHints();
     if (hintsButton) leftButtons.push(hintsButton);
+
+    const solutionButton = this.renderSolution();
+    if (solutionButton) leftButtons.push(solutionButton);
 
     if (leftButtons.length > 0) {
       left.appendChild(this.renderButtonGroup(leftButtons));
