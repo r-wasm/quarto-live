@@ -135,36 +135,15 @@ export class ExerciseEditor {
     const hints = document.querySelectorAll(
       `.d-none.exercise-hint[data-exercise="${this.options.exercise}"]`
     );
-    // Chain onclick handlers to reveal hints in order of appearance in DOM
-    return Array.from(hints).reduceRight<ExerciseButton | null>((current, hint) => {
-      if (!current) {
-        current = this.renderButton({
-          text: "Show Hint",
-          icon: "lightbulb",
-          className: "btn-outline-dark",
-          onclick: () => {
-            hint.classList.remove("d-none");
-            current.remove();
-          }
-        });
-      } else {
-        const next = current.onclick;
-        current.onclick = () => {
-          hint.classList.remove("d-none");
-          current.onclick = next;
-        }
-      }
-      return current;
-    }, null);
-  }
-
-  renderSolution(): ExerciseButton | null {
     const solutions = document.querySelectorAll(
       `.d-none.exercise-solution[data-exercise="${this.options.exercise}"]`
     );
 
+    // Reveal hints and solution in order of appearance in DOM
+    // If there is a solution, terminate with a solution button
+    let terminal: ExerciseButton | undefined;
     if (solutions.length > 0) {
-      return this.renderButton({
+      terminal = this.renderButton({
         text: "Show Solution",
         icon: "exclamation-circle",
         className: "btn-outline-dark",
@@ -176,7 +155,23 @@ export class ExerciseEditor {
         }
       });
     }
-    return null
+
+    // Next reduce over the hints, replacing each in a chain of click handlers
+    return Array.from(hints).reduceRight<ExerciseButton | null>((current, hint) => {
+      return this.renderButton({
+        text: "Show Hint",
+        icon: "lightbulb",
+        className: "btn-outline-dark",
+        onclick: function() {
+          hint.classList.remove("d-none");
+          if (current) {
+            this.replaceWith(current);
+          } else {
+            this.remove();
+          }
+        }
+      });
+    }, terminal);
   }
 
   render() {
@@ -222,9 +217,6 @@ export class ExerciseEditor {
 
     const hintsButton = this.renderHints();
     if (hintsButton) leftButtons.push(hintsButton);
-
-    const solutionButton = this.renderSolution();
-    if (solutionButton) leftButtons.push(solutionButton);
 
     if (leftButtons.length > 0) {
       left.appendChild(this.renderButtonGroup(leftButtons));
