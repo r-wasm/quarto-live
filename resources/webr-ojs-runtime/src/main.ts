@@ -1,6 +1,6 @@
 import * as WebR from 'webr'
 import { ExerciseEditor } from './editor'
-import { highlightR } from './highlighter'
+import { highlightR, replaceHighlightR } from './highlighter'
 import { WebREvaluator} from './evaluate'
 
 declare global {
@@ -10,6 +10,7 @@ declare global {
       ExerciseEditor: typeof ExerciseEditor;
       WebREvaluator: typeof WebREvaluator;
       highlightR: typeof highlightR;
+      replaceHighlightR: typeof replaceHighlightR;
     };
   }
 }
@@ -19,6 +20,7 @@ window._webr_ojs_runtime = {
   ExerciseEditor,
   WebREvaluator,
   highlightR,
+  replaceHighlightR,
 };
 
-export { WebR, ExerciseEditor, WebREvaluator, highlightR }
+export { WebR, ExerciseEditor, WebREvaluator, highlightR, replaceHighlightR }

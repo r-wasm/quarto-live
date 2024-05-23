@@ -1,5 +1,5 @@
 webROjs = {
-  let { ExerciseEditor, WebREvaluator} = window._webr_ojs_runtime;
+  let { ExerciseEditor, WebREvaluator, replaceHighlightR } = window._webr_ojs_runtime;
   let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
 
   // Initialise webR and setup for R code evaluation
@@ -198,5 +198,5 @@ webROjs = {
     global: webR.objs.globalEnv,
   }
 
-  return { webR, asOjs, process, ExerciseEditor, exerciseEnv };
+  return { webR, asOjs, process, ExerciseEditor, exerciseEnv, replaceHighlightR };
 }

@@ -10,11 +10,7 @@ local function json_as_b64(obj)
   return quarto.base64.encode(json_string)
 end
 
-function CodeBlock(code)
-  if not (code.classes:includes("{webr}") or code.classes:includes("webr")) then
-    return
-  end
-
+function WebRCodeBlock(code)
   local attr = {}
   local param_lines = {}
   local code_lines = {}
@@ -145,6 +141,47 @@ function CodeBlock(code)
       json_as_b64(block) .. "\n</script>"
     )
   })
+end
+
+function InterpolatedRBlock(code)
+  block_id = block_id + 1
+
+  -- Reactively render OJS variables in codeblocks
+  file = io.open("webr-interpolate.ojs", "r")
+  assert(file)
+  content = file:read("*a")
+
+  -- Build map of OJS variable names to JS template literals
+  local map = "{\n"
+  for var in code.text:gmatch("${([a-zA-Z_$][%w_$]+)}") do
+    map = map .. var .. ",\n"
+  end
+  map = map .. "}"
+
+  -- We add this OJS block for its side effect of updating the HTML element
+  content = string.gsub(content, "{{block_id}}", block_id)
+  content = string.gsub(content, "{{def_map}}", map)
+  table.insert(ojs_definitions.contents, {
+    methodName = "interpretQuiet",
+    cellName = "webr-" .. block_id,
+    inline = false,
+    source = content,
+  })
+
+  code.identifier = "webr-interpolate-" .. block_id
+  return code
+end
+
+function CodeBlock(code)
+  if (code.classes:includes("{webr}") or code.classes:includes("webr")) then
+    -- Client side R code block
+    return WebRCodeBlock(code)
+  end
+
+  if (code.classes:includes("r") and string.match(code.text, "${[a-zA-Z_$][%w_$]+}")) then
+    -- Non-interactive code block containing OJS variables
+    return InterpolatedRBlock(code)
+  end
 end
 
 function Div(block)

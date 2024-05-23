@@ -42,3 +42,21 @@ export function highlightR(code: string) {
   highlightCode(code, r.parse(code), tagHighlighterR, emit, emitBreak);
   return result;
 }
+
+// Traverse a HTMLElement tree and replace text with highlighted replacement
+export function replaceHighlightR(el: Element, search: string, replace: string) {
+  if (el.textContent.includes(search)) {
+    let found = false;
+    for (let child of el.children) {
+      found ||= replaceHighlightR(child, search, replace);
+    }
+    // If `search` not found in children, replace this entire node.
+    // `search` could span several syntax spans, so we re-highlight replacement
+    if (!found) {
+      const highlighted = highlightR(el.textContent.replace(search, replace));
+      el.innerHTML = highlighted.innerHTML;
+    }
+    return true;
+  }
+  return false;
+}
