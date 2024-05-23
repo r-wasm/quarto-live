@@ -222,12 +222,13 @@ function Pandoc(doc)
     methodName = "interpretQuiet",
     cellName = "webr-prelude",
     inline = false,
-    source = content
+    source = content,
   })
   doc.blocks:insert(pandoc.RawBlock(
     "html", "<script type=\"ojs-module-contents\">\n" ..
     json_as_b64(ojs_definitions) .. "\n</script>"))
 
+  -- Exercise runtime dependencies
   quarto.doc.add_html_dependency({
     name = 'webr-ojs-runtime',
     scripts = {
