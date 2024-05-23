@@ -215,12 +215,15 @@ function Proof(block)
 end
 
 function Pandoc(doc)
+  local webr = doc.meta.webr or {}
+  local packages = webr.packages or {}
+
   local file = io.open("templates/webr-setup.ojs", "r")
   assert(file)
   local content = file:read("*a")
 
   local webr_pkgs = {"evaluate", "knitr", "htmltools"}
-  for _, pkg in pairs(doc.meta.webr.packages) do
+  for _, pkg in pairs(packages) do
     table.insert(webr_pkgs, pandoc.utils.stringify(pkg))
   end
   table.insert(ojs_definitions.contents, {
@@ -246,7 +249,7 @@ function Pandoc(doc)
   doc.blocks:insert(
     pandoc.Div(
       pandoc.Div({
-        pandoc.Div("Downloading webR", pandoc.Attr("exercise-loading-status")),
+        pandoc.Div({}, pandoc.Attr("exercise-loading-status")),
         pandoc.Div({}, pandoc.Attr("", {"spinner-grow", "spinner-grow-sm"})),
       }, pandoc.Attr("", {"d-flex", "align-items-center", "gap-2"})),
       pandoc.Attr("exercise-loading-indicator", {"exercise-loading-indicator"})
@@ -261,7 +264,7 @@ function Pandoc(doc)
     },
     stylesheets = {
       "resources/webr-ojs-evaluate.css",
-      "resources/webr-ojs-runtime/dist/codemirror-themes-html.css"
+      "resources/codemirror-themes-html.css"
     }
   })
 

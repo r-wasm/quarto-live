@@ -1,9 +1,17 @@
 webROjs = {
-  let { ExerciseEditor, WebREvaluator, replaceHighlightR } = window._webr_ojs_runtime;
-  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
-
   const statusContainer = document.getElementById("exercise-loading-indicator");
   const statusText = document.getElementById("exercise-loading-status");
+  statusText.textContent = `Downloading webR`;
+
+  // Hoist indicator out from final slide when running under reveal
+  const revealStatus = document.querySelector(".reveal .exercise-loading-indicator");
+  if (revealStatus) {
+    revealStatus.remove();
+    document.querySelector(".reveal > .slides").appendChild(revealStatus);
+  }
+
+  let { ExerciseEditor, WebREvaluator, replaceHighlightR } = window._webr_ojs_runtime;
+  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
 
   // Initialise webR and setup for R code evaluation
   let webR = new WebR();
