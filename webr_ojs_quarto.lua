@@ -103,7 +103,7 @@ function WebRCodeBlock(code)
     ojs_source = "webr-exercise.ojs"
   end
 
-  local file = io.open(ojs_source, "r")
+  local file = io.open("templates/" .. ojs_source, "r")
   assert(file)
   local content = file:read("*a")
 
@@ -122,7 +122,7 @@ function WebRCodeBlock(code)
   })
 
   -- Render any HTMLWidgets after HTML output has been added to the DOM
-  file = io.open("webr-widget.ojs", "r")
+  file = io.open("templates/webr-widget.ojs", "r")
   assert(file)
   content = file:read("*a")
 
@@ -147,7 +147,7 @@ function InterpolatedRBlock(code)
   block_id = block_id + 1
 
   -- Reactively render OJS variables in codeblocks
-  file = io.open("webr-interpolate.ojs", "r")
+  file = io.open("templates/webr-interpolate.ojs", "r")
   assert(file)
   content = file:read("*a")
 
@@ -215,7 +215,7 @@ function Proof(block)
 end
 
 function Pandoc(doc)
-  local file = io.open("webr-setup.ojs", "r")
+  local file = io.open("templates/webr-setup.ojs", "r")
   assert(file)
   local content = file:read("*a")
 
