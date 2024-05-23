@@ -1,5 +1,5 @@
 /* Colours: Bootstrap, revealjs, fallback */
-.quarto-light .card.exercise-editor-card {
+.quarto-light {
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #212529));
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #ffffff));
   --exercise-primary-rgb: var(--bs-primary-rgb, 13, 110, 253);
@@ -9,7 +9,7 @@
   --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.1);
 }
 
-.quarto-dark .card.exercise-editor-card {
+.quarto-dark {
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #ffffff));
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #222222));
   --exercise-primary-rgb: var(--bs-primary-rgb, 55, 90, 127);
@@ -17,6 +17,18 @@
   --exercise-cap-bg: var(--bs-card-cap-bg, #505050);
   --exercise-line-bg: rgba(var(--exercise-primary-rgb), 0.2);
   --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.4);
+}
+
+/* Client-side loading indicator */
+div.exercise-loading-indicator {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  font-size: 1.2rem;
+  padding: 0.2rem 0.75rem;
+  border: 1px solid var(--exercise-default);
+  background-color: var(--exercise-cap-bg);
+  border-top-left-radius: 5px;
 }
 
 /* Editor header buttons */

@@ -2,6 +2,9 @@ webROjs = {
   let { ExerciseEditor, WebREvaluator, replaceHighlightR } = window._webr_ojs_runtime;
   let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
 
+  const statusContainer = document.getElementById("exercise-loading-indicator");
+  const statusText = document.getElementById("exercise-loading-status");
+
   // Initialise webR and setup for R code evaluation
   let webR = new WebR();
   await webR.init();
@@ -10,10 +13,13 @@ webROjs = {
   const pkgsContent = document.querySelector(`script[type=\"webr-packages\"]`).textContent;
   const pkgs = JSON.parse(atob(pkgsContent));
   await pkgs.map((pkg) => () => {
+    statusText.textContent = `Downloading package: ${pkg}`;
     return webR.installPackages([pkg]);
   }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
+  statusText.textContent = `Installing webR shims`;
   await webR.evalRVoid(`webr::shim_install()`);
+  statusText.textContent = `WebR environment setup`;
   await webR.evalRVoid(`
     .webr_ojs <- new.env()
     ojs_define <- function(...) {
@@ -196,6 +202,9 @@ webROjs = {
     // Clean up OJS values from R environment
     await webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
 
+    // Remove initial evaluation indicator
+    statusContainer.classList.add("d-none");
+
     // Return HTML output from the evaluator
     return evaluator.output;
   }
@@ -205,5 +214,6 @@ webROjs = {
     global: webR.objs.globalEnv,
   }
 
+  statusText.textContent = "Initial evaluation";
   return { webR, asOjs, process, ExerciseEditor, exerciseEnv, replaceHighlightR };
 }

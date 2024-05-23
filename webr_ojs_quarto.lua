@@ -242,6 +242,17 @@ function Pandoc(doc)
     "<script type=\"ojs-module-contents\">\n" .. json_as_b64(ojs_definitions) .. "\n</script>"
   ))
 
+  -- Loading indicator
+  doc.blocks:insert(
+    pandoc.Div(
+      pandoc.Div({
+        pandoc.Div("Downloading webR", pandoc.Attr("exercise-loading-status")),
+        pandoc.Div({}, pandoc.Attr("", {"spinner-grow", "spinner-grow-sm"})),
+      }, pandoc.Attr("", {"d-flex", "align-items-center", "gap-2"})),
+      pandoc.Attr("exercise-loading-indicator", {"exercise-loading-indicator"})
+    )
+  )
+
   -- Exercise runtime dependencies
   quarto.doc.add_html_dependency({
     name = 'webr-ojs-runtime',
