@@ -14,8 +14,6 @@ declare global {
 }
 
 type EvaluateOptions = {
-  envir: REnvironment,
-  caption: string,
   eval: boolean,
   echo: boolean,
   warning: boolean,
@@ -23,8 +21,7 @@ type EvaluateOptions = {
   include: boolean,
   output: boolean,
   timelimit: number,
-  running: () => void,
-  idle: () => void,
+  container?: OJSElement,
 }
 
 // Build interleaved source code and HTML output
@@ -35,8 +32,9 @@ export class WebREvaluator {
   webR: WebR;
   shelter: Promise<Shelter>;
   options: EvaluateOptions;
+  envir: REnvironment;
 
-  constructor(webR: WebR, options = {}) {
+  constructor(webR: WebR, options = {}, envir: REnvironment) {
     this.output = document.createElement('div');
     this.output.value = null;
     this.sourceLines = [];
@@ -46,7 +44,6 @@ export class WebREvaluator {
     // Fallback default options
     this.options = Object.assign(
       {
-        envir: webR.objs.globalEnv,
         eval: true,
         echo: true,
         warning: true,
@@ -55,11 +52,11 @@ export class WebREvaluator {
         output: true,
         timelimit: 30,
         caption: 'Code',
-        running: () => { },
-        idle: () => { },
       },
       options
     );
+
+    this.envir = envir;
   }
 
   async purge() {
@@ -79,7 +76,7 @@ export class WebREvaluator {
       return;
     }
 
-    this.options.running();
+    this.setRunning();
     const shelter = await this.shelter;
     try {
       const capture = await shelter.captureR(`
@@ -107,7 +104,7 @@ export class WebREvaluator {
           env: {
             code,
             timelimit: Number(this.options.timelimit),
-            envir: this.options.envir,
+            envir: this.envir,
             warning: this.options.warning,
             error: this.options.error ? 0 : 1,
           }
@@ -177,7 +174,7 @@ export class WebREvaluator {
       this.output.value = await result[result.length - 1].get('value');
     } finally {
       shelter.purge();
-      this.options.idle();
+      this.setIdle();
     }
   }
 
@@ -256,5 +253,25 @@ export class WebREvaluator {
       this.appendSource();
       this.output.appendChild(outputDiv);
     }
+  }
+
+  setRunning() {
+    if (this.options.container) {
+      Array.from(
+        this.options.container.getElementsByClassName('exercise-editor-eval-indicator')
+      ).forEach((el) => el.classList.remove('d-none'));
+    }
+    Array.from(
+      document.getElementsByClassName('exercise-editor-btn-run-code')
+    ).forEach((el) => el.classList.add('disabled'));
+  }
+
+  setIdle() {
+    Array.from(
+      document.getElementsByClassName('exercise-editor-eval-indicator')
+    ).forEach((el) => el.classList.add('d-none'));
+    Array.from(
+      document.getElementsByClassName('exercise-editor-btn-run-code')
+    ).forEach((el) => el.classList.remove('disabled'));
   }
 }

@@ -7,11 +7,11 @@ import { tags } from "@lezer/highlight"
 import { r } from 'codemirror-lang-r'
 
 type EditorOptions = {
-  container: OJSElement;
   autorun: boolean;
   caption: string;
   exercise: string;
   startover: boolean;
+  container?: OJSElement;
 }
 
 type ExerciseButtonSpec = {
@@ -72,9 +72,9 @@ export class ExerciseEditor {
       throw new Error("Can't create editor, `code` must be a string.");
     }
 
-    this.container = options.container;
-    this.code = this.initialCode = code;
     this.options = options;
+    this.options.container = this.container = document.createElement("div");
+    this.code = this.initialCode = code;
     this.state = EditorState.create({
       doc: code,
       extensions: [
@@ -91,10 +91,10 @@ export class ExerciseEditor {
 
     const dom = this.render();
     this.container.appendChild(dom);
-    this.container.value = { options };
-    if (this.options.autorun) {
-      this.container.value.code = code;
-    }
+    this.container.value = {
+      code: this.options.autorun ? code : null,
+      options: this.options,
+    };
 
     // Prevent input Event when code autorun is disabled
     this.container.oninput = ((ev: CustomEvent) => {

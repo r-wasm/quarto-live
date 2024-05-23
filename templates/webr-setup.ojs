@@ -1,7 +1,9 @@
 webROjs = {
+  let { ExerciseEditor, WebREvaluator, highlightR, replaceHighlightR } = window._webr_ojs_runtime;
+  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
+
   const statusContainer = document.getElementById("exercise-loading-indicator");
   const statusText = document.getElementById("exercise-loading-status");
-  statusText.textContent = `Downloading webR`;
 
   // Hoist indicator out from final slide when running under reveal
   const revealStatus = document.querySelector(".reveal .exercise-loading-indicator");
@@ -10,65 +12,50 @@ webROjs = {
     document.querySelector(".reveal > .slides").appendChild(revealStatus);
   }
 
-  let { ExerciseEditor, WebREvaluator, replaceHighlightR } = window._webr_ojs_runtime;
-  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
-
-  // Initialise webR and setup for R code evaluation
-  let webR = new WebR();
-  await webR.init();
-
-  // Install provided list of packages
+  // Grab list of R packages to be pre-installed
   const pkgsContent = document.querySelector(`script[type=\"webr-packages\"]`).textContent;
   const pkgs = JSON.parse(atob(pkgsContent));
-  await pkgs.map((pkg) => () => {
-    statusText.textContent = `Downloading package: ${pkg}`;
-    return webR.installPackages([pkg]);
-  }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
-  statusText.textContent = `Installing webR shims`;
-  await webR.evalRVoid(`webr::shim_install()`);
-  statusText.textContent = `WebR environment setup`;
-  await webR.evalRVoid(`
-    .webr_ojs <- new.env()
-    ojs_define <- function(...) {
-      args <- list(...)
-      names(args) <- quote(match.call(expand.dots=TRUE)[1:length(args) + 1])
-      .webr_ojs <<- list2env(args, envir = .webr_ojs)
-    }
-    options(webr.fig.width = 7, webr.fig.height = 5, knitr.table.format = "html")
-    options(pager = function(files, ...) {
-      writeLines(gsub(".[\b]", "", readLines(files)))
-    })
-    options(device = function(...) {
-      args <- list(bg = "white", ...)
-      args <- args[!duplicated(names(args))]
-      do.call(webr::canvas, args)
-    })
-  `);
+  // Initialise webR and setup for R code evaluation
+  let webRPromise = (async (webR) => {
+    statusText.textContent = `Downloading webR`;
+    await webR.init();
 
-  // Evaluation indicators
-  const setRunning = (container) => () => {
-    if (container) {
-      Array.from(
-        container.getElementsByClassName('exercise-editor-eval-indicator')
-      ).forEach((el) => el.classList.remove('d-none'));
-    }
-    Array.from(
-      document.getElementsByClassName('exercise-editor-btn-run-code')
-    ).forEach((el) => el.classList.add('disabled'));
-  }
+    // Install provided list of packages
+    await pkgs.map((pkg) => () => {
+      statusText.textContent = `Downloading package: ${pkg}`;
+      return webR.installPackages([pkg]);
+    }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
-  const setIdle = (container) => () => {
-    Array.from(
-      document.getElementsByClassName('exercise-editor-eval-indicator')
-    ).forEach((el) => el.classList.add('d-none'));
-    Array.from(
-      document.getElementsByClassName('exercise-editor-btn-run-code')
-    ).forEach((el) => el.classList.remove('disabled'));
-  }
+    statusText.textContent = `Installing webR shims`;
+    await webR.evalRVoid(`webr::shim_install()`);
+
+    statusText.textContent = `WebR environment setup`;
+    await webR.evalRVoid(`
+      .webr_ojs <- new.env()
+      ojs_define <- function(...) {
+        args <- list(...)
+        names(args) <- quote(match.call(expand.dots=TRUE)[1:length(args) + 1])
+        .webr_ojs <<- list2env(args, envir = .webr_ojs)
+      }
+      options(webr.fig.width = 7, webr.fig.height = 5, knitr.table.format = "html")
+      options(pager = function(files, ...) {
+        writeLines(gsub(".[\b]", "", readLines(files)))
+      })
+      options(device = function(...) {
+        args <- list(bg = "white", ...)
+        args <- args[!duplicated(names(args))]
+        do.call(webr::canvas, args)
+      })
+    `);
+
+    statusText.textContent = "Initial evaluation";
+    return webR;
+  })(new WebR());
 
   // Convert webR R object reference to OJS value
   const asOjs = async (webRValue) => {
+    const webR = await webRPromise;
     if (webRValue instanceof ImageBitmap) {
       const ctx = DOM.context2d(webRValue.width, webRValue.height, 1);
       ctx.drawImage(webRValue, 0, 0, webRValue.width, webRValue.height);
@@ -82,12 +69,10 @@ webROjs = {
     }
 
     // We have an R object, so grab knitr output to support asis, e.g. HTML.
-    setRunning();
     const capture = await webR.globalShelter.captureR(`
       knitr::knit_print(webRValue, options = list(screenshot.force = FALSE))
     `, { env: { webRValue } });
     webRValue = capture.result;
-    setIdle();
 
     if (isRFunction(webRValue) || isRCall(webRValue)) {
       // If there are images, return the final captured plot back to OJS.
@@ -97,7 +82,6 @@ webROjs = {
           try {
             const width = await webR.evalRNumber('72 * getOption("webr.fig.width")');
             const height = await webR.evalRNumber('72 * getOption("webr.fig.height")');
-            setRunning();
             const capture = await webRValue.capture(
               {
                 withAutoprint: true,
@@ -113,7 +97,6 @@ webROjs = {
             return await asOjs(capture.result);
           } finally {
             webR.globalShelter.purge();
-            setIdle();
           }
       };
     }
@@ -161,18 +144,35 @@ webROjs = {
     }
   }
 
+  // Storage for shared exercise environments
+  const exerciseEnv = {
+    global: webRPromise.then((webR) => webR.objs.globalEnv),
+  };
+
+  const getExerciseEnv = async (envir) => {
+    envir = envir || "global";
+    const webR = await webRPromise;
+
+    // If required, register a new exercise environment
+    if (!(envir in exerciseEnv)) {
+      exerciseEnv[envir] = webR.evalR(`new.env(parent = globalenv())`);
+    }
+    return await exerciseEnv[envir];
+  };
+
   const process = async (code, options, inputs) => {
-    options.running = setRunning(options.container);
-    options.idle = setIdle(options.container);
+    const webR = await webRPromise;
+    const envir = await getExerciseEnv(options.envir);
 
     // Set OJS inputs in R environment
     await Promise.all(
       Object.entries(inputs).map(async ([k, v]) => {
-        await options.envir.bind(k, v);
+        await envir.bind(k, v);
       })
     );
 
-    const evaluator = new WebREvaluator(webR, options);
+    const evaluator = new WebREvaluator(webR, options, envir);
+
     try {
       await evaluator.evaluate(code);
     } finally {
@@ -185,12 +185,12 @@ webROjs = {
 
     // Grab objects from the evaluator environment
     if (typeof options.define === 'string') {
-      objs[options.define] = await options.envir.get(options.define);
+      objs[options.define] = await envir.get(options.define);
     } else if (options.define) {
       Object.assign(objs, Object.fromEntries(
         await Promise.all(
           options.define.map(async (name) => {
-            const obj = await options.envir.get(name);
+            const obj = await envir.get(name);
             return [name, obj];
           })
         )
@@ -217,11 +217,13 @@ webROjs = {
     return evaluator.output;
   }
 
-  // Storage for shared exercise environments
-  const exerciseEnv = {
-    global: webR.objs.globalEnv,
-  }
-
-  statusText.textContent = "Initial evaluation";
-  return { webR, asOjs, process, ExerciseEditor, exerciseEnv, replaceHighlightR };
+  return {
+    ExerciseEditor,
+    asOjs,
+    getExerciseEnv,
+    highlightR,
+    process,
+    replaceHighlightR,
+    webRPromise,
+  };
 }
