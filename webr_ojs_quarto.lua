@@ -218,15 +218,29 @@ function Pandoc(doc)
   local file = io.open("webr-setup.ojs", "r")
   assert(file)
   local content = file:read("*a")
+
+  local webr_pkgs = {"evaluate", "knitr", "htmltools"}
+  for _, pkg in pairs(doc.meta.webr.packages) do
+    table.insert(webr_pkgs, pandoc.utils.stringify(pkg))
+  end
   table.insert(ojs_definitions.contents, {
     methodName = "interpretQuiet",
     cellName = "webr-prelude",
     inline = false,
     source = content,
   })
+
+  -- List of webR R packages to install
   doc.blocks:insert(pandoc.RawBlock(
-    "html", "<script type=\"ojs-module-contents\">\n" ..
-    json_as_b64(ojs_definitions) .. "\n</script>"))
+    "html",
+    "<script type=\"webr-packages\">\n" .. json_as_b64(webr_pkgs) .. "\n</script>"
+  ))
+
+  -- OJS block definitions
+  doc.blocks:insert(pandoc.RawBlock(
+    "html",
+    "<script type=\"ojs-module-contents\">\n" .. json_as_b64(ojs_definitions) .. "\n</script>"
+  ))
 
   -- Exercise runtime dependencies
   quarto.doc.add_html_dependency({
