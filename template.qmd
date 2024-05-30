@@ -1,0 +1,17 @@
+---
+title: Quarto Interactive
+author: Ann Example
+date: today
+format: interactive-html
+webr:
+  packages:
+    - dplyr
+---
+
+# Overview
+
+Here is an editable code block.
+
+```{webr}
+rnorm(100)
+```

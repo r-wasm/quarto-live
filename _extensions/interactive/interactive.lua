@@ -10,8 +10,8 @@ local function json_as_b64(obj)
   return quarto.base64.encode(json_string)
 end
 
-function WebRCodeBlock(code)
-  local attr = {}
+function WebRParseBlock(code)
+  local attr = { edit = true, exercise = false }
   local param_lines = {}
   local code_lines = {}
   for line in code.text:gmatch("([^\r\n]*)[\r\n]?") do
@@ -55,83 +55,94 @@ function WebRCodeBlock(code)
     end
   end
 
-  local block = {
+  return {
     code = r_code,
     attr = attr
   }
+end
+
+function WebRCodeHint(block)
+  -- Build a simple code block from the R source
+  local hint = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
+
+  -- Wrap codeblock in a div and process as a markdown exercise hint/solution
+  local container = nil
+  if (block.attr.hint) then
+    container = pandoc.Div(
+      {
+        pandoc.Strong({"Hint:"}),
+        pandoc.Div({hint}, pandoc.Attr('', {'p-0'})),
+      },
+      pandoc.Attr('', {'hint'}, {exercise = block.attr.exercise})
+    )
+  else
+    container = pandoc.Div(
+      pandoc.Div({hint}, pandoc.Attr('', {'p-0'})),
+      pandoc.Attr('', {'solution'}, {exercise = block.attr.exercise})
+    )
+  end
+
+  return Div(container)
+end
+
+function WebRCodeBlock(code)
   block_id = block_id + 1
 
-  if (attr.output == "asis") then
+  function append_ojs_template(template, method, template_vars)
+    local file = io.open(quarto.utils.resolve_path("templates/" .. template), "r")
+    assert(file)
+    local content = file:read("*a")
+    for k, v in pairs(template_vars) do
+      content = string.gsub(content, "{{" .. k .. "}}", v)
+    end
+  
+    table.insert(ojs_definitions.contents, 1, {
+      methodName = method,
+      cellName = "webr-" .. block_id,
+      inline = false,
+      source = content,
+    })
+  end
+
+  -- Parse codeblock contents for YAML header and R code body
+  local block = WebRParseBlock(code)
+
+  if (block.attr.output == "asis") then
     quarto.log.warning(
       "Execution option `output: asis` is unsupported for `webr` code blocks."
     )
   end
 
   -- If this is a hint return it as a non-interactive code block
-  if (attr.exercise and (attr.hint or attr.solution)) then
-    -- Build a simple code block from the R source
-    local block = pandoc.CodeBlock(r_code, pandoc.Attr('', {'r', 'cell-code'}))
-
-    if (attr.hint) then
-      -- Wrap code block in a div and process as a markdown exercise hint
-      local container = pandoc.Div(
-        {
-          pandoc.Strong({"Hint:"}),
-          pandoc.Div({block}, pandoc.Attr('', {'p-0'})),
-        },
-        pandoc.Attr('', {'hint'}, {exercise = attr.exercise})
-      )
-      return Div(container)
-    else
-      local container = pandoc.Div(
-        pandoc.Div({block}, pandoc.Attr('', {'p-0'})),
-        pandoc.Attr('', {'solution'}, {exercise = attr.exercise})
-      )
-      return Div(container)
-    end
+  if (block.attr.exercise and (block.attr.hint or block.attr.solution)) then
+    return WebRCodeHint(block)
   end
+
+  -- Render any HTMLWidgets after HTML output has been added to the DOM
+  HTMLWidget(block_id)
 
   -- Render appropriate OJS for the type of client-side block we're working with
   local ojs_source = "webr-evaluate.ojs"
-  if (attr.edit) then
+  local ojs_method = "interpret"
+  if (block.attr.edit) then
     ojs_source = "webr-editor.ojs"
-  elseif (attr.exercise and attr.check) then
+  elseif (block.attr.exercise and block.attr.check) then
     ojs_source = "webr-exercise-check.ojs"
-  elseif (attr.exercise and attr.setup) then
+    ojs_method = "interpretQuiet"
+  elseif (block.attr.exercise and block.attr.setup) then
     ojs_source = "webr-exercise-setup.ojs"
-  elseif (attr.exercise) then
+    ojs_method = "interpretQuiet"
+  elseif (block.attr.exercise) then
     ojs_source = "webr-exercise.ojs"
   end
 
-  local file = io.open("templates/" .. ojs_source, "r")
-  assert(file)
-  local content = file:read("*a")
-
-  local input = "{" .. table.concat(attr.input or {}, ", ") .. "}"
-  local source = string.gsub(content, "{{block_id}}", block_id)
-  if (attr.exercise) then
-    source = string.gsub(source, "{{exercise_id}}", attr.exercise)
-  end
-  source = string.gsub(source, "{{block_input}}", input)
-
-  table.insert(ojs_definitions.contents, 1, {
-    methodName = "interpret",
-    cellName = "webr-" .. block_id,
-    inline = false,
-    source = source,
-  })
-
-  -- Render any HTMLWidgets after HTML output has been added to the DOM
-  file = io.open("templates/webr-widget.ojs", "r")
-  assert(file)
-  content = file:read("*a")
-
-  table.insert(ojs_definitions.contents, 1, {
-    methodName = "interpretQuiet",
-    cellName = "webr-widget-" .. block_id,
-    inline = false,
-    source = string.gsub(content, "{{block_id}}", block_id),
-  })
+  local input = "{" .. table.concat(block.attr.input or {}, ", ") .. "}"
+  local ojs_vars = {
+    block_id = block_id,
+    block_input = input,
+    exercise_id = block.attr.exercise or nil,
+  }
+  append_ojs_template(ojs_source, ojs_method, ojs_vars)
 
   return pandoc.Div({
     pandoc.Div({}, pandoc.Attr("webr-" .. block_id)),
@@ -147,7 +158,7 @@ function InterpolatedRBlock(code)
   block_id = block_id + 1
 
   -- Reactively render OJS variables in codeblocks
-  file = io.open("templates/webr-interpolate.ojs", "r")
+  file = io.open(quarto.utils.resolve_path("templates/webr-interpolate.ojs"), "r")
   assert(file)
   content = file:read("*a")
 
@@ -184,6 +195,19 @@ function CodeBlock(code)
   end
 end
 
+function HTMLWidget(block_id)
+  local file = io.open(quarto.utils.resolve_path("templates/webr-widget.ojs"), "r")
+  assert(file)
+  content = file:read("*a")
+
+  table.insert(ojs_definitions.contents, 1, {
+    methodName = "interpretQuiet",
+    cellName = "webr-widget-" .. block_id,
+    inline = false,
+    source = string.gsub(content, "{{block_id}}", block_id),
+  })
+end
+
 function Div(block)
   -- Render exercise hints with display:none
   if (block.classes:includes("hint") and block.attributes["exercise"] ~= nil) then
@@ -218,7 +242,7 @@ function Pandoc(doc)
   local webr = doc.meta.webr or {}
   local packages = webr.packages or {}
 
-  local file = io.open("templates/webr-setup.ojs", "r")
+  local file = io.open(quarto.utils.resolve_path("templates/webr-setup.ojs"), "r")
   assert(file)
   local content = file:read("*a")
 
@@ -258,13 +282,13 @@ function Pandoc(doc)
 
   -- Exercise runtime dependencies
   quarto.doc.add_html_dependency({
-    name = 'webr-ojs-runtime',
+    name = 'interactive-runtime',
     scripts = {
-      "resources/webr-ojs-runtime/dist/webr-ojs-runtime.js"
+      "resources/interactive-runtime.js"
     },
     stylesheets = {
-      "resources/webr-ojs-evaluate.css",
-      "resources/codemirror-themes-html.css"
+      "resources/highlighting.css",
+      "resources/interactive-runtime.css"
     }
   })
 

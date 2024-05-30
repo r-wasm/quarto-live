@@ -1,11 +1,11 @@
 {
-  "name": "webr-ojs-runtime",
+  "name": "interactive-runtime",
   "type": "module",
   "version": "0.0.1",
   "files": [
     "dist"
   ],
-  "main": "./dist/webr-ojs-runtime.js",
+  "main": "./dist/interactive-runtime.js",
   "private": true,
   "license": "mit",
   "scripts": {

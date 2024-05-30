@@ -24,4 +24,4 @@ _webr_value_{{block_id}} = webROjs.process(
   _webr_editor_{{block_id}}.options,
   {{block_input}}
 )
-viewof _webr_value_{{exercise_id}} = _webr_value_{{block_id}};
+viewof _webr_value_{{exercise_id}} = _webr_value_{{block_id}}

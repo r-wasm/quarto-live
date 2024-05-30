@@ -49,7 +49,7 @@ webROjs = {
       })
     `);
 
-    statusText.textContent = "Initial evaluation";
+    statusContainer.classList.add("d-none");
     return webR;
   })(new WebR());
 
@@ -209,9 +209,6 @@ webROjs = {
 
     // Clean up OJS values from R environment
     await webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
-
-    // Remove initial evaluation indicator
-    statusContainer.classList.add("d-none");
 
     // Return HTML output from the evaluator
     return evaluator.output;

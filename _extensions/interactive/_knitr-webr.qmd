@@ -1,0 +1,15 @@
+```{r echo=FALSE}
+# Setup knitr for handling {webr} blocks
+knitr::knit_engines$set(webr = function(options) {
+  knitr:::one_string(c(
+    paste0(
+      "```{.",
+      gsub(',(?=(?:[^\'"\n]*"[^\'"\n]*")*[^\'"\n]*$)', "", options$original.params.src, perl = TRUE),
+      "}"
+    ),
+    options$yaml.code,
+    options$code,
+    "```"
+  ))
+})
+```

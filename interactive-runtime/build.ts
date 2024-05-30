@@ -9,7 +9,7 @@ if (process.argv.includes("--watch")) {
 const options: BuildOptions = {
   entryPoints: ['./src/main.ts'],
   bundle: true,
-  outfile: './dist/webr-ojs-runtime.js',
+  outfile: '../_extensions/interactive/resources/interactive-runtime.js',
   minify: true,
   loader: { '.svg': 'text' },
   platform: 'browser',
