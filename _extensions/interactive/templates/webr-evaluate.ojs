@@ -8,8 +8,9 @@ _webr_value_{{block_id}} = {
   const result = webROjs.process(block.code, options, {{block_input}});
 
   // Early yield while we wait for the first evaluation and render
-  if (options.output) {
+  if (options.output && !("{{block_id}}" in webROjs.renderedOjs)) {
     const container = document.createElement("div");
+    const spinner = document.createElement("div");
 
     if (options.echo) {
       // Show output as highlighted source
@@ -17,10 +18,10 @@ _webr_value_{{block_id}} = {
       container.className = "sourceCode";
       preElem.className = "sourceCode r";
       preElem.appendChild(webROjs.highlightR(block.code));
+      spinner.className = "spinner-grow spinner-grow-sm m-2 position-absolute top-0 end-0";
+      preElem.appendChild(spinner);
       container.appendChild(preElem);
     } else {
-      // Show output as a spinner
-      const spinner = document.createElement("div");
       spinner.className = "spinner-border spinner-border-sm";
       container.appendChild(spinner);
     }
@@ -28,5 +29,6 @@ _webr_value_{{block_id}} = {
     yield container;
   }
 
+  webROjs.renderedOjs["{{block_id}}"] = true;
   yield await result;
 }

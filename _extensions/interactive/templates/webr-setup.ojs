@@ -149,6 +149,9 @@ webROjs = {
     global: webRPromise.then((webR) => webR.objs.globalEnv),
   };
 
+  // Keep track of initial OJS block render
+  const renderedOjs = {};
+
   const getExerciseEnv = async (envir) => {
     envir = envir || "global";
     const webR = await webRPromise;
@@ -174,6 +177,7 @@ webROjs = {
     const evaluator = new WebREvaluator(webR, options, envir);
 
     try {
+      await evaluator.evaluateQuietly(options.setup);
       await evaluator.evaluate(code);
     } finally {
       evaluator.purge();
@@ -222,5 +226,6 @@ webROjs = {
     process,
     replaceHighlightR,
     webRPromise,
+    renderedOjs,
   };
 }

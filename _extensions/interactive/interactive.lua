@@ -88,7 +88,7 @@ end
 function WebRCodeBlock(code)
   block_id = block_id + 1
 
-  function append_ojs_template(template, method, template_vars)
+  function append_ojs_template(template, template_vars)
     local file = io.open(quarto.utils.resolve_path("templates/" .. template), "r")
     assert(file)
     local content = file:read("*a")
@@ -97,7 +97,7 @@ function WebRCodeBlock(code)
     end
   
     table.insert(ojs_definitions.contents, 1, {
-      methodName = method,
+      methodName = "interpret",
       cellName = "webr-" .. block_id,
       inline = false,
       source = content,
@@ -113,36 +113,45 @@ function WebRCodeBlock(code)
     )
   end
 
-  -- If this is a hint return it as a non-interactive code block
+  -- If this is a hint return a non-interactive block
   if (block.attr.exercise and (block.attr.hint or block.attr.solution)) then
     return WebRCodeHint(block)
   end
 
-  -- Render any HTMLWidgets after HTML output has been added to the DOM
-  HTMLWidget(block_id)
+  -- If this is an exercise setup or check block, store code for runtime eval
+  if (block.attr.exercise and block.attr.setup) then
+    return pandoc.RawBlock(
+        "html",
+        "<script type=\"webr-setup-" .. block.attr.exercise .. "-contents\">\n" ..
+        json_as_b64(block) .. "\n</script>"
+      )
+  elseif (block.attr.exercise and block.attr.check) then
+    return pandoc.RawBlock(
+        "html",
+        "<script type=\"webr-check-" .. block.attr.exercise .. "-contents\">\n" ..
+        json_as_b64(block) .. "\n</script>"
+      )
+  end
 
   -- Render appropriate OJS for the type of client-side block we're working with
   local ojs_source = "webr-evaluate.ojs"
-  local ojs_method = "interpret"
-  if (block.attr.edit) then
-    ojs_source = "webr-editor.ojs"
-  elseif (block.attr.exercise and block.attr.check) then
-    ojs_source = "webr-exercise-check.ojs"
-    ojs_method = "interpretQuiet"
-  elseif (block.attr.exercise and block.attr.setup) then
-    ojs_source = "webr-exercise-setup.ojs"
-    ojs_method = "interpretQuiet"
-  elseif (block.attr.exercise) then
-    ojs_source = "webr-exercise.ojs"
-  end
-
   local input = "{" .. table.concat(block.attr.input or {}, ", ") .. "}"
   local ojs_vars = {
     block_id = block_id,
     block_input = input,
-    exercise_id = block.attr.exercise or nil,
   }
-  append_ojs_template(ojs_source, ojs_method, ojs_vars)
+
+  if (block.attr.exercise) then
+    ojs_source = "webr-exercise.ojs"
+    ojs_vars["exercise_id"] = block.attr.exercise
+  elseif (block.attr.edit) then
+    ojs_source = "webr-editor.ojs"
+  end
+
+  append_ojs_template(ojs_source, ojs_vars)
+
+  -- Render any HTMLWidgets after HTML output has been added to the DOM
+  HTMLWidget(block_id)
 
   return pandoc.Div({
     pandoc.Div({}, pandoc.Attr("webr-" .. block_id)),

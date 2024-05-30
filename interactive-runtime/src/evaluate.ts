@@ -64,6 +64,37 @@ export class WebREvaluator {
     shelter.purge();
   }
 
+  async evaluateQuietly(code) {
+    if (!code || code === '') {
+      return;
+    }
+    this.setRunning();
+    const shelter = await this.shelter;
+    try {
+      await shelter.evalR(`
+        evaluate::evaluate(
+          code,
+          envir = envir,
+          keep_message = warning,
+          keep_warning = warning,
+          stop_on_error = error
+        )
+      `,
+        {
+          env: {
+            code,
+            envir: this.envir,
+            warning: this.options.warning,
+            error: this.options.error ? 0 : 1,
+          }
+        }
+      );
+    } finally {
+      shelter.purge();
+      this.setIdle();
+    }
+  }
+
   async evaluate(code) {
     // Early returns if we're not actually evaluating
     if (!code || code === '' || !this.options.include) {
