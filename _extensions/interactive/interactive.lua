@@ -11,7 +11,7 @@ local function json_as_b64(obj)
 end
 
 function WebRParseBlock(code)
-  local attr = { edit = true, exercise = false }
+  local attr = { edit = false, exercise = false }
   local param_lines = {}
   local code_lines = {}
   for line in code.text:gmatch("([^\r\n]*)[\r\n]?") do
@@ -26,7 +26,10 @@ function WebRParseBlock(code)
 
   local param_yaml = table.concat(param_lines, "\n")
   if (param_yaml ~= "") then
-    attr = tinyyaml.parse(param_yaml)
+    param_attr = tinyyaml.parse(param_yaml)
+    for k, v in pairs(param_attr) do
+      attr[k] = v
+    end
   end
 
   for k, v in pairs(code.attributes) do
@@ -34,8 +37,9 @@ function WebRParseBlock(code)
       return string.lower(v) == "true"
     end
 
-    local convert = { 
+    local convert = {
       autorun = toboolean,
+      runbutton = toboolean,
       echo = toboolean,
       edit = toboolean,
       error = toboolean,

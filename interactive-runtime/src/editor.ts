@@ -1,15 +1,19 @@
+import type { WebR, RFunction } from 'webr'
 import type { OJSElement } from './evaluate';
 import { basicSetup } from 'codemirror'
 import { EditorView, ViewUpdate } from '@codemirror/view'
 import { EditorState } from '@codemirror/state'
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
+import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
 import { tags } from "@lezer/highlight"
 import { r } from 'codemirror-lang-r'
 
 type EditorOptions = {
   autorun: boolean;
   caption: string;
+  completion: boolean;
   exercise: string;
+  runbutton: boolean;
   startover: boolean;
   container?: OJSElement;
 }
@@ -20,6 +24,15 @@ type ExerciseButtonSpec = {
   className: string;
   onclick?: ((ev: MouseEvent) => any);
 }
+
+type ExerciseCompletionMethods = {
+  assignLineBuffer: RFunction;
+  assignToken: RFunction;
+  assignStart: RFunction;
+  assignEnd: RFunction;
+  completeToken: RFunction;
+  retrieveCompletions: RFunction;
+};
 
 type ExerciseButton = HTMLButtonElement | HTMLAnchorElement;
 
@@ -56,6 +69,8 @@ export class ExerciseEditor {
   view: EditorView;
   container: OJSElement;
   options: EditorOptions;
+  webRPromise: Promise<WebR>;
+  completionMethods: Promise<ExerciseCompletionMethods>;
   reactiveViewof = [
     EditorView.updateListener.of((update: ViewUpdate) => {
       if (!update.docChanged) return;
@@ -67,22 +82,33 @@ export class ExerciseEditor {
     }),
   ];
 
-  constructor(code: string, options: EditorOptions) {
+  constructor(webRPromise: Promise<WebR>, code: string, options: EditorOptions) {
     if (typeof code !== "string") {
       throw new Error("Can't create editor, `code` must be a string.");
     }
 
     this.options = options;
     this.options.container = this.container = document.createElement("div");
+    this.webRPromise = webRPromise;
     this.code = this.initialCode = code;
+
+    const extensions = [
+      basicSetup,
+      syntaxHighlighting(highlightStyle),
+      r(),
+      this.reactiveViewof,
+    ];
+
+    if (options.completion) {
+      this.completionMethods = this.setupCompletion();
+      extensions.push(
+        autocompletion({ override: [(...args) => this.doCompletion(...args)] })
+      );
+    }
+
     this.state = EditorState.create({
       doc: code,
-      extensions: [
-        basicSetup,
-        syntaxHighlighting(highlightStyle),
-        this.reactiveViewof,
-        r(),
-      ],
+      extensions,
     });
 
     this.view = new EditorView({
@@ -96,14 +122,48 @@ export class ExerciseEditor {
       options: this.options,
     };
 
-    // Prevent input Event when code autorun is disabled
+    // Prevent input Event when run button is enabled
     this.container.oninput = ((ev: CustomEvent) => {
-      if (ev.detail.manual || this.options.autorun) {
-        return;
+      if (this.options.runbutton && !ev.detail.manual) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
       }
-      ev.preventDefault();
-      ev.stopImmediatePropagation();
     }) as EventListener;
+  }
+
+  async setupCompletion(): Promise<ExerciseCompletionMethods> {
+    const webR = await this.webRPromise;
+    return {
+      assignLineBuffer: await webR.evalR('utils:::.assignLinebuffer') as RFunction,
+      assignToken: await webR.evalR('utils:::.assignToken') as RFunction,
+      assignStart: await webR.evalR('utils:::.assignStart') as RFunction,
+      assignEnd: await webR.evalR('utils:::.assignEnd') as RFunction,
+      completeToken: await webR.evalR('utils:::.completeToken') as RFunction,
+      retrieveCompletions: await webR.evalR('utils:::.retrieveCompletions') as RFunction,
+    };
+  }
+
+  async doCompletion(context: CompletionContext) {
+    const completionMethods = await this.completionMethods;
+    const line = context.state.doc.lineAt(context.state.selection.main.head).text;
+    const { from, to, text } = context.matchBefore(/[a-zA-Z0-9_.:]*/) ?? { from: 0, to: 0, text: '' };
+    if (from === to && !context.explicit) {
+      return null;
+    }
+    await completionMethods.assignLineBuffer(line);
+    await completionMethods.assignToken(text);
+    await completionMethods.assignStart(from + 1);
+    await completionMethods.assignEnd(to + 1);
+    await completionMethods.completeToken();
+    const compl = await completionMethods.retrieveCompletions() as { values: string [] };
+    const options = compl.values.map((val) => {
+      if (!val) {
+        throw new Error('Missing values in completion result.');
+      }
+      return { label: val };
+    });
+
+    return { from: from, options };
   }
 
   renderButton(spec: ExerciseButtonSpec) {
@@ -204,9 +264,12 @@ export class ExerciseEditor {
             }
           });
 
-          // Set blank output if code is run manually
-          if (!this.options.autorun) {
+          // Reset output if code is run manually
+          if (this.options.runbutton) {
             this.container.value.code = undefined;
+            if (this.options.autorun) {
+              this.container.value.code = this.initialCode;
+            }
             this.container.dispatchEvent(new CustomEvent('input', {
               detail: { manual: true }
             }));
@@ -227,7 +290,7 @@ export class ExerciseEditor {
     right.className = "d-flex align-items-center gap-3";
 
     const rightButtons: ExerciseButton[] = [];
-    if (!this.options.autorun) {
+    if (this.options.runbutton) {
       rightButtons.push(this.renderButton({
         text: "Run Code",
         icon: "play",
@@ -242,16 +305,6 @@ export class ExerciseEditor {
     }
 
     right.appendChild(this.renderSpinner());
-
-    if (false) {
-      rightButtons.push(
-        this.renderButton({
-          text: "Submit Answer",
-          icon: "lightbulb",
-          className: "btn-primary"
-        }),
-      );
-    }
 
     if (rightButtons.length > 0) {
       right.appendChild(this.renderButtonGroup(rightButtons));

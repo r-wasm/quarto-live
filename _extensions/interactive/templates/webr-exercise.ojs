@@ -13,6 +13,8 @@ viewof _webr_editor_{{block_id}} = {
       error: false,
       startover: true,
       autorun: false,
+      runbutton: true,
+      completion: true,
       caption: 'Exercise',
       output: true,
       setup: setup.code,
@@ -20,7 +22,7 @@ viewof _webr_editor_{{block_id}} = {
     block.attr
   );
 
-  const editor = new webROjs.ExerciseEditor(block.code, options);
+  const editor = new webROjs.ExerciseEditor(webROjs.webRPromise, block.code, options);
   return editor.container;
 }
 viewof _webr_value_{{block_id}} = webROjs.process(

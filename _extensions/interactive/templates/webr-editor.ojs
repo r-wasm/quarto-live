@@ -7,14 +7,16 @@ viewof _webr_editor_{{block_id}} = {
   const options = Object.assign(
     {
       echo: false,
-      startover: false,
+      startover: true,
       autorun: true,
+      runbutton: true,
+      completion: true,
       caption: 'R Code',
     },
     block.attr
   );
 
-  const editor = new webROjs.ExerciseEditor(block.code, options);
+  const editor = new webROjs.ExerciseEditor(webROjs.webRPromise, block.code, options);
   return editor.container;
 }
 _webr_value_{{block_id}} = webROjs.process(
