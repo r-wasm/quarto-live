@@ -130,7 +130,7 @@ function types.timestamp:__init(y, m, d, h, i, s, f, z)
   self.minute = tonumber(i or 0)
   self.second = tonumber(s or 0)
   if type(f) == 'string' and sfind(f, '^%d+$') then
-    self.fraction = tonumber(f) * math.pow(10, 3 - #f)
+    self.fraction = tonumber(f) * 10 ^ (3 - #f)
   elseif f then
     self.fraction = f
   else
@@ -602,12 +602,12 @@ function Parser:parseseq(line, lines, indent)
       --
       -- value:
       --   - foo:bar
-      local indent2 = j
+      local indent2 = j or 0
       lines[1] = string.rep(' ', indent2)..rest
       tinsert(seq, self:parsemap('', lines, indent2))
     elseif sfind(rest, '^%-%s+') then
       -- Inline nested seq
-      local indent2 = j
+      local indent2 = j or 0
       lines[1] = string.rep(' ', indent2)..rest
       tinsert(seq, self:parseseq('', lines, indent2))
     elseif isemptyline(rest) then
@@ -679,7 +679,7 @@ function Parser:parseset(line, lines, indent)
 
     if sfind(rest, '^[^\'\"%s]*:') then
       -- Inline nested hash
-      local indent2 = j
+      local indent2 = j or 0
       lines[1] = string.rep(' ', indent2)..rest
       set[self:parsemap('', lines, indent2)] = true
     elseif sfind(rest, '^%s+$') then
