@@ -66,6 +66,7 @@ export class WebREvaluator {
 
   async evaluateQuietly(code) {
     if (!code || code === '') {
+      this.setIdle();
       return;
     }
     this.setRunning();
@@ -98,6 +99,7 @@ export class WebREvaluator {
   async evaluate(code) {
     // Early returns if we're not actually evaluating
     if (!code || code === '' || !this.options.include) {
+      this.setIdle();
       return;
     }
 

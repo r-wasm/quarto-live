@@ -250,6 +250,7 @@ end
 function Pandoc(doc)
   local webr = doc.meta.webr or {}
   local packages = webr.packages or {}
+  local resources = webr.resources or nil
 
   local file = io.open(quarto.utils.resolve_path("templates/webr-setup.ojs"), "r")
   assert(file)
@@ -301,6 +302,21 @@ function Pandoc(doc)
     }
   })
 
+  local vfs_files = {}
+  local resource_list = doc.meta.resources
+  if (resources) then resource_list = resources end
+  if (resource_list) then
+    for _, files in pairs(resource_list) do
+      for _, file in pairs(files) do
+        local filename = pandoc.utils.stringify(file)
+        table.insert(vfs_files, filename)
+      end
+    end
+  end
+  doc.blocks:insert(pandoc.RawBlock(
+    "html",
+    "<script type=\"webr-vfs-file\">\n" .. json_as_b64(vfs_files) .. "\n</script>"
+  ))
   return doc
 end
 
