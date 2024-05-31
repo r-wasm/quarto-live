@@ -163,6 +163,7 @@ export class ExerciseEditor {
 
   async setupCompletion(): Promise<ExerciseCompletionMethods> {
     const webR = await this.webRPromise;
+    await webR.evalRVoid('rc.settings(func=TRUE, fuzzy=TRUE)');
     return {
       assignLineBuffer: await webR.evalR('utils:::.assignLinebuffer') as RFunction,
       assignToken: await webR.evalR('utils:::.assignToken') as RFunction,
@@ -190,10 +191,10 @@ export class ExerciseEditor {
       if (!val) {
         throw new Error('Missing values in completion result.');
       }
-      return { label: val };
+      return { label: val, boost: val.endsWith("=") ? 10 : 0 };
     });
 
-    return { from: from, options };
+    return { from, options };
   }
 
   renderButton(spec: ExerciseButtonSpec) {
