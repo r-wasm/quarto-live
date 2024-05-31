@@ -1,8 +1,8 @@
 import type { WebR, RFunction } from 'webr'
 import type { OJSElement } from './evaluate';
 import { basicSetup } from 'codemirror'
-import { EditorView, ViewUpdate } from '@codemirror/view'
-import { EditorState } from '@codemirror/state'
+import { EditorView, ViewUpdate, keymap } from '@codemirror/view'
+import { EditorState, Compartment, Prec } from '@codemirror/state'
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
 import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
 import { tags } from "@lezer/highlight"
@@ -92,10 +92,40 @@ export class ExerciseEditor {
     this.webRPromise = webRPromise;
     this.code = this.initialCode = code;
 
+    const language = new Compartment();
+    const tabSize = new Compartment();
     const extensions = [
       basicSetup,
       syntaxHighlighting(highlightStyle),
-      r(),
+      language.of(r()),
+      tabSize.of(EditorState.tabSize.of(2)),
+      Prec.high(
+        keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: () => {
+              this.container.value.code = this.code;
+              this.container.dispatchEvent(new CustomEvent('input', {
+                detail: { manual: true }
+              }));
+              return true;
+            },
+          },
+          {
+            key: 'Mod-Shift-m',
+            run: () => {
+              this.view.dispatch({
+                changes: {
+                  from: 0,
+                  to: this.view.state.doc.length,
+                  insert: this.code.trimEnd() + " |> ",
+                }
+              });
+              return true;
+            },
+          },
+        ]
+        )),
       this.reactiveViewof,
     ];
 
@@ -155,7 +185,7 @@ export class ExerciseEditor {
     await completionMethods.assignStart(from + 1);
     await completionMethods.assignEnd(to + 1);
     await completionMethods.completeToken();
-    const compl = await completionMethods.retrieveCompletions() as { values: string [] };
+    const compl = await completionMethods.retrieveCompletions() as { values: string[] };
     const options = compl.values.map((val) => {
       if (!val) {
         throw new Error('Missing values in completion result.');
@@ -207,7 +237,7 @@ export class ExerciseEditor {
         text: "Show Solution",
         icon: "exclamation-circle",
         className: "btn-outline-dark",
-        onclick: function() {
+        onclick: function () {
           Array.from(solutions).forEach((solution) => {
             solution.classList.remove("d-none");
           });
@@ -222,7 +252,7 @@ export class ExerciseEditor {
         text: "Show Hint",
         icon: "lightbulb",
         className: "btn-outline-dark",
-        onclick: function() {
+        onclick: function () {
           hint.classList.remove("d-none");
           if (current) {
             this.replaceWith(current);
