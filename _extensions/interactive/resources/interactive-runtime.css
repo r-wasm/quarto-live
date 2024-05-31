@@ -57,6 +57,12 @@ div.exercise-loading-indicator {
 }
 
 /* Codemirror Editor */
+.card.exercise-editor-card .card-header {
+  padding: 0.5rem 1rem;
+  background-color: var(--exercise-cap-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.175);
+}
+
 .card.exercise-editor-card .cm-editor {
   color: var(--exercise-main-color);
   background-color: var(--exercise-main-bg);
@@ -358,4 +364,11 @@ pre > code.sourceCode span.tok-function-attributeName {
     opacity: 1;
     transform: none
   }
+}
+
+/* Output cells */
+div.exercise-cell-output.cell-output-stdout pre code,
+div.exercise-cell-output.cell-output-stderr pre code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }

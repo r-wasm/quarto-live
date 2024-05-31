@@ -227,7 +227,7 @@ export class WebREvaluator {
 
   appendStdout(content: string) {
     const outputDiv = document.createElement("div");
-    outputDiv.className = "cell-output cell-output-stdout";
+    outputDiv.className = "exercise-cell-output cell-output cell-output-stdout";
     outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
     if (this.options.output) {
@@ -238,7 +238,7 @@ export class WebREvaluator {
 
   appendStderr(content: string) {
     const outputDiv = document.createElement("div");
-    outputDiv.className = "cell-output cell-output-stderr";
+    outputDiv.className = "exercise-cell-output cell-output cell-output-stderr";
     outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
     if (this.options.output) {
