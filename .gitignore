@@ -1,4 +1,5 @@
 *_files
 *.html
 /.luarc.json
+_site
 node_modules
