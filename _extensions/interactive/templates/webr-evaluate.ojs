@@ -2,6 +2,7 @@ _webr_value_{{block_id}} = {
   const scriptContent = document.querySelector(`script[type=\"webr-{{block_id}}-contents\"]`).textContent;
   const block = JSON.parse(atob(scriptContent));
 
+  // Default evaluation configuration
   const options = Object.assign({ echo: true, output: true }, block.attr);
 
   // Evaluate the provided R code

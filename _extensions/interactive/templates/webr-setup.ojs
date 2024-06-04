@@ -89,58 +89,8 @@ webROjs = {
 
   const process = async (context, inputs) => {
     const webR = await webRPromise;
-    const envir = await environmentManager.get(context.options.envir);
-    const code = context.code;
-    const options = context.options;
-
-    // Set OJS inputs in R environment
-    await Promise.all(
-      Object.entries(inputs).map(async ([k, v]) => {
-        await envir.bind(k, v);
-      })
-    );
-
-    const evaluator = new WebREvaluator(webR, environmentManager, context, inputs)
-
-    try {
-      await evaluator.evaluateQuietly(options.setup);
-      await evaluator.evaluate(code);
-    } finally {
-      evaluator.purge();
-    }
-
-    // Grab objects from the webR OJS environment
-    const ojs_envir = await webR.objs.globalEnv.get('.webr_ojs');
-    const objs = await ojs_envir.toObject({ depth: -1 });
-
-    // Grab objects from the evaluator environment
-    if (typeof options.define === 'string') {
-      objs[options.define] = await envir.get(options.define);
-    } else if (options.define) {
-      Object.assign(objs, Object.fromEntries(
-        await Promise.all(
-          options.define.map(async (name) => {
-            const obj = await envir.get(name);
-            return [name, obj];
-          })
-        )
-      ));
-    }
-
-    // Define the objects as OJS values
-    Object.keys(objs).forEach(async (key) => {
-      const jsValue = await evaluator.asOjs(objs[key]);
-      if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
-        window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
-      } else {
-        window._ojs.ojsConnector.define(key)(jsValue);
-      }
-    });
-
-    // Clean up OJS values from R environment
-    await webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
-
-    // Return HTML output from the evaluator
+    const evaluator = new WebREvaluator(webR, environmentManager, context)
+    await evaluator.process(inputs);
     return evaluator.container;
   }
 
