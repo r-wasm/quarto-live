@@ -21,6 +21,25 @@ export class EnvironmentManager {
     return await this.env[id];
   }
 
+  async create(target_id: string, parent_id: string) {
+    if (target_id === "global") {
+      return this.get("global");
+    }
+
+    if (target_id in this.env) {
+      await this.destroy(target_id);
+    }
+
+    const shelter = await this.shelter;
+    const parent = await this.get(parent_id);
+    this.env[target_id] = shelter.evalR(
+      "new.env(parent = parent)",
+      { env: { parent } }
+    ) as Promise<REnvironment>;
+
+    return await this.env[target_id];
+  }
+
   async destroy(id: string) {
     if (id == "global" || !(id in this.env)) {
       return;
@@ -28,6 +47,7 @@ export class EnvironmentManager {
     const shelter = await this.shelter;
     const env = await this.env[id];
     await shelter.destroy(env);
+    delete this.env[id];
   }
 }
 

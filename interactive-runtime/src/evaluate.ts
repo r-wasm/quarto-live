@@ -25,12 +25,26 @@ export interface EvaluatorContext {
   editor?: OJSElement,
 };
 
+// prep   - Copy of active environment after setup
+// result  - Copy of active environment after execution
+// grading - Copy of globalenv for running grading function inside
+export type EvaluatorEnvironment = {
+  prep: string;
+  result: string;
+  grading: string;
+}
+type EvaluatorEnvironmentType = keyof EvaluatorEnvironment;
+
 // Build interleaved source code and HTML output
 // Use {evaluate}, so as to match {knitr} output
-interface ExerciseEvaluator {
-  evaluate(code: string);
-  evaluateQuietly(code: string);
+export interface ExerciseEvaluator {
+  evaluate(code: string, envir: EvaluatorEnvironmentType): Promise<OJSElement>;
+  evaluateQuietly(code: string, envir: EvaluatorEnvironmentType): Promise<RObject>;
+  process(inputs: {[key: string]: any}): Promise<void>;
+  bind(key: string, value: any, envir: EvaluatorEnvironmentType): Promise<void>;
   asOjs(value: any): Promise<any>;
+  envir: EvaluatorEnvironment;
+  environmentManager: EnvironmentManager;
   container: OJSElement;
 }
 
@@ -40,14 +54,16 @@ export class WebREvaluator implements ExerciseEvaluator {
   shelter: Promise<Shelter>;
   context: EvaluatorContext;
   options: ExerciseOptions;
-  envir: {
-    active: Promise<REnvironment>;
-  }
+  envir: EvaluatorEnvironment;
+  environmentManager: EnvironmentManager;
   webR: WebR;
 
   constructor(webR: WebR, environmentManager: EnvironmentManager, context: EvaluatorContext) {
     this.container = document.createElement('div');
-    this.container.value = null;
+    this.container.value = {
+      result: null,
+      evaluator: this,
+    };
     this.webR = webR;
     this.context = context;
     this.shelter = new webR.Shelter();
@@ -67,9 +83,20 @@ export class WebREvaluator implements ExerciseEvaluator {
       context.options
     );
 
-    this.envir = {
-      active: environmentManager.get(this.options.envir),
+    if (this.options.envir === "global") {
+      this.envir = {
+        prep: "global",
+        result: "global",
+        grading: "global",
+      }
+    } else {
+      this.envir = {
+        prep: `${this.options.envir}-prep`,
+        result: `${this.options.envir}-result`,
+        grading: `${this.options.envir}-grading`,
+      }
     }
+    this.environmentManager = environmentManager;
   }
 
   // Convert webR R object reference to OJS value
@@ -179,24 +206,31 @@ export class WebREvaluator implements ExerciseEvaluator {
     shelter.purge();
   }
 
+  async bind(key: string, value: RObject, envir: EvaluatorEnvironmentType) {
+    const environment = await this.environmentManager.get(this.envir[envir]);
+    await environment.bind(key, value);
+  }
+
   async process(inputs: {[key: string]: any}) {
     // Set OJS inputs in R environment
-    const envir = await this.envir.active;
+    const prep = await this.environmentManager.create(this.envir.prep, "global");
     await Promise.all(
       Object.entries(inputs).map(async ([k, v]) => {
-        await envir.bind(k, v);
+        await prep.bind(k, v);
       })
     );
 
     // Evaluate setup code (if exists), then current code
     try {
-      await this.evaluateQuietly(this.options.setup);
-      await this.evaluate(this.context.code);
+      await this.evaluateQuietly(this.options.setup, "prep");
+      await this.environmentManager.create(this.envir.result, this.envir.prep);
+      await this.evaluate(this.context.code, "result");
     } finally {
       this.purge();
     }
 
     // Grab objects from the webR OJS environment
+    const envir = await this.environmentManager.get(this.envir.result);
     const ojs_envir = await this.webR.objs.globalEnv.get('.webr_ojs') as REnvironment;
     const objs = await ojs_envir.toObject({ depth: -1 });
 
@@ -228,7 +262,7 @@ export class WebREvaluator implements ExerciseEvaluator {
     await this.webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
   }
 
-  async evaluateQuietly(code) {
+  async evaluateQuietly(code, envir: EvaluatorEnvironmentType) {
     if (!code || code === '') {
       this.setIdle();
       return;
@@ -236,31 +270,15 @@ export class WebREvaluator implements ExerciseEvaluator {
     this.setRunning();
     const shelter = await this.shelter;
     try {
-      await shelter.evalR(`
-        evaluate::evaluate(
-          code,
-          envir = envir,
-          keep_message = warning,
-          keep_warning = warning,
-          stop_on_error = error
-        )
-      `,
-        {
-          env: {
-            code,
-            envir: await this.envir.active,
-            warning: this.options.warning,
-            error: this.options.error ? 0 : 1,
-          }
-        }
-      );
+      return shelter.evalR(code, {
+        env: await this.environmentManager.get(this.envir[envir]),
+      });
     } finally {
-      shelter.purge();
       this.setIdle();
     }
   }
 
-  async evaluate(code) {
+  async evaluate(code: string, envir: EvaluatorEnvironmentType) {
     // Early returns if we're not actually evaluating
     if (!code || code === '' || !this.options.include) {
       this.setIdle();
@@ -301,7 +319,7 @@ export class WebREvaluator implements ExerciseEvaluator {
           env: {
             code,
             timelimit: Number(this.options.timelimit),
-            envir: await this.envir.active,
+            envir: await this.environmentManager.get(this.envir[envir]),
             warning: this.options.warning,
             error: this.options.error ? 0 : 1,
           }
@@ -368,7 +386,8 @@ export class WebREvaluator implements ExerciseEvaluator {
       this.appendSource();
 
       // Attach final result to output value
-      this.container.value = await result[result.length - 1].get('value');
+      this.container.value.result = await result[result.length - 1].get('value');
+      return this.container;
     } finally {
       shelter.purge();
       this.setIdle();

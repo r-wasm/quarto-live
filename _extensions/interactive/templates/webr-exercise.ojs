@@ -34,35 +34,18 @@ _webr_feedback_{{block_id}} = {
   if (!checkElement) return emptyFeedback;
 
   // Return empty block if there's no code submitted yet
-  const result = await _webr_value_{{block_id}};
+  const result = await _webr_value_{{block_id}}.result;
   if (!result) return emptyFeedback;
 
-  // Bind result into grading environment
-  const check = JSON.parse(atob(checkElement.textContent));
-  const envir = await webROjs.environmentManager.get(check.attr.exercise);
-  envir.bind('.result', result);
-
-  // Evaluate supplied grading function in the grader environment
-  const options = {
-    envir: check.attr.exercise,
-    echo: false,
+  // Build grading definition
+  const check = !checkElement ? {} : JSON.parse(atob(checkElement.textContent));
+  const grading = {
+    check: check.code,
   };
 
-  return webROjs.process(
-    {
-      code: `
-        grade <- function() {
-          grader <- (${check.code})
-          grader(.result)
-        }
-        tryCatch({
-          grade()
-        }, error = function(e){
-          invisible(NULL)
-        })
-      `,
-      options,
-    },
-    {{block_input}}
+  const grader = new webROjs.ExerciseGrader(
+    _webr_value_{{block_id}}.evaluator,
+    grading,
   );
+  return await grader.check();
 }

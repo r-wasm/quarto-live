@@ -3,6 +3,7 @@ import { ExerciseEditor } from './editor'
 import { highlightR, replaceHighlightR } from './highlighter'
 import { WebREvaluator } from './evaluate'
 import { EnvironmentManager } from './environment'
+import { ExerciseGrader } from './grader'
 
 declare global {
   interface Window {
@@ -11,6 +12,7 @@ declare global {
       ExerciseEditor: typeof ExerciseEditor;
       WebREvaluator: typeof WebREvaluator;
       EnvironmentManager: typeof EnvironmentManager;
+      ExerciseGrader: typeof ExerciseGrader;
       highlightR: typeof highlightR;
       replaceHighlightR: typeof replaceHighlightR;
     };
@@ -22,6 +24,7 @@ window._webr_ojs_runtime = {
   ExerciseEditor,
   WebREvaluator,
   EnvironmentManager,
+  ExerciseGrader,
   highlightR,
   replaceHighlightR,
 };
