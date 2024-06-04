@@ -5,7 +5,7 @@ _webr_value_{{block_id}} = {
   const options = Object.assign({ echo: true, output: true }, block.attr);
 
   // Evaluate the provided R code
-  const result = webROjs.process(block.code, options, {{block_input}});
+  const result = webROjs.process({code: block.code, options}, {{block_input}});
 
   // Early yield while we wait for the first evaluation and render
   if (options.output && !("{{block_id}}" in webROjs.renderedOjs)) {

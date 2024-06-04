@@ -1,5 +1,5 @@
 webROjs = {
-  let { ExerciseEditor, WebREvaluator, highlightR, replaceHighlightR } = window._webr_ojs_runtime;
+  let { ExerciseEditor, WebREvaluator, EnvironmentManager, highlightR, replaceHighlightR } = window._webr_ojs_runtime;
   let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
@@ -173,27 +173,16 @@ webROjs = {
   }
 
   // Storage for shared exercise environments
-  const exerciseEnv = {
-    global: webRPromise.then((webR) => webR.objs.globalEnv),
-  };
+  const environmentManager = new EnvironmentManager(webRPromise);
 
   // Keep track of initial OJS block render
   const renderedOjs = {};
 
-  const getExerciseEnv = async (envir) => {
-    envir = envir || "global";
+  const process = async (context, inputs) => {
     const webR = await webRPromise;
-
-    // If required, register a new exercise environment
-    if (!(envir in exerciseEnv)) {
-      exerciseEnv[envir] = webR.evalR(`new.env(parent = globalenv())`);
-    }
-    return await exerciseEnv[envir];
-  };
-
-  const process = async (code, options, inputs) => {
-    const webR = await webRPromise;
-    const envir = await getExerciseEnv(options.envir);
+    const envir = await environmentManager.get(context.options.envir);
+    const code = context.code;
+    const options = context.options;
 
     // Set OJS inputs in R environment
     await Promise.all(
@@ -202,7 +191,7 @@ webROjs = {
       })
     );
 
-    const evaluator = new WebREvaluator(webR, options, envir);
+    const evaluator = new WebREvaluator(webR, environmentManager, context, inputs)
 
     try {
       await evaluator.evaluateQuietly(options.setup);
@@ -243,13 +232,13 @@ webROjs = {
     await webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
 
     // Return HTML output from the evaluator
-    return evaluator.output;
+    return evaluator.container;
   }
 
   return {
     ExerciseEditor,
-    asOjs,
-    getExerciseEnv,
+    WebREvaluator,
+    environmentManager,
     highlightR,
     process,
     replaceHighlightR,

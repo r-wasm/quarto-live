@@ -1,7 +1,9 @@
 import type { WebR, Shelter, RObject, RList, RNull, REnvironment, RLogical } from 'webr'
-import { isRList } from 'webr';
+import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr';
 import { highlightR } from './highlighter'
 import { renderHtmlDependency } from './render'
+import { ExerciseOptions } from './editor';
+import { EnvironmentManager } from './environment';
 
 export type OJSElement = HTMLElement & { value?: any };
 
@@ -13,37 +15,41 @@ declare global {
   }
 }
 
-type EvaluateOptions = {
-  eval: boolean,
-  echo: boolean,
-  warning: boolean,
-  error: boolean,
-  include: boolean,
-  output: boolean,
-  timelimit: number,
-  container?: OJSElement,
-}
+export interface EvaluatorContext {
+  code: string,
+  options: ExerciseOptions,
+  editor?: OJSElement,
+};
 
 // Build interleaved source code and HTML output
 // Use {evaluate}, so as to match {knitr} output
-export class WebREvaluator {
-  output: OJSElement;
-  sourceLines: string[];
-  webR: WebR;
-  shelter: Promise<Shelter>;
-  options: EvaluateOptions;
-  envir: REnvironment;
+interface ExerciseEvaluator {
+  evaluate(code: string);
+  evaluateQuietly(code: string);
+  container: OJSElement;
+}
 
-  constructor(webR: WebR, options = {}, envir: REnvironment) {
-    this.output = document.createElement('div');
-    this.output.value = null;
+export class WebREvaluator implements ExerciseEvaluator {
+  container: OJSElement;
+  sourceLines: string[];
+  shelter: Promise<Shelter>;
+  context: EvaluatorContext;
+  options: ExerciseOptions;
+  environmentManager: EnvironmentManager;
+  inputs: {[key: string]: any};
+  webR: WebR;
+
+  constructor(webR: WebR, environmentManager: EnvironmentManager, context: EvaluatorContext, inputs: { [key: string]: any }) {
+    this.container = document.createElement('div');
+    this.container.value = null;
     this.sourceLines = [];
     this.webR = webR;
     this.shelter = new webR.Shelter();
 
-    // Fallback default options
+    // Default evaluation options
     this.options = Object.assign(
       {
+        envir: "global",
         eval: true,
         echo: true,
         warning: true,
@@ -51,12 +57,13 @@ export class WebREvaluator {
         include: true,
         output: true,
         timelimit: 30,
-        caption: 'Code',
       },
-      options
+      context.options
     );
 
-    this.envir = envir;
+    this.context = context;
+    this.environmentManager = environmentManager;
+    this.inputs = inputs;
   }
 
   async purge() {
@@ -84,7 +91,7 @@ export class WebREvaluator {
         {
           env: {
             code,
-            envir: this.envir,
+            envir: await this.environmentManager.get(this.options.envir),
             warning: this.options.warning,
             error: this.options.error ? 0 : 1,
           }
@@ -137,7 +144,7 @@ export class WebREvaluator {
           env: {
             code,
             timelimit: Number(this.options.timelimit),
-            envir: this.envir,
+            envir: await this.environmentManager.get(this.options.envir),
             warning: this.options.warning,
             error: this.options.error ? 0 : 1,
           }
@@ -204,7 +211,7 @@ export class WebREvaluator {
       this.appendSource();
 
       // Attach final result to output value
-      this.output.value = await result[result.length - 1].get('value');
+      this.container.value = await result[result.length - 1].get('value');
     } finally {
       shelter.purge();
       this.setIdle();
@@ -220,7 +227,7 @@ export class WebREvaluator {
       const sourceCode = highlightR(this.sourceLines.join(''));
       sourcePre.appendChild(sourceCode);
       sourceDiv.appendChild(sourcePre);
-      this.output.appendChild(sourceDiv);
+      this.container.appendChild(sourceDiv);
     }
     this.sourceLines.length = 0;
   }
@@ -232,7 +239,7 @@ export class WebREvaluator {
 
     if (this.options.output) {
       this.appendSource();
-      this.output.appendChild(outputDiv);
+      this.container.appendChild(outputDiv);
     }
   }
 
@@ -243,7 +250,7 @@ export class WebREvaluator {
 
     if (this.options.output) {
       this.appendSource();
-      this.output.appendChild(outputDiv);
+      this.container.appendChild(outputDiv);
     }
   }
 
@@ -258,7 +265,7 @@ export class WebREvaluator {
 
       // Add HTML output to the DOM
       this.appendSource();
-      this.output.appendChild(outputDiv);
+      this.container.appendChild(outputDiv);
 
       // Dynamically load any dependencies into page (await & maintain ordering)
       if (isRList(meta)) {
@@ -284,14 +291,14 @@ export class WebREvaluator {
 
     if (this.options.output) {
       this.appendSource();
-      this.output.appendChild(outputDiv);
+      this.container.appendChild(outputDiv);
     }
   }
 
   setRunning() {
-    if (this.options.container) {
+    if (this.context.editor) {
       Array.from(
-        this.options.container.getElementsByClassName('exercise-editor-eval-indicator')
+        this.context.editor.getElementsByClassName('exercise-editor-eval-indicator')
       ).forEach((el) => el.classList.remove('d-none'));
     }
     Array.from(

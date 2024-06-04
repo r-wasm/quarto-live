@@ -1,5 +1,5 @@
 import type { WebR, RFunction } from 'webr'
-import type { OJSElement } from './evaluate';
+import type { OJSElement, EvaluatorContext } from './evaluate';
 import { basicSetup } from 'codemirror'
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view'
 import { EditorState, Compartment, Prec } from '@codemirror/state'
@@ -8,14 +8,24 @@ import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
 import { tags } from "@lezer/highlight"
 import { r } from 'codemirror-lang-r'
 
-type EditorOptions = {
+export type ExerciseOptions = {
   autorun: boolean;
   caption: string;
   completion: boolean;
+  define: string[];
+  echo: boolean;
+  envir: string;
+  error: boolean;
+  eval: boolean;
   exercise: string;
+  include: boolean;
+  input: string[];
+  output: boolean;
   runbutton: boolean;
+  setup: string;
   startover: boolean;
-  container?: OJSElement;
+  timelimit: number;
+  warning: boolean;
 }
 
 type ExerciseButtonSpec = {
@@ -68,7 +78,7 @@ export class ExerciseEditor {
   state: EditorState;
   view: EditorView;
   container: OJSElement;
-  options: EditorOptions;
+  options: ExerciseOptions;
   webRPromise: Promise<WebR>;
   completionMethods: Promise<ExerciseCompletionMethods>;
   reactiveViewof = [
@@ -82,15 +92,23 @@ export class ExerciseEditor {
     }),
   ];
 
-  constructor(webRPromise: Promise<WebR>, code: string, options: EditorOptions) {
+  constructor(webRPromise: Promise<WebR>, code: string, options: ExerciseOptions) {
     if (typeof code !== "string") {
       throw new Error("Can't create editor, `code` must be a string.");
     }
 
-    this.options = options;
-    this.options.container = this.container = document.createElement("div");
+    this.container = document.createElement("div");
     this.webRPromise = webRPromise;
     this.code = this.initialCode = code;
+
+    // Default editor options
+    this.options = Object.assign({
+      caption: 'Code',
+      startover: true,
+      autorun: true,
+      runbutton: true,
+      completion: true,
+    }, options);
 
     const language = new Compartment();
     const tabSize = new Compartment();
@@ -150,6 +168,7 @@ export class ExerciseEditor {
     this.container.value = {
       code: this.options.autorun ? code : null,
       options: this.options,
+      editor: this.container,
     };
 
     // Prevent input Event when run button is enabled
@@ -217,7 +236,7 @@ export class ExerciseEditor {
 
   renderSpinner() {
     const dom = document.createElement("div");
-    dom.className = "exercise-editor-eval-indicator d-none spinner-grow spinner-grow-sm";
+    dom.className = "exercise-editor-eval-indicator spinner-grow spinner-grow-sm";
     dom.setAttribute("role", "status");
     return dom;
   }
@@ -297,7 +316,7 @@ export class ExerciseEditor {
 
           // Reset output if code is run manually
           if (this.options.runbutton) {
-            this.container.value.code = undefined;
+            this.container.value.code = null;
             if (this.options.autorun) {
               this.container.value.code = this.initialCode;
             }

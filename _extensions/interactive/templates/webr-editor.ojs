@@ -19,8 +19,4 @@ viewof _webr_editor_{{block_id}} = {
   const editor = new webROjs.ExerciseEditor(webROjs.webRPromise, block.code, options);
   return editor.container;
 }
-_webr_value_{{block_id}} = webROjs.process(
-  _webr_editor_{{block_id}}.code,
-  _webr_editor_{{block_id}}.options,
-  {{block_input}}
-);
+_webr_value_{{block_id}} = webROjs.process(_webr_editor_{{block_id}}, {{block_input}});

@@ -25,11 +25,7 @@ viewof _webr_editor_{{block_id}} = {
   const editor = new webROjs.ExerciseEditor(webROjs.webRPromise, block.code, options);
   return editor.container;
 }
-viewof _webr_value_{{block_id}} = webROjs.process(
-  _webr_editor_{{block_id}}.code,
-  _webr_editor_{{block_id}}.options,
-  {{block_input}}
-)
+viewof _webr_value_{{block_id}} = webROjs.process(_webr_editor_{{block_id}}, {{block_input}});
 _webr_feedback_{{block_id}} = {
   const emptyFeedback = document.createElement('div');
   const checkElement = document.querySelector(`script[type=\"webr-check-{{exercise_id}}-contents\"]`);
@@ -43,8 +39,7 @@ _webr_feedback_{{block_id}} = {
 
   // Bind result into grading environment
   const check = JSON.parse(atob(checkElement.textContent));
-  const envir = await webROjs.getExerciseEnv(check.attr.exercise);
-  console.log(result);
+  const envir = await webROjs.environmentManager.get(check.attr.exercise);
   envir.bind('.result', result);
 
   // Evaluate supplied grading function in the grader environment
@@ -53,19 +48,21 @@ _webr_feedback_{{block_id}} = {
     echo: false,
   };
 
-  return await webROjs.process(
-    `
-      grade <- function() {
-        grader <- (${check.code})
-        grader(.result)
-      }
-      tryCatch({
-        grade()
-      }, error = function(e){
-        invisible(NULL)
-      })
-    `,
-    options,
+  return webROjs.process(
+    {
+      code: `
+        grade <- function() {
+          grader <- (${check.code})
+          grader(.result)
+        }
+        tryCatch({
+          grade()
+        }, error = function(e){
+          invisible(NULL)
+        })
+      `,
+      options,
+    },
     {{block_input}}
   );
 }
