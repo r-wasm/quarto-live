@@ -81,97 +81,6 @@ webROjs = {
     return webR;
   })(new WebR());
 
-  // Convert webR R object reference to OJS value
-  const asOjs = async (webRValue) => {
-    const webR = await webRPromise;
-    if (webRValue instanceof ImageBitmap) {
-      const ctx = DOM.context2d(webRValue.width, webRValue.height, 1);
-      ctx.drawImage(webRValue, 0, 0, webRValue.width, webRValue.height);
-      webRValue.close();
-      ctx.canvas.style.width = `${2 * ctx.canvas.width / 3}px`;
-      return ctx.canvas;
-    }
-
-    if (!isRObject(webRValue)) {
-      return webRValue;
-    }
-
-    // We have an R object, so grab knitr output to support asis, e.g. HTML.
-    const capture = await webR.globalShelter.captureR(`
-      knitr::knit_print(webRValue, options = list(screenshot.force = FALSE))
-    `, { env: { webRValue } });
-    webRValue = capture.result;
-
-    if (isRFunction(webRValue) || isRCall(webRValue)) {
-      // If there are images, return the final captured plot back to OJS.
-      // Otherwise, return the captured R result value.
-      // TODO: Handle returning result and (multiple) plots to OJS
-      return async (...args) => {
-          try {
-            const width = await webR.evalRNumber('72 * getOption("webr.fig.width")');
-            const height = await webR.evalRNumber('72 * getOption("webr.fig.height")');
-            const capture = await webRValue.capture(
-              {
-                withAutoprint: true,
-                captureGraphics: { width, height },
-              },
-              ...args
-            );
-            if (capture.images.length) {
-              const el = await asOjs(capture.images[capture.images.length - 1]);
-              el.value = await asOjs(capture.result);
-              return el;
-            }
-            return await asOjs(capture.result);
-          } finally {
-            webR.globalShelter.purge();
-          }
-      };
-    }
-
-    switch (webRValue._payload.obj.type) {
-        // TODO: "symbol"
-        case "null":
-          return null;
-
-        case "character": {
-          const classes = await (await webRValue.class()).toArray();
-          if (classes.includes('knit_asis')) {
-            var container = document.createElement('div');
-            container.innerHTML = await webRValue.toString();
-            return container.firstElementChild;
-          }
-        }
-        case "logical":
-        case "double":
-        case "raw":
-        case "integer":
-          return await webRValue.toArray();
-
-        case "list": {
-          // Convert a `data.frame` to D3 format, otherwise fall through.
-          const attrs = await webRValue.attrs();
-          const cls = await attrs.get('class');
-          if (!isRNull(cls) && (await cls.toArray()).includes('data.frame')) {
-            return await webRValue.toD3();
-          }
-        }
-        case "environment":
-        case "pairlist": {
-            const result = {};
-            const shallow = await webRValue.toJs({ depth: -1 });
-            for (let i = 0; i < shallow.values.length; i++) {
-              const key = shallow.names ? shallow.names[i] : i;
-              result[key] = await asOjs(shallow.values[i]);
-            }
-            return result;
-        };
-
-        default:
-            throw new Error(`Unsupported type: ${webRValue._payload.obj.type}`);
-    }
-  }
-
   // Storage for shared exercise environments
   const environmentManager = new EnvironmentManager(webRPromise);
 
@@ -220,7 +129,7 @@ webROjs = {
 
     // Define the objects as OJS values
     Object.keys(objs).forEach(async (key) => {
-      const jsValue = await asOjs(objs[key]);
+      const jsValue = await evaluator.asOjs(objs[key]);
       if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
         window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
       } else {
