@@ -1,5 +1,5 @@
 import type { WebR, RFunction } from 'webr'
-import type { OJSElement, EvaluatorContext } from './evaluate';
+import type { OJSElement, EvaluateOptions } from './evaluate';
 import { basicSetup } from 'codemirror'
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view'
 import { EditorState, Compartment, Prec } from '@codemirror/state'
@@ -8,24 +8,12 @@ import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
 import { tags } from "@lezer/highlight"
 import { r } from 'codemirror-lang-r'
 
-export type ExerciseOptions = {
+type ExerciseOptions = EvaluateOptions & {
   autorun: boolean;
   caption: string;
   completion: boolean;
-  define: string[];
-  echo: boolean;
-  envir: string;
-  error: boolean;
-  eval: boolean;
-  exercise: string;
-  include: boolean;
-  input: string[];
-  output: boolean;
   runbutton: boolean;
-  setup: string;
   startover: boolean;
-  timelimit: number;
-  warning: boolean;
 }
 
 type ExerciseButtonSpec = {
@@ -103,11 +91,11 @@ export class ExerciseEditor {
 
     // Default editor options
     this.options = Object.assign({
-      caption: 'Code',
-      startover: true,
       autorun: true,
-      runbutton: true,
+      caption: 'Code',
       completion: true,
+      runbutton: true,
+      startover: true,
     }, options);
 
     const language = new Compartment();

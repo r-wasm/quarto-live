@@ -1,5 +1,5 @@
 webROjs = {
-  let { ExerciseEditor, WebREvaluator, EnvironmentManager, ExerciseGrader } = window._webr_ojs_runtime;
+  let { ExerciseEditor, WebREvaluator, EnvironmentManager, WebRGrader } = window._webr_ojs_runtime;
   let { highlightR, replaceHighlightR } = window._webr_ojs_runtime;
   let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
 
@@ -103,7 +103,7 @@ webROjs = {
   return {
     ExerciseEditor,
     WebREvaluator,
-    ExerciseGrader,
+    WebRGrader,
     environmentManager,
     highlightR,
     process,

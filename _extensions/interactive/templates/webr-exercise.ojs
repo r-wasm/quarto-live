@@ -43,9 +43,10 @@ _webr_feedback_{{block_id}} = {
     check: check.code,
   };
 
-  const grader = new webROjs.ExerciseGrader(
+  const grader = new webROjs.WebRGrader(
     _webr_value_{{block_id}}.evaluator,
     grading,
   );
+  await grader.setupGrading();
   return await grader.check();
 }
