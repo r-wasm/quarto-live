@@ -145,6 +145,8 @@ export class WebREvaluator implements ExerciseEvaluator {
       const result = await this.evaluate(this.context.code, "result");
       if (!isRNull(result)) {
         this.container = await this.asHtml(result);
+      } else {
+        this.container.value.result = null;
       }
     } finally {
       this.purge();
@@ -191,40 +193,43 @@ export class WebREvaluator implements ExerciseEvaluator {
     }
 
     this.setRunning();
-    const shelter = await this.shelter;
-    const capture = await shelter.captureR(`
-        setTimeLimit(elapsed = timelimit)
-        on.exit(setTimeLimit(elapsed = Inf))
+    try {
+      const shelter = await this.shelter;
+      const capture = await shelter.captureR(`
+          setTimeLimit(elapsed = timelimit)
+          on.exit(setTimeLimit(elapsed = Inf))
 
-        evaluate::evaluate(
-          code,
-          envir = envir,
-          keep_message = warning,
-          keep_warning = warning,
-          stop_on_error = error,
-          output_handler = evaluate::new_output_handler(
-            value = function(x, visible) {
-              res <- if (visible) {
-                withVisible(knitr::knit_print(x, options = list(screenshot.force = FALSE)))
-              } else list(value = x, visible = FALSE)
-              class(res) <- "result"
-              res
-            }
+          evaluate::evaluate(
+            code,
+            envir = envir,
+            keep_message = warning,
+            keep_warning = warning,
+            stop_on_error = error,
+            output_handler = evaluate::new_output_handler(
+              value = function(x, visible) {
+                res <- if (visible) {
+                  withVisible(knitr::knit_print(x, options = list(screenshot.force = FALSE)))
+                } else list(value = x, visible = FALSE)
+                class(res) <- "result"
+                res
+              }
+            )
           )
-        )
-      `,
-      {
-        env: {
-          code,
-          timelimit: Number(options.timelimit),
-          envir: await this.envManager.get(this.envLabels[envLabel]),
-          warning: options.warning,
-          error: options.error ? 0 : 1,
+        `,
+        {
+          env: {
+            code,
+            timelimit: Number(options.timelimit),
+            envir: await this.envManager.get(this.envLabels[envLabel]),
+            warning: options.warning,
+            error: options.error ? 0 : 1,
+          }
         }
-      }
-    );
-    this.setIdle();
-    return capture.result as RList;
+      );
+      return capture.result as RList;
+    } finally {
+      this.setIdle();
+    }
   }
 
   asSourceHTML(code): HTMLDivElement {

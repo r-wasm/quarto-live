@@ -1,4 +1,4 @@
-import { WebR, RObject, isRNull } from 'webr'
+import { WebR, RObject, RLogical, isRNull } from 'webr'
 import { WebREvaluator, EvaluateOptions, EnvLabels, OJSElement } from "./evaluate"
 import { EnvironmentManager } from './environment'
 import { isRFunction } from "webr"
@@ -49,7 +49,7 @@ export class WebRGrader {
     this.evaluator.bind(".engine", "r", "grading");
     this.evaluator.bind(".label", this.evaluator.options.exercise, "grading");
     this.evaluator.bind(".user_code", this.evaluator.context.editor.value.code, "grading");
-    this.evaluator.bind(".last_value",last_value, "grading");
+    this.evaluator.bind(".last_value", last_value, "grading");
     this.evaluator.bind(".result", last_value, "grading");
     this.evaluator.bind(".user", last_value, "grading");
     this.evaluator.bind(".envir_prep", envir_prep, "grading");
@@ -57,7 +57,6 @@ export class WebRGrader {
     this.evaluator.bind(".evaluate_result", evaluate_result, "grading");
   }
 
-  // TODO: don't return OJSElements here, populate an array
   async check(): Promise<OJSElement | HTMLElement | null> {
     const shelter = await this.evaluator.shelter;
     const grading = await this.envManager.get(this.envLabels.grading);
@@ -76,13 +75,8 @@ export class WebRGrader {
         const container = await this.evaluator.asHtml(capture, this.options);
         const result = await container.value.result as RObject;
         const classList = await (await result.class()).toArray();
-          // TODO: convert gradethis obj into a HTML message
         if (classList.includes("gradethis_graded")) {
-          const message = await result.get('message');
-          // TODO: convert gradethis obj into a HTML message
-          const new_container = document.createElement("div");
-          new_container.innerText = await message.toString();
-          return new_container;
+          return await this.feedbackAsHtml(result);
         } else {
           return container;
         }
@@ -90,5 +84,41 @@ export class WebRGrader {
     } finally {
       shelter.purge()
     }
+  }
+
+  async feedbackAsHtml(grade: RObject): Promise<HTMLElement> {
+    const container = document.createElement("div");
+    const type = await grade.get('type');
+    const correct = await grade.get('correct') as RLogical;
+    container.classList.add("alert");
+
+    switch (await type.toString()) {
+      case "success":
+        container.classList.add("alert-success");
+        break;
+      case "info":
+        container.classList.add("alert-info");
+        break;
+      case "warning":
+        container.classList.add("alert-warning");
+        break;
+      case "error":
+      case "danger":
+        container.classList.add("alert-danger");
+        break;
+      default:
+        if (await correct.toBoolean()) {
+          container.classList.add("alert-success");
+        } else {
+          container.classList.add("alert-danger");
+        }
+    }
+
+    const content = document.createElement("span");
+    const message = await grade.get('message');
+    content.innerText = await message.toString();
+
+    container.appendChild(content);
+    return container;
   }
 }
