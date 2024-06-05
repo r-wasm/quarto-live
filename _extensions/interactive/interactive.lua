@@ -254,16 +254,24 @@ end
 function Pandoc(doc)
   local webr = doc.meta.webr or {}
   local packages = webr.packages or {}
+  local repos = webr.repos or {}
   local resources = webr.resources or nil
 
   local file = io.open(quarto.utils.resolve_path("templates/webr-setup.ojs"), "r")
   assert(file)
   local content = file:read("*a")
 
-  local webr_pkgs = {"evaluate", "knitr", "htmltools"}
+  local webr_packages = {
+    pkgs = {"evaluate", "knitr", "htmltools"},
+    repos = {}
+  }
   for _, pkg in pairs(packages) do
-    table.insert(webr_pkgs, pandoc.utils.stringify(pkg))
+    table.insert(webr_packages.pkgs, pandoc.utils.stringify(pkg))
   end
+  for _, repo in pairs(repos) do
+    table.insert(webr_packages.repos, pandoc.utils.stringify(repo))
+  end
+
   table.insert(ojs_definitions.contents, {
     methodName = "interpretQuiet",
     cellName = "webr-prelude",
@@ -271,10 +279,10 @@ function Pandoc(doc)
     source = content,
   })
 
-  -- List of webR R packages to install
+  -- List of webR R packages and repositories to install
   doc.blocks:insert(pandoc.RawBlock(
     "html",
-    "<script type=\"webr-packages\">\n" .. json_as_b64(webr_pkgs) .. "\n</script>"
+    "<script type=\"webr-packages\">\n" .. json_as_b64(webr_packages) .. "\n</script>"
   ))
 
   -- OJS block definitions

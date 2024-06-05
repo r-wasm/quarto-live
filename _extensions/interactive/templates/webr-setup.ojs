@@ -15,7 +15,7 @@ webROjs = {
 
   // Grab list of R packages to be pre-installed
   const pkgsContent = document.querySelector(`script[type=\"webr-packages\"]`).textContent;
-  const pkgs = JSON.parse(atob(pkgsContent));
+  const packages = JSON.parse(atob(pkgsContent));
 
   // Grab list of resources to be downloaded
   const filesContent = document.querySelector(`script[type=\"webr-vfs-file\"]`).textContent;
@@ -27,9 +27,14 @@ webROjs = {
     await webR.init();
 
     // Install provided list of packages
-    await pkgs.map((pkg) => () => {
+    // Ensure webR default repo is included
+    packages.repos.push("https://repo.r-wasm.org")
+    await packages.pkgs.map((pkg) => () => {
       statusText.textContent = `Downloading package: ${pkg}`;
-      return webR.installPackages([pkg]);
+      return webR.evalR("webr::install(pkg, repos = repos)", { env: {
+        pkg: pkg,
+        repos: packages.repos,
+      }});
     }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
     // Download and install resources
@@ -80,7 +85,7 @@ webROjs = {
 
     statusContainer.classList.add("d-none");
     return webR;
-  })(new WebR());
+  })(new WebR({ baseUrl: "https://webr.r-wasm.org/latest/" }));
 
   // Storage for shared exercise environments
   const environmentManager = new EnvironmentManager(webRPromise);
