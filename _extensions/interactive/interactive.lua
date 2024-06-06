@@ -10,6 +10,34 @@ local function json_as_b64(obj)
   return quarto.base64.encode(json_string)
 end
 
+local function tree(root)
+  function isdir(path)
+    -- Is there a better OS agnostic way to do this?
+    local ok, err, code = os.rename(path .. "/", path .. "/")
+    if not ok then
+       if code == 13 then
+          -- Permission denied, but it exists
+          return true
+       end
+    end
+    return ok, err
+  end
+  function gather(path, list)
+    if (isdir(path)) then
+      -- For each item in this dir, recurse for subdir content
+      local items = pandoc.system.list_directory(path)
+      for _, item in pairs(items) do
+        gather(path .. "/" .. item, list)
+      end
+    else
+      -- This is a file, add it to the table directly
+      table.insert(list, path)
+    end
+    return list
+  end
+  return gather(root, {})
+end
+
 function WebRParseBlock(code)
   local attr = { edit = false, exercise = false }
   local param_lines = {}
@@ -255,7 +283,6 @@ function Pandoc(doc)
   local webr = doc.meta.webr or {}
   local packages = webr.packages or {}
   local repos = webr.repos or {}
-  local resources = webr.resources or nil
 
   local file = io.open(quarto.utils.resolve_path("templates/webr-setup.ojs"), "r")
   assert(file)
@@ -314,14 +341,28 @@ function Pandoc(doc)
     }
   })
 
+  -- Copy resources for upload to VFS at runtime
   local vfs_files = {}
-  local resource_list = doc.meta.resources
-  if (resources) then resource_list = resources end
+  if (webr.resources) then
+    resource_list = webr.resources
+  else
+    resource_list = doc.meta.resources
+  end
+
+  if (type(resource_list) ~= "table") then
+    resource_list = { resource_list }
+  end
+
   if (resource_list) then
     for _, files in pairs(resource_list) do
+      if (type(files) ~= "table") then
+        files = { files }
+      end
       for _, file in pairs(files) do
-        local filename = pandoc.utils.stringify(file)
-        table.insert(vfs_files, filename)
+        local filetree = tree(pandoc.utils.stringify(file))
+        for _, path in pairs(filetree) do
+          table.insert(vfs_files, path)
+        end
       end
     end
   end

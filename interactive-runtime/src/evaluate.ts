@@ -1,4 +1,4 @@
-import type { WebR, Shelter, RObject, RList, RNull, REnvironment} from 'webr'
+import type { WebR, Shelter, RObject, RList, RNull, REnvironment } from 'webr'
 import type { RCharacter, RLogical, RDouble, RRaw, RInteger } from 'webr'
 import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr';
 import { highlightR } from './highlighter'
@@ -54,7 +54,7 @@ type EnvManager = EnvironmentManager;
 // Use {evaluate}, so as to match {knitr} output
 export interface ExerciseEvaluator {
   evaluate(code: string, envir?: EnvLabel, options?: EvaluateOptions): Promise<any>;
-  process(inputs: {[key: string]: any}): Promise<void>;
+  process(inputs: { [key: string]: any }): Promise<void>;
   bind(key: string, value: any, envir: EnvLabel): Promise<void>;
   asOjs(value: any): Promise<any>;
   asHtml(value: any): Promise<OJSElement>;
@@ -122,7 +122,7 @@ export class WebREvaluator implements ExerciseEvaluator {
   }
 
   // Setup environment, execute setup code, execute user code, define outputs
-  async process(inputs: {[key: string]: any}) {
+  async process(inputs: { [key: string]: any }) {
     // If we're not evaluating, just print the source directly
     if (!this.options.eval) {
       this.container = this.asSourceHTML(this.context.code);
@@ -302,7 +302,7 @@ export class WebREvaluator implements ExerciseEvaluator {
       }
     }
 
-    const appendHtml  = async (content: RObject) => {
+    const appendHtml = async (content: RObject) => {
       if (options.output) {
         const html = await content.toString();
         const meta = await (await content.attrs()).get("knit_meta") as RList | RNull;
