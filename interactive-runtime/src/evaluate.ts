@@ -133,7 +133,7 @@ export class WebREvaluator implements ExerciseEvaluator {
     }
 
     // Set OJS inputs in "prep" environment
-    const prep = await this.envManager.create(this.envLabels.prep, "global");
+    const prep = await this.envManager.get(this.envLabels.prep);
     await Promise.all(
       Object.entries(inputs).map(async ([k, v]) => {
         await prep.bind(k, v);
@@ -432,70 +432,70 @@ export class WebREvaluator implements ExerciseEvaluator {
       // Otherwise, return the captured R result value.
       // TODO: Handle returning result and (multiple) plots to OJS
       return async (...args) => {
-          try {
-            const width = await this.webR.evalRNumber('72 * getOption("webr.fig.width")');
-            const height = await this.webR.evalRNumber('72 * getOption("webr.fig.height")');
-            const capture = await robj.capture(
-              {
-                withAutoprint: true,
-                captureGraphics: { width, height },
-              },
-              ...args
-            );
-            if (capture.images.length) {
-              const el = await this.asOjs(capture.images[capture.images.length - 1]);
-              el.value = await this.asOjs(capture.result);
-              return el;
-            }
-            return await this.asOjs(capture.result);
-          } finally {
-            this.webR.globalShelter.purge();
+        try {
+          const width = await this.webR.evalRNumber('72 * getOption("webr.fig.width")');
+          const height = await this.webR.evalRNumber('72 * getOption("webr.fig.height")');
+          const capture = await robj.capture(
+            {
+              withAutoprint: true,
+              captureGraphics: { width, height },
+            },
+            ...args
+          );
+          if (capture.images.length) {
+            const el = await this.asOjs(capture.images[capture.images.length - 1]);
+            el.value = await this.asOjs(capture.result);
+            return el;
           }
+          return await this.asOjs(capture.result);
+        } finally {
+          this.webR.globalShelter.purge();
+        }
       };
     }
 
     switch (robj._payload.obj.type) {
-        // TODO: "symbol"
-        case "null":
-          return null;
+      // TODO: "symbol"
+      case "null":
+        return null;
 
-        case "character": {
-          const classes = await (await robj.class()).toArray();
-          if (classes.includes('knit_asis')) {
-            var container = document.createElement('div');
-            container.innerHTML = await robj.toString();
-            return container.firstElementChild;
-          }
+      case "character": {
+        const classes = await (await robj.class()).toArray();
+        if (classes.includes('knit_asis')) {
+          var container = document.createElement('div');
+          container.innerHTML = await robj.toString();
+          return container.firstElementChild;
         }
-        case "logical":
-        case "double":
-        case "raw":
-        case "integer": {
-          const rVector = robj as RLogical | RDouble | RRaw | RInteger;
-          return await rVector.toArray();
-        }
+      }
+      case "logical":
+      case "double":
+      case "raw":
+      case "integer": {
+        const rVector = robj as RLogical | RDouble | RRaw | RInteger;
+        return await rVector.toArray();
+      }
 
-        case "list": {
-          // Convert a `data.frame` to D3 format, otherwise fall through.
-          const attrs = await robj.attrs();
-          const cls = await attrs.get('class') as RCharacter;
-          if (!isRNull(cls) && (await cls.toArray()).includes('data.frame')) {
-            return await (robj as RList).toD3();
-          }
+      case "list": {
+        // Convert a `data.frame` to D3 format, otherwise fall through.
+        const attrs = await robj.attrs();
+        const cls = await attrs.get('class') as RCharacter;
+        if (!isRNull(cls) && (await cls.toArray()).includes('data.frame')) {
+          return await (robj as RList).toD3();
         }
-        case "environment":
-        case "pairlist": {
-            const result = {};
-            const shallow = await robj.toJs({ depth: -1 }) as { names: string[]; values: any[] };
-            for (let i = 0; i < shallow.values.length; i++) {
-              const key = shallow.names ? shallow.names[i] : i;
-              result[key] = await this.asOjs(shallow.values[i]);
-            }
-            return result;
-        };
+      }
+      case "environment":
+      case "pairlist": {
+        const result = {};
+        const shallow = await robj.toJs({ depth: -1 }) as { names: string[]; values: any[] };
+        for (let i = 0; i < shallow.values.length; i++) {
+          const key = shallow.names ? shallow.names[i] : i;
+          result[key] = await this.asOjs(shallow.values[i]);
+        }
+        return result;
+      };
 
-        default:
-            throw new Error(`Unsupported type: ${value._payload.obj.type}`);
+      default:
+        throw new Error(`Unsupported type: ${value._payload.obj.type}`);
     }
   }
 
