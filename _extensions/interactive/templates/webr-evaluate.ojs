@@ -3,7 +3,11 @@ _webr_value_{{block_id}} = {
   const block = JSON.parse(atob(scriptContent));
 
   // Default evaluation configuration
-  const options = Object.assign({ echo: true, output: true }, block.attr);
+  const options = Object.assign({
+    id: "webr-{{block_id}}-contents",
+    echo: true,
+    output: true
+  }, block.attr);
 
   // Evaluate the provided R code
   const result = webROjs.process({code: block.code, options}, {{block_input}});

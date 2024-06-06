@@ -388,7 +388,11 @@ function Meta(meta)
   local cell_options = webr["cell-options"] or {}
 
   for k, v in pairs(cell_options) do
-    webr_cell_options[k] = pandoc.utils.stringify(v)
+    if (type(v) == "table") then
+      webr_cell_options[k] = pandoc.utils.stringify(v)
+    else
+      webr_cell_options[k] = v
+    end
   end
 end
 

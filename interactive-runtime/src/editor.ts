@@ -12,6 +12,8 @@ type ExerciseOptions = EvaluateOptions & {
   autorun: boolean;
   caption: string;
   completion: boolean;
+  id: string,
+  localstorage: boolean;
   runbutton: boolean;
   startover: boolean;
 }
@@ -61,8 +63,9 @@ const highlightStyle = HighlightStyle.define([
 ]);
 
 export class ExerciseEditor {
-  code: string
-  initialCode: string
+  storageKey: string;
+  code: string;
+  initialCode: string;
   state: EditorState;
   view: EditorView;
   container: OJSElement;
@@ -96,7 +99,10 @@ export class ExerciseEditor {
       completion: true,
       runbutton: true,
       startover: true,
+      localstorage: false,
     }, options);
+
+    this.storageKey = `editor-${window.location.href}#${this.options.id}`;
 
     const language = new Compartment();
     const tabSize = new Compartment();
@@ -132,7 +138,7 @@ export class ExerciseEditor {
           },
         ]
         )),
-      this.reactiveViewof,
+      EditorView.updateListener.of((update) => this.onViewUpdate(update)),
     ];
 
     if (options.completion) {
@@ -140,6 +146,14 @@ export class ExerciseEditor {
       extensions.push(
         autocompletion({ override: [(...args) => this.doCompletion(...args)] })
       );
+    }
+
+    // Load previous edits to editor from browser storage
+    if (this.options.localstorage) {
+      const storedCode = window.localStorage.getItem(this.storageKey);
+      if (storedCode) {
+        code = storedCode;
+      }
     }
 
     this.state = EditorState.create({
@@ -152,20 +166,38 @@ export class ExerciseEditor {
     });
 
     const dom = this.render();
+    this.container.oninput = (ev: CustomEvent) => this.onInput(ev);
     this.container.appendChild(dom);
     this.container.value = {
       code: this.options.autorun ? code : null,
       options: this.options,
       editor: this.container,
     };
+  }
 
-    // Prevent input Event when run button is enabled
-    this.container.oninput = ((ev: CustomEvent) => {
-      if (this.options.runbutton && !ev.detail.manual) {
-        ev.preventDefault();
-        ev.stopImmediatePropagation();
-      }
-    }) as EventListener;
+  onInput(ev: CustomEvent) {
+    // When using run button, prevent firing of reactive ojs updates until `manual: true`.
+    if (this.options.runbutton && !ev.detail.manual) {
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+      return;
+    }
+
+    // Store latest updates to editor content to local browser storage
+    if (this.options.localstorage) {
+      window.localStorage.setItem(this.storageKey, this.code);
+    }
+  }
+
+  onViewUpdate (update: ViewUpdate) {
+    if (!update.docChanged) return;
+
+    this.code = update.state.doc.toString();
+    this.container.value.code = this.code;
+
+    this.container.dispatchEvent(
+      new CustomEvent('input', { detail: { manual: false } })
+    );
   }
 
   async setupCompletion(): Promise<ExerciseCompletionMethods> {
