@@ -27,7 +27,7 @@ export type EvaluateOptions = {
   exercise?: string;
   include: boolean;
   input?: string[];
-  output: boolean;
+  output: string | false;
   setup?: string;
   timelimit: number;
   warning: boolean;
@@ -140,15 +140,21 @@ export class WebREvaluator implements ExerciseEvaluator {
       })
     );
 
-    // Run setup code, copy prep environment for result, run user code
     try {
+      // Run setup code, copy prep environment for result, run user code
       await this.evaluate(this.options.setup, "prep");
       await this.envManager.create(this.envLabels.result, this.envLabels.prep);
       const result = await this.evaluate(this.context.code, "result");
-      if (!isRNull(result)) {
-        this.container = await this.asHtml(result);
-      } else {
+
+      // Once we have the evaluate result, render it's contents to HTML
+      if (isRNull(result) || !this.options.output) {
         this.container.value.result = null;
+      } else if (this.options.output === "asis") {
+        const evaluateList = await result.toArray() as RObject[];
+        const lastValue = await evaluateList[evaluateList.length - 1].get('value');
+        this.container.innerHTML = await lastValue.toString();
+      } else {
+        this.container = await this.asHtml(result);
       }
     } finally {
       this.purge();

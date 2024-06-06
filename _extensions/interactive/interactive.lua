@@ -151,7 +151,8 @@ function WebRCodeBlock(code)
 
   if (block.attr.output == "asis") then
     quarto.log.warning(
-      "Execution option `output: asis` is unsupported for `webr` code blocks."
+      "For `webr` code blocks, using `output: asis` renders R output as HTML.",
+      "Markdown rendering is not currently supported."
     )
   end
 
