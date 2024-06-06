@@ -31,6 +31,8 @@ export type EvaluateOptions = {
   setup?: string;
   timelimit: number;
   warning: boolean;
+  "fig-width"?: number;
+  "fig-height"?: number;
 }
 
 export interface EvaluateContext {
@@ -369,8 +371,15 @@ export class WebREvaluator implements ExerciseEvaluator {
 
           // Plot image
           if (classes.includes('recordedplot')) {
-            const width = await this.webR.evalRNumber('72 * getOption("webr.fig.width")');
-            const height = await this.webR.evalRNumber('72 * getOption("webr.fig.height")');
+            let width = await this.webR.evalRNumber('72 * getOption("webr.fig.width")');
+            if ("fig-width" in this.options) {
+              width = Number(this.options["fig-width"]);
+            }
+            let height = await this.webR.evalRNumber('72 * getOption("webr.fig.height")');
+            if ("fig-height" in this.options) {
+              height = Number(this.options["fig-height"]);
+            }
+
             const capturePlot = await shelter.captureR("replayPlot(plot)", {
               captureGraphics: { width, height },
               env: { plot: result[i] },

@@ -52,6 +52,7 @@ function WebRParseBlock(code)
   end
   local r_code = table.concat(code_lines, "\n")
 
+  -- Parse quarto-style yaml attributes
   local param_yaml = table.concat(param_lines, "\n")
   if (param_yaml ~= "") then
     param_attr = tinyyaml.parse(param_yaml)
@@ -60,6 +61,7 @@ function WebRParseBlock(code)
     end
   end
 
+  -- Parse traditional knitr-style attributes
   for k, v in pairs(code.attributes) do
     local function toboolean(v)
       return string.lower(v) == "true"
@@ -78,6 +80,8 @@ function WebRParseBlock(code)
       solution = toboolean,
       warning = toboolean,
       timelimit = tonumber,
+      ["fig-width"] = tonumber,
+      ["fig-height"] = tonumber,
     }
 
     if (convert[k]) then
