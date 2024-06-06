@@ -9,14 +9,9 @@ viewof _webr_editor_{{block_id}} = {
   const options = Object.assign(
     {
       envir: block.attr.exercise,
-      echo: false,
       error: false,
-      startover: true,
       autorun: false,
-      runbutton: true,
-      completion: true,
       caption: 'Exercise',
-      output: true,
       setup: setup.code,
     },
     block.attr

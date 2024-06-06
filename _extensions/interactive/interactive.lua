@@ -1,5 +1,6 @@
 local tinyyaml = require "resources/tinyyaml"
 
+local webr_cell_options = { edit = true }
 local ojs_definitions = {
   contents = {},
 }
@@ -39,7 +40,7 @@ local function tree(root)
 end
 
 function WebRParseBlock(code)
-  local attr = { edit = false, exercise = false }
+  local attr = {}
   local param_lines = {}
   local code_lines = {}
   for line in code.text:gmatch("([^\r\n]*)[\r\n]?") do
@@ -51,6 +52,11 @@ function WebRParseBlock(code)
     end
   end
   local r_code = table.concat(code_lines, "\n")
+
+  -- Include cell-options defaults
+  for k, v in pairs(webr_cell_options) do
+    attr[k] = v
+  end
 
   -- Parse quarto-style yaml attributes
   local param_yaml = table.concat(param_lines, "\n")
@@ -377,9 +383,21 @@ function Pandoc(doc)
   return doc
 end
 
+function Meta(meta)
+  local webr = meta.webr or {}
+  local cell_options = webr["cell-options"] or {}
+
+  for k, v in pairs(cell_options) do
+    webr_cell_options[k] = pandoc.utils.stringify(v)
+  end
+end
+
 return {
-  Div = Div,
-  Proof = Proof,
-  CodeBlock = CodeBlock,
-  Pandoc = Pandoc
+  { Meta = Meta },
+  {
+    Div = Div,
+    Proof = Proof,
+    CodeBlock = CodeBlock,
+    Pandoc = Pandoc,
+  },
 }

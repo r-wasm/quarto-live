@@ -88,7 +88,7 @@ export class WebREvaluator implements ExerciseEvaluator {
       {
         envir: "global",
         eval: true,
-        echo: true,
+        echo: false,
         warning: true,
         error: true,
         include: true,

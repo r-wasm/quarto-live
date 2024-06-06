@@ -92,7 +92,7 @@ export class ExerciseEditor {
     // Default editor options
     this.options = Object.assign({
       autorun: true,
-      caption: 'Code',
+      caption: 'R Code',
       completion: true,
       runbutton: true,
       startover: true,

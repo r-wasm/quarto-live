@@ -2,21 +2,7 @@ viewof _webr_editor_{{block_id}} = {
   const block_id = "{{block_id}}";
   const scriptContent = document.querySelector(`script[type=\"webr-${block_id}-contents\"]`).textContent;
   const block = JSON.parse(atob(scriptContent));
-
-  // Default editor configuration
-  const options = Object.assign(
-    {
-      echo: false,
-      startover: true,
-      autorun: true,
-      runbutton: true,
-      completion: true,
-      caption: 'R Code',
-    },
-    block.attr
-  );
-
-  const editor = new webROjs.ExerciseEditor(webROjs.webRPromise, block.code, options);
+  const editor = new webROjs.ExerciseEditor(webROjs.webRPromise, block.code, block.attr);
   return editor.container;
 }
 _webr_value_{{block_id}} = webROjs.process(_webr_editor_{{block_id}}, {{block_input}});
