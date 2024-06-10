@@ -103,30 +103,6 @@ function WebRParseBlock(code)
   }
 end
 
-function WebRCodeHint(block)
-  -- Build a simple code block from the R source
-  local hint = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
-
-  -- Wrap codeblock in a div and process as a markdown exercise hint/solution
-  local container = nil
-  if (block.attr.hint) then
-    container = pandoc.Div(
-      {
-        pandoc.Strong({"Hint:"}),
-        pandoc.Div({hint}, pandoc.Attr('', {'p-0'})),
-      },
-      pandoc.Attr('', {'hint'}, {exercise = block.attr.exercise})
-    )
-  else
-    container = pandoc.Div(
-      pandoc.Div({hint}, pandoc.Attr('', {'p-0'})),
-      pandoc.Attr('', {'solution'}, {exercise = block.attr.exercise})
-    )
-  end
-
-  return Div(container)
-end
-
 function WebRCodeBlock(code)
   block_id = block_id + 1
 
@@ -146,6 +122,12 @@ function WebRCodeBlock(code)
     })
   end
 
+  function assertBlockExercise(type, block)
+    if (not block.attr.exercise) then
+      error("Can't create `webr` ".. type .." block, `exercise` not defined in cell options.")
+    end
+  end
+
   -- Parse codeblock contents for YAML header and R code body
   local block = WebRParseBlock(code)
 
@@ -156,24 +138,48 @@ function WebRCodeBlock(code)
     )
   end
 
-  -- If this is a hint return a non-interactive block
-  if (block.attr.exercise and (block.attr.hint or block.attr.solution)) then
-    return WebRCodeHint(block)
-  end
-
-  -- If this is an exercise setup or check block, store code for runtime eval
-  if (block.attr.exercise and block.attr.setup) then
+  -- Handle additional non-interactive execise blocks: setup, check, hint, solution
+  if (block.attr.setup) then
+    assertBlockExercise("setup", block)
     return pandoc.RawBlock(
         "html",
         "<script type=\"webr-setup-" .. block.attr.exercise .. "-contents\">\n" ..
         json_as_b64(block) .. "\n</script>"
       )
-  elseif (block.attr.exercise and block.attr.check) then
+  end
+
+  if (block.attr.check) then
+    assertBlockExercise("check", block)
     return pandoc.RawBlock(
         "html",
         "<script type=\"webr-check-" .. block.attr.exercise .. "-contents\">\n" ..
         json_as_b64(block) .. "\n</script>"
       )
+  end
+
+  if (block.attr.hint) then
+    assertBlockExercise("hint", block)
+    return pandoc.Div(
+      pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
+      pandoc.Attr('',
+        { 'webr-ojs-exercise', 'exercise-hint', 'd-none' },
+        { exercise = block.attr.exercise }
+      )
+    )
+  end
+
+  if (block.attr.solution) then
+    assertBlockExercise("solution", block)
+    return pandoc.Div(
+      {
+        pandoc.Code(block.code, pandoc.Attr('', { 'solution-code', 'd-none' })),
+        pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
+      },
+      pandoc.Attr( '',
+        { 'webr-ojs-exercise', 'exercise-solution', 'd-none' },
+        { exercise = block.attr.exercise }
+      )
+    )
   end
 
   -- Render appropriate OJS for the type of client-side block we're working with

@@ -43,6 +43,5 @@ _webr_feedback_{{block_id}} = {
     _webr_value_{{block_id}}.evaluator,
     grading,
   );
-  await grader.setupGrading();
-  return await grader.check();
+  return await grader.gradeExercise();
 }

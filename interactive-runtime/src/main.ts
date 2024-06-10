@@ -5,6 +5,10 @@ import { WebREvaluator } from './evaluate'
 import { EnvironmentManager } from './environment'
 import { WebRGrader } from './grader'
 
+async function setupR(webR: WebR.WebR) {
+  return await webR.evalRVoid(require('./assets/R/setup.R'));
+}
+
 declare global {
   interface Window {
     _webr_ojs_runtime?: {
@@ -15,6 +19,7 @@ declare global {
       EnvironmentManager: typeof EnvironmentManager;
       highlightR: typeof highlightR;
       replaceHighlightR: typeof replaceHighlightR;
+      setupR: typeof setupR;
     };
   }
 }
@@ -27,6 +32,7 @@ window._webr_ojs_runtime = {
   EnvironmentManager,
   highlightR,
   replaceHighlightR,
+  setupR,
 };
 
 export { WebR, ExerciseEditor, WebREvaluator, highlightR, replaceHighlightR }

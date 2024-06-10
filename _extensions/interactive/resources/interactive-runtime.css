@@ -372,3 +372,8 @@ div.exercise-cell-output.cell-output-stderr pre code {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
+/* Feedback alerts */
+.alert .exercise-feedback p:last-child {
+  margin-bottom: 0;
+}

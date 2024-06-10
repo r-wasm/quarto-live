@@ -1,0 +1,16 @@
+```{webr}
+#| edit: false
+#| echo: false
+webr::install("gradethis", repos = c("http://127.0.0.1:9000/repo", "https://repo.r-wasm.org"), quiet = TRUE)
+library(gradethis)
+options(webr.exercise.checker = function(
+  label, user_code, solution_code, check_code, envir_result, evaluate_result,
+  envir_prep, last_value, engine, stage, ...
+) {
+  gradethis::gradethis_exercise_checker(
+    label = label, solution_code = solution_code, user_code = user_code,
+    check_code = check_code, envir_result = envir_result,
+    evaluate_result = evaluate_result, envir_prep = envir_prep,
+    last_value = last_value, stage = stage, engine = engine)
+})
+```

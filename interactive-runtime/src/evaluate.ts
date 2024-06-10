@@ -27,7 +27,7 @@ export type EvaluateOptions = {
   exercise?: string;
   include: boolean;
   input?: string[];
-  output: string | false;
+  output: string | boolean;
   setup?: string;
   timelimit: number;
   warning: boolean;
@@ -48,6 +48,7 @@ export type EnvLabels = {
   prep: string;
   result: string;
   grading: string;
+  solution: string;
 }
 type EnvLabel = keyof EnvLabels;
 type EnvManager = EnvironmentManager;
@@ -103,12 +104,14 @@ export class WebREvaluator implements ExerciseEvaluator {
         prep: "global",
         result: "global",
         grading: "global",
+        solution: "global",
       }
     } else {
       this.envLabels = {
         prep: `${this.options.envir}-prep`,
         result: `${this.options.envir}-result`,
         grading: `${this.options.envir}-grading`,
+        solution: `${this.options.envir}-solution`,
       }
     }
     this.envManager = environmentManager;
@@ -194,8 +197,8 @@ export class WebREvaluator implements ExerciseEvaluator {
   }
 
   async evaluate(code: string, envLabel: EnvLabel, options: EvaluateOptions = this.options) {
-    // Early returns if we're not actually evaluating
-    if (!code || code === '' || !options.include) {
+    // Early return if code is undefined, null, or if we're not evaluating
+    if (code == null || !options.include) {
       this.setIdle();
       return this.webR.objs.null;
     }
