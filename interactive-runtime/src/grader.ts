@@ -64,7 +64,16 @@ export class WebRGrader {
     const container = await this.evaluator.asHtml(checkResult, this.options);
     const result = await container.value.result as RObject;
     const classList = await (await result.class()).toArray();
+
+    // Is this a feedback from gradethis
     if (classList.includes("gradethis_graded") || classList.includes("gradethis_feedback")) {
+      return await this.feedbackAsHtmlAlert(result);
+    }
+
+    // This is feedback contained in an R list object
+    const message = await result.get("message");
+    const correct = await result.get("correct");
+    if (!isRNull(message) && !isRNull(correct)) {
       return await this.feedbackAsHtmlAlert(result);
     }
     return container;
@@ -183,6 +192,7 @@ export class WebRGrader {
     const typeCharacter = await grade.get('type');
     const correctLogical = await grade.get('correct') as RLogical;
     container.classList.add("alert");
+    container.classList.add("exercise-grade");
 
     switch (await typeCharacter.toString()) {
       case "success":

@@ -234,6 +234,7 @@ pre > code.sourceCode span.tok-function-attributeName {
 }
 
 .reveal .card.exercise-editor-card {
+  margin: 1rem 0;
   border: 1px solid rgba(0, 0, 0, 0.175);
   border-radius: 0.375rem;
   font-size: .55em;
@@ -376,4 +377,76 @@ div.exercise-cell-output.cell-output-stderr pre code {
 /* Feedback alerts */
 .alert .exercise-feedback p:last-child {
   margin-bottom: 0;
+}
+
+.reveal .alert.exercise-grade {
+  font-size: .55em;
+  position: relative;
+  padding: 1rem 1rem;
+  margin: 1rem 0;
+  border-radius: 0.25rem;
+  color: var(--exercise-alert-color);
+  background-color: var(--exercise-alert-bg);
+  border: 1px solid var(--exercise-alert-border-color);
+}
+
+.reveal .alert.exercise-grade .alert-link {
+  font-weight: 700;
+  color: var(--exercise-alert-link-color);
+}
+
+.quarto-light .reveal .exercise-grade.alert-info {
+  --exercise-alert-color: #055160;
+  --exercise-alert-bg: #cff4fc;
+  --exercise-alert-border-color: #9eeaf9;
+  --exercise-alert-link-color: #055160;
+}
+
+.quarto-light .reveal .exercise-grade.alert-success {
+  --exercise-alert-color: #0a3622;
+  --exercise-alert-bg: #d1e7dd;
+  --exercise-alert-border-color: #a3cfbb;
+  --exercise-alert-link-color: #0a3622;
+}
+
+.quarto-light .reveal .exercise-grade.alert-warning {
+  --exercise-alert-color: #664d03;
+  --exercise-alert-bg: #fff3cd;
+  --exercise-alert-border-color: #ffe69c;
+  --exercise-alert-link-color: #664d03;
+}
+
+.quarto-light .reveal .exercise-grade.alert-danger {
+  --exercise-alert-color: #58151c;
+  --exercise-alert-bg: #f8d7da;
+  --exercise-alert-border-color: #f1aeb5;
+  --exercise-alert-link-color: #58151c;
+}
+
+.quarto-dark .reveal .exercise-grade.alert-info {
+  --exercise-alert-color: #ffffff;
+  --exercise-alert-bg: #3498db;
+  --exercise-alert-border-color: #3498db;
+  --exercise-alert-link-color: #ffffff;
+}
+
+.quarto-dark .reveal .exercise-grade.alert-success {
+  --exercise-alert-color: #ffffff;
+  --exercise-alert-bg: #00bc8c;
+  --exercise-alert-border-color: #00bc8c;
+  --exercise-alert-link-color: #ffffff;
+}
+
+.quarto-dark .reveal .exercise-grade.alert-warning {
+  --exercise-alert-color: #ffffff;
+  --exercise-alert-bg: #f39c12;
+  --exercise-alert-border-color: #f39c12;
+  --exercise-alert-link-color: #ffffff;
+}
+
+.quarto-dark .reveal .exercise-grade.alert-danger {
+  --exercise-alert-color: #ffffff;
+  --exercise-alert-bg: #e74c3c;
+  --exercise-alert-border-color: #e74c3c;
+  --exercise-alert-link-color: #ffffff;
 }
