@@ -1,0 +1,62 @@
+pyodideOjs = {
+  const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.mjs");
+  let { PyodideEvaluator, PyodideExerciseEditor, highlightPython } = window._exercise_ojs_runtime;
+
+  const statusContainer = document.getElementById("exercise-loading-indicator");
+  const statusText = document.getElementById("exercise-loading-status");
+  statusText.textContent = `Initialise`;
+  statusContainer.classList.remove("d-none");
+
+  // Hoist indicator out from final slide when running under reveal
+  const revealStatus = document.querySelector(".reveal .exercise-loading-indicator");
+  if (revealStatus) {
+    revealStatus.remove();
+    document.querySelector(".reveal > .slides").appendChild(revealStatus);
+  }
+
+  // Grab list of Python packages to be pre-installed
+  const pkgsContent = document.querySelector(`script[type=\"pyodide-packages\"]`).textContent;
+  const packages = JSON.parse(atob(pkgsContent));
+
+  // Grab list of resources to be downloaded
+  const filesContent = document.querySelector(`script[type=\"vfs-file\"]`).textContent;
+  const files = JSON.parse(atob(filesContent));
+
+  let pyodidePromise = (async () => {
+    statusText.textContent = `Downloading Pyodide`;
+    const pyodide = await loadPyodide();
+
+    await packages.pkgs.map((pkg) => () => {
+      statusText.textContent = `Downloading package: ${pkg}`;
+      return pyodide.loadPackage(pkg);
+    }).reduce((cur, next) => cur.then(next), Promise.resolve());
+
+    statusText.textContent = `Pyodide environment setup`;
+    await pyodide.runPythonAsync(`
+      import micropip
+      import pyodide_http
+      pyodide_http.patch_all()
+    `);
+
+    statusContainer.classList.add("d-none");
+    return pyodide;
+  })();
+
+  // Keep track of initial OJS block render
+  const renderedOjs = {};
+
+  const process = async (context, inputs) => {
+    const pyodide = await pyodidePromise;
+    const evaluator = new PyodideEvaluator(pyodide, null, context)
+    await evaluator.process(inputs);
+    return evaluator.container;
+  }
+
+  return {
+    PyodideExerciseEditor,
+    pyodidePromise,
+    renderedOjs,
+    process,
+    highlightPython,
+  };
+}

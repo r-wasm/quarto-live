@@ -1,4 +1,5 @@
 import type { WebR, RFunction } from 'webr'
+import type { PyodideInterface } from 'pyodide';
 import type { OJSElement, EvaluateOptions } from './evaluate'
 import { Indicator } from './indicator'
 import { basicSetup } from 'codemirror'
@@ -63,7 +64,8 @@ const highlightStyle = HighlightStyle.define([
   { tag: tags.function(tags.attributeName), color: "var(--exercise-editor-hl-at)" },
 ]);
 
-export class ExerciseEditor {
+ abstract class ExerciseEditor {
+  abstract defaultCaption: string;
   storageKey: string;
   code: string;
   initialCode: string;
@@ -72,7 +74,6 @@ export class ExerciseEditor {
   container: OJSElement;
   options: ExerciseOptions;
   indicator: Indicator;
-  webRPromise: Promise<WebR>;
   completionMethods: Promise<ExerciseCompletionMethods>;
   reactiveViewof = [
     EditorView.updateListener.of((update: ViewUpdate) => {
@@ -85,19 +86,17 @@ export class ExerciseEditor {
     }),
   ];
 
-  constructor(webRPromise: Promise<WebR>, code: string, options: ExerciseOptions) {
+  constructor(code: string, options: ExerciseOptions) {
     if (typeof code !== "string") {
       throw new Error("Can't create editor, `code` must be a string.");
     }
 
     this.container = document.createElement("div");
-    this.webRPromise = webRPromise;
     this.code = this.initialCode = code;
 
     // Default editor options
     this.options = Object.assign({
       autorun: true,
-      caption: 'R Code',
       completion: true,
       runbutton: true,
       startover: true,
@@ -144,7 +143,6 @@ export class ExerciseEditor {
     ];
 
     if (options.completion) {
-      this.completionMethods = this.setupCompletion();
       extensions.push(
         autocompletion({ override: [(...args) => this.doCompletion(...args)] })
       );
@@ -225,41 +223,8 @@ export class ExerciseEditor {
     );
   }
 
-  async setupCompletion(): Promise<ExerciseCompletionMethods> {
-    const webR = await this.webRPromise;
-    await webR.evalRVoid('rc.settings(func=TRUE, fuzzy=TRUE)');
-    return {
-      assignLineBuffer: await webR.evalR('utils:::.assignLinebuffer') as RFunction,
-      assignToken: await webR.evalR('utils:::.assignToken') as RFunction,
-      assignStart: await webR.evalR('utils:::.assignStart') as RFunction,
-      assignEnd: await webR.evalR('utils:::.assignEnd') as RFunction,
-      completeToken: await webR.evalR('utils:::.completeToken') as RFunction,
-      retrieveCompletions: await webR.evalR('utils:::.retrieveCompletions') as RFunction,
-    };
-  }
-
-  async doCompletion(context: CompletionContext) {
-    const completionMethods = await this.completionMethods;
-    const line = context.state.doc.lineAt(context.state.selection.main.head).text;
-    const { from, to, text } = context.matchBefore(/[a-zA-Z0-9_.:]*/) ?? { from: 0, to: 0, text: '' };
-    if (from === to && !context.explicit) {
-      return null;
-    }
-    await completionMethods.assignLineBuffer(line.replace(/\)+$/, ""));
-    await completionMethods.assignToken(text);
-    await completionMethods.assignStart(from + 1);
-    await completionMethods.assignEnd(to + 1);
-    await completionMethods.completeToken();
-    const compl = await completionMethods.retrieveCompletions() as { values: string[] };
-    const options = compl.values.map((val) => {
-      if (!val) {
-        throw new Error('Missing values in completion result.');
-      }
-      return { label: val, boost: val.endsWith("=") ? 10 : 0 };
-    });
-
-    return { from, options };
-  }
+  abstract setupCompletion() : Promise<any>;
+  abstract doCompletion(context: CompletionContext): Promise<any>;
 
   renderButton(spec: ExerciseButtonSpec) {
     // TODO: Fix: we use <a> because Quarto adds its own styling to <button>
@@ -407,7 +372,7 @@ export class ExerciseEditor {
     const left = document.createElement("div");
     left.className = "d-flex align-items-center gap-3";
     const label = document.createElement("div");
-    label.innerHTML = this.options.caption;
+    label.innerHTML = "caption" in this.options ? this.options.caption : this.defaultCaption;
     left.appendChild(label);
 
     const leftButtons: ExerciseButton[] = [];
@@ -478,5 +443,79 @@ export class ExerciseEditor {
     body.appendChild(this.view.dom);
     card.appendChild(body);
     return card;
+  }
+}
+
+export class WebRExerciseEditor extends ExerciseEditor {
+  webRPromise: Promise<WebR>;
+  defaultCaption: string;
+  constructor(webRPromise: Promise<WebR>, code: string, options: ExerciseOptions) {
+    super(code, options);
+    this.webRPromise = webRPromise;
+    this.completionMethods = this.setupCompletion();
+  }
+
+  render() {
+    this.defaultCaption = 'R Code';
+    return super.render();
+  }
+
+  async setupCompletion(): Promise<ExerciseCompletionMethods> {
+    const webR = await this.webRPromise;
+    await webR.evalRVoid('rc.settings(func=TRUE, fuzzy=TRUE)');
+    return {
+      assignLineBuffer: await webR.evalR('utils:::.assignLinebuffer') as RFunction,
+      assignToken: await webR.evalR('utils:::.assignToken') as RFunction,
+      assignStart: await webR.evalR('utils:::.assignStart') as RFunction,
+      assignEnd: await webR.evalR('utils:::.assignEnd') as RFunction,
+      completeToken: await webR.evalR('utils:::.completeToken') as RFunction,
+      retrieveCompletions: await webR.evalR('utils:::.retrieveCompletions') as RFunction,
+    };
+  }
+
+  async doCompletion(context: CompletionContext) {
+    const completionMethods = await this.completionMethods;
+    const line = context.state.doc.lineAt(context.state.selection.main.head).text;
+    const { from, to, text } = context.matchBefore(/[a-zA-Z0-9_.:]*/) ?? { from: 0, to: 0, text: '' };
+    if (from === to && !context.explicit) {
+      return null;
+    }
+    await completionMethods.assignLineBuffer(line.replace(/\)+$/, ""));
+    await completionMethods.assignToken(text);
+    await completionMethods.assignStart(from + 1);
+    await completionMethods.assignEnd(to + 1);
+    await completionMethods.completeToken();
+    const compl = await completionMethods.retrieveCompletions() as { values: string[] };
+    const options = compl.values.map((val) => {
+      if (!val) {
+        throw new Error('Missing values in completion result.');
+      }
+      return { label: val, boost: val.endsWith("=") ? 10 : 0 };
+    });
+
+    return { from, options };
+  }
+}
+
+export class PyodideExerciseEditor extends ExerciseEditor {
+  pyodidePromise: Promise<PyodideInterface>;
+  defaultCaption: string;
+  constructor(pyodidePromise: Promise<PyodideInterface>, code: string, options: ExerciseOptions) {
+    super(code, options);
+    this.pyodidePromise = pyodidePromise;
+    this.setupCompletion();
+  }
+
+  render() {
+    this.defaultCaption = 'Python Code';
+    return super.render();
+  }
+
+  async setupCompletion() {
+    const pyodide = await this.pyodidePromise;
+  }
+
+  async doCompletion(context: CompletionContext) {
+    return null;
   }
 }

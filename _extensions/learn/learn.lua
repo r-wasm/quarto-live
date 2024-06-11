@@ -6,6 +6,9 @@ local ojs_definitions = {
 }
 local block_id = 0
 
+local include_webr = false
+local include_pyodide = false
+
 local function json_as_b64(obj)
   local json_string = quarto.json.encode(obj)
   return quarto.base64.encode(json_string)
@@ -39,11 +42,11 @@ local function tree(root)
   return gather(root, {})
 end
 
-function WebRParseBlock(code)
+function ParseBlock(block)
   local attr = {}
   local param_lines = {}
   local code_lines = {}
-  for line in code.text:gmatch("([^\r\n]*)[\r\n]?") do
+  for line in block.text:gmatch("([^\r\n]*)[\r\n]?") do
     local param_line = string.find(line, "^#|")
     if (param_line ~= nil) then
       table.insert(param_lines, string.sub(line, 4))
@@ -51,7 +54,7 @@ function WebRParseBlock(code)
       table.insert(code_lines, line)
     end
   end
-  local r_code = table.concat(code_lines, "\n")
+  local code = table.concat(code_lines, "\n")
 
   -- Include cell-options defaults
   for k, v in pairs(webr_cell_options) do
@@ -68,7 +71,7 @@ function WebRParseBlock(code)
   end
 
   -- Parse traditional knitr-style attributes
-  for k, v in pairs(code.attributes) do
+  for k, v in pairs(block.attributes) do
     local function toboolean(v)
       return string.lower(v) == "true"
     end
@@ -98,9 +101,65 @@ function WebRParseBlock(code)
   end
 
   return {
-    code = r_code,
+    code = code,
     attr = attr
   }
+end
+
+function PyodideCodeBlock(code)
+  block_id = block_id + 1
+
+  function append_ojs_template(template, template_vars)
+    local file = io.open(quarto.utils.resolve_path("templates/" .. template), "r")
+    assert(file)
+    local content = file:read("*a")
+    for k, v in pairs(template_vars) do
+      content = string.gsub(content, "{{" .. k .. "}}", v)
+    end
+  
+    table.insert(ojs_definitions.contents, 1, {
+      methodName = "interpret",
+      cellName = "pyodide-" .. block_id,
+      inline = false,
+      source = content,
+    })
+  end
+
+  -- Parse codeblock contents for YAML header and Python code body
+  local block = ParseBlock(code)
+
+  -- Prepare OJS attributes
+  local input = "{" .. table.concat(block.attr.input or {}, ", ") .. "}"
+  local ojs_vars = {
+    block_id = block_id,
+    block_input = input,
+  }
+
+  -- Render appropriate OJS for the type of client-side block we're working with
+  local ojs_source = nil
+  if (block.attr.exercise) then
+    -- Primary interactive exercise block
+    ojs_source = "pyodide-exercise.ojs"
+    ojs_vars["exercise_id"] = block.attr.exercise
+  elseif (block.attr.edit) then
+    -- Editable non-exercise sandbox block
+    ojs_source = "pyodide-editor.ojs"
+  else
+    -- Non-interactive evaluation block
+    ojs_source = "pyodide-evaluate.ojs"
+  end
+
+  append_ojs_template(ojs_source, ojs_vars)
+
+  return pandoc.Div({
+    pandoc.Div({}, pandoc.Attr("pyodide-" .. block_id)),
+    pandoc.RawBlock(
+      "html",
+      "<script type=\"pyodide-" .. block_id .. "-contents\">\n" ..
+      json_as_b64(block) .. "\n</script>"
+    )
+  })
+
 end
 
 function WebRCodeBlock(code)
@@ -129,7 +188,7 @@ function WebRCodeBlock(code)
   end
 
   -- Parse codeblock contents for YAML header and R code body
-  local block = WebRParseBlock(code)
+  local block = ParseBlock(code)
 
   if (block.attr.output == "asis") then
     quarto.log.warning(
@@ -252,13 +311,29 @@ function InterpolatedRBlock(block, highlight)
 end
 
 function CodeBlock(code)
-  if (code.classes:includes("{webr}") or code.classes:includes("webr")) then
+  if (
+    code.classes:includes("{webr}") or
+    code.classes:includes("webr") or
+    code.classes:includes("{webr-r}")
+  ) then
     -- Client side R code block
+    include_webr = true
     return WebRCodeBlock(code)
+  end
+
+  if (
+    code.classes:includes("{pyodide}") or
+    code.classes:includes("pyodide") or
+    code.classes:includes("{pyodide-python}")
+  ) then
+    -- Client side Python code block
+    include_pyodide = true
+    return PyodideCodeBlock(code)
   end
 
   if (code.classes:includes("r") and string.match(code.text, "${[a-zA-Z_$][%w_$]+}")) then
     -- Non-interactive code block containing OJS variables
+    include_webr = true
     return InterpolatedRBlock(code, true)
   end
 end
@@ -306,7 +381,38 @@ function Proof(block)
   end
 end
 
-function Pandoc(doc)
+function setupPyodide(doc)
+  local pyodide = doc.meta.pyodide or {}
+  local packages = pyodide.packages or {}
+
+  local file = io.open(quarto.utils.resolve_path("templates/pyodide-setup.ojs"), "r")
+  assert(file)
+  local content = file:read("*a")
+
+  local pyodide_packages = {
+    pkgs = {"pyodide_http", "micropip", "ipython"},
+  }
+  for _, pkg in pairs(packages) do
+    table.insert(pyodide_packages.pkgs, pandoc.utils.stringify(pkg))
+  end
+
+  table.insert(ojs_definitions.contents, {
+    methodName = "interpretQuiet",
+    cellName = "pyodide-prelude",
+    inline = false,
+    source = content,
+  })
+
+  -- List of webR R packages and repositories to install
+  doc.blocks:insert(pandoc.RawBlock(
+    "html",
+    "<script type=\"pyodide-packages\">\n" .. json_as_b64(pyodide_packages) .. "\n</script>"
+  ))
+
+  return pyodide
+end
+
+function setupWebR(doc)
   local webr = doc.meta.webr or {}
   local packages = webr.packages or {}
   local repos = webr.repos or {}
@@ -339,6 +445,19 @@ function Pandoc(doc)
     "<script type=\"webr-packages\">\n" .. json_as_b64(webr_packages) .. "\n</script>"
   ))
 
+  return webr
+end
+
+function Pandoc(doc)
+  local webr = nil
+  local pyodide = nil
+  if (include_webr) then
+    webr = setupWebR(doc)
+  end
+  if (include_pyodide) then
+    pyodide = setupPyodide(doc)
+  end
+
   -- OJS block definitions
   doc.blocks:insert(pandoc.RawBlock(
     "html",
@@ -352,7 +471,7 @@ function Pandoc(doc)
         pandoc.Div({}, pandoc.Attr("exercise-loading-status")),
         pandoc.Div({}, pandoc.Attr("", {"spinner-grow", "spinner-grow-sm"})),
       }, pandoc.Attr("", {"d-flex", "align-items-center", "gap-2"})),
-      pandoc.Attr("exercise-loading-indicator", {"exercise-loading-indicator"})
+      pandoc.Attr("exercise-loading-indicator", {"d-none", "exercise-loading-indicator"})
     )
   )
 
@@ -370,7 +489,7 @@ function Pandoc(doc)
 
   -- Copy resources for upload to VFS at runtime
   local vfs_files = {}
-  if (webr.resources) then
+  if (webr and webr.resources) then
     resource_list = webr.resources
   else
     resource_list = doc.meta.resources
@@ -395,7 +514,7 @@ function Pandoc(doc)
   end
   doc.blocks:insert(pandoc.RawBlock(
     "html",
-    "<script type=\"webr-vfs-file\">\n" .. json_as_b64(vfs_files) .. "\n</script>"
+    "<script type=\"vfs-file\">\n" .. json_as_b64(vfs_files) .. "\n</script>"
   ))
   return doc
 end

@@ -1,11 +1,11 @@
+import type { PyodideInterface } from 'pyodide'
 import type { WebR, Shelter, RObject, RList, RNull, REnvironment } from 'webr'
 import type { RCharacter, RLogical, RDouble, RRaw, RInteger } from 'webr'
 import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr'
-import { highlightR } from './highlighter'
+import { highlightPython, highlightR } from './highlighter'
 import { Indicator } from './indicator'
 import { renderHtmlDependency } from './render'
 import { EnvironmentManager } from './environment'
-import { ExerciseEditor } from './editor'
 
 declare global {
   interface Window {
@@ -60,8 +60,8 @@ type EnvManager = EnvironmentManager;
 export interface ExerciseEvaluator {
   evaluate(code: string, envir?: EnvLabel, options?: EvaluateOptions): Promise<any>;
   process(inputs: { [key: string]: any }): Promise<void>;
-  bind(key: string, value: any, envir: EnvLabel): Promise<void>;
-  asOjs(value: any): Promise<any>;
+  //bind(key: string, value: any, envir: EnvLabel): Promise<void>;
+  //asOjs(value: any): Promise<any>;
   asHtml(value: any): Promise<OJSElement>;
   context: EvaluateContext;
   options: EvaluateOptions;
@@ -528,5 +528,161 @@ export class WebREvaluator implements ExerciseEvaluator {
       default:
         throw new Error(`Unsupported type: ${value._payload.obj.type}`);
     }
+  }
+}
+
+export class PyodideEvaluator implements ExerciseEvaluator {
+  container: OJSElement;
+  context: EvaluateContext;
+  options: EvaluateOptions;
+  envLabels: EnvLabels;
+  envManager: EnvManager;
+  pyodide: PyodideInterface;
+
+  constructor(
+    pyodide: PyodideInterface,
+    environmentManager: EnvironmentManager,
+    context: EvaluateContext
+  ) {
+    this.container = document.createElement('div');
+    this.container.value = { result: null, evaluator: this };
+    this.pyodide = pyodide;
+    this.context = context;
+
+    // Default evaluation options
+    this.options = Object.assign(
+      {
+        envir: "global",
+        eval: true,
+        echo: false,
+        warning: true,
+        error: true,
+        include: true,
+        output: true,
+        timelimit: 30,
+      },
+      context.options
+    );
+
+    if (!this.options.exercise || this.options.envir === "global") {
+      this.envLabels = {
+        prep: this.options.envir,
+        result: this.options.envir,
+        grading: this.options.envir,
+        solution: this.options.envir,
+      }
+    } else {
+      this.envLabels = {
+        prep: `${this.options.envir}-prep`,
+        result: `${this.options.envir}-result`,
+        grading: `${this.options.envir}-grading`,
+        solution: `${this.options.envir}-solution`,
+      }
+    }
+    this.envManager = environmentManager;
+  }
+
+  // Setup environment, execute setup code, execute user code, define outputs
+  async process(inputs: { [key: string]: any }) {
+    // If we're not evaluating, just print the source directly
+    if (!this.options.eval) {
+      this.container = this.asSourceHTML(this.context.code);
+      this.container.value = { result: null, evaluator: this };
+      return;
+    }
+
+    // Indicate processing
+    let ind = this.context.indicator;
+    if (!this.context.indicator) {
+      ind = new Indicator();
+    }
+    ind.running();
+
+    try {
+      const result = await this.evaluate(this.context.code, "result");
+
+      // Once we have the evaluate result, render it's contents to HTML
+      if (!this.options.output) {
+        this.container.value.result = null;
+      } else if (this.options.output === "asis") {
+        //const evaluateList = await result.toArray() as RObject[];
+        //const lastValue = await evaluateList[evaluateList.length - 1].get('value');
+        this.container.innerHTML = await result.stdout.join('\n');
+      } else {
+        this.container = await this.asHtml(result);
+      }
+    } finally {
+      ind.finished();
+      if (!this.context.indicator) ind.destroy();
+    }
+  }
+
+  async evaluate(code: string, envLabel: EnvLabel, options: EvaluateOptions = this.options) {
+    // Early return if code is undefined, null, or if we're not evaluating
+    if (code == null || !options.include) {
+      return null;
+    }
+
+    const resultObject = await this.pyodide.runPythonAsync(`
+      import pyodide
+      from IPython.utils.capture import capture_output
+      value = None
+      with capture_output() as capture:
+        value = pyodide.code.eval_code(code)
+        if (value):
+          print(value)
+      {
+        "stdout": capture.stdout,
+        "stderr": capture.stderr,
+        "value": value
+      }
+    `, {
+      globals: this.pyodide.toPy({ code: code }),
+    });
+    const result = resultObject.toJs({ depth: 1 })
+    console.log(result);
+    return result;
+  }
+
+  asSourceHTML(code): HTMLDivElement {
+    const sourceDiv = document.createElement("div");
+    const sourcePre = document.createElement("pre");
+    sourceDiv.className = "sourceCode";
+    sourcePre.className = "sourceCode python";
+    const sourceCode = highlightPython(code);
+    sourcePre.appendChild(sourceCode);
+    sourceDiv.appendChild(sourcePre);
+    return sourceDiv;
+  }
+
+  async asHtml(value: any, options: EvaluateOptions = this.options) {
+    const container: OJSElement = document.createElement("div");
+    container.value = { result: value };
+
+    if (options.echo) {
+      const sourceDiv = document.createElement("div");
+      const sourcePre = document.createElement("pre");
+      sourceDiv.className = "sourceCode";
+      sourcePre.className = "sourceCode python";
+      const sourceCode = highlightPython(this.context.code);
+      sourcePre.appendChild(sourceCode);
+      sourceDiv.appendChild(sourcePre);
+      container.appendChild(sourceDiv);
+    }
+
+    const outputDiv = document.createElement("div");
+    outputDiv.className = "exercise-cell-output cell-output cell-output-stdout";
+    outputDiv.innerHTML = `<pre><code>${value.stdout}</code></pre>`;
+    container.appendChild(outputDiv);
+
+    const errorDiv = document.createElement("div");
+    errorDiv.className = "exercise-cell-output cell-output cell-output-stderr";
+    errorDiv.innerHTML = `<pre><code>${value.stderr}</code></pre>`;
+    container.appendChild(errorDiv);
+
+    // Attach final result to output value
+    //container.value.result = await result[result.length - 1].get('value');
+    //container.value.evaluate_result = value;
+    return container;
   }
 }

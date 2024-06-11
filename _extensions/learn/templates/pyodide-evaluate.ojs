@@ -1,0 +1,39 @@
+_pyodide_value_{{block_id}} = {
+  const scriptContent = document.querySelector(`script[type=\"pyodide-{{block_id}}-contents\"]`).textContent;
+  const block = JSON.parse(atob(scriptContent));
+
+  // Default evaluation configuration
+  const options = Object.assign({
+    id: "pyodide-{{block_id}}-contents",
+    echo: true,
+    output: true
+  }, block.attr);
+
+  // Evaluate the provided Python code
+  const result = pyodideOjs.process({code: block.code, options}, {{block_input}});
+
+  // Early yield while we wait for the first evaluation and render
+  if (options.output && !("{{block_id}}" in pyodideOjs.renderedOjs)) {
+    const container = document.createElement("div");
+    const spinner = document.createElement("div");
+
+    if (options.echo) {
+      // Show output as highlighted source
+      const preElem = document.createElement("pre");
+      container.className = "sourceCode";
+      preElem.className = "sourceCode python";
+      preElem.appendChild(pyodideOjs.highlightPython(block.code));
+      spinner.className = "spinner-grow spinner-grow-sm m-2 position-absolute top-0 end-0";
+      preElem.appendChild(spinner);
+      container.appendChild(preElem);
+    } else {
+      spinner.className = "spinner-border spinner-border-sm";
+      container.appendChild(spinner);
+    }
+
+    yield container;
+  }
+
+  pyodideOjs.renderedOjs["{{block_id}}"] = true;
+  yield await result;
+}

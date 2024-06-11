@@ -3,7 +3,7 @@ viewof _webr_editor_{{block_id}} = {
   const block = JSON.parse(atob(scriptContent));
 
   const options = Object.assign({ id: `webr-{{block_id}}-contents` }, block.attr);
-  const editor = new webROjs.ExerciseEditor(webROjs.webRPromise, block.code, options);
+  const editor = new webROjs.WebRExerciseEditor(webROjs.webRPromise, block.code, options);
 
   return editor.container;
 }

@@ -1,7 +1,8 @@
 import { parser as r } from "lezer-r"
+import { parser as python } from "@lezer/python"
 import { highlightCode, tagHighlighter, tags } from "@lezer/highlight"
 
-const tagHighlighterR = tagHighlighter([
+const tagHighlighterTok = tagHighlighter([
   { tag: tags.keyword, class: "tok-keyword" },
   { tag: tags.operator, class: "tok-operator" },
   { tag: tags.definitionOperator, class: "tok-definitionOperator" },
@@ -39,7 +40,30 @@ export function highlightR(code: string) {
     result.appendChild(document.createTextNode("\n"));
   }
 
-  highlightCode(code, r.parse(code), tagHighlighterR, emit, emitBreak);
+  highlightCode(code, r.parse(code), tagHighlighterTok, emit, emitBreak);
+  return result;
+}
+
+export function highlightPython(code: string) {
+  let result = document.createElement("code");
+  result.className = "sourceCode python";
+
+  function emit(text: string, classes: string) {
+    let node: HTMLElement | Text = document.createTextNode(text);
+    if (classes) {
+      let span = document.createElement("span");
+      span.appendChild(node);
+      span.className = classes;
+      node = span;
+    }
+    result.appendChild(node);
+  }
+
+  function emitBreak() {
+    result.appendChild(document.createTextNode("\n"));
+  }
+
+  highlightCode(code, python.parse(code), tagHighlighterTok, emit, emitBreak);
   return result;
 }
 

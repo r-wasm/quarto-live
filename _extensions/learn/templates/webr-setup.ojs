@@ -1,10 +1,12 @@
 webROjs = {
-  let { ExerciseEditor, WebREvaluator, EnvironmentManager, WebRGrader } = window._webr_ojs_runtime;
-  let { highlightR, interpolateR, setupR } = window._webr_ojs_runtime;
-  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
+  let { WebRExerciseEditor, WebREvaluator, EnvironmentManager, WebRGrader } = window._exercise_ojs_runtime;
+  let { highlightR, interpolateR, setupR } = window._exercise_ojs_runtime;
+  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._exercise_ojs_runtime.WebR;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
   const statusText = document.getElementById("exercise-loading-status");
+  statusText.textContent = `Initialise`;
+  statusContainer.classList.remove("d-none");
 
   // Hoist indicator out from final slide when running under reveal
   const revealStatus = document.querySelector(".reveal .exercise-loading-indicator");
@@ -18,7 +20,7 @@ webROjs = {
   const packages = JSON.parse(atob(pkgsContent));
 
   // Grab list of resources to be downloaded
-  const filesContent = document.querySelector(`script[type=\"webr-vfs-file\"]`).textContent;
+  const filesContent = document.querySelector(`script[type=\"vfs-file\"]`).textContent;
   const files = JSON.parse(atob(filesContent));
 
   // Initialise webR and setup for R code evaluation
@@ -85,7 +87,7 @@ webROjs = {
   }
 
   return {
-    ExerciseEditor,
+    WebRExerciseEditor,
     WebREvaluator,
     WebRGrader,
     environmentManager,

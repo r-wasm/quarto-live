@@ -1,0 +1,11 @@
+---
+title: Editor
+format: learn-html
+---
+
+```{pyodide}
+import pyodide
+import random
+print(pyodide.__version__)
+random.randint(1,100)
+```

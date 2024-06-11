@@ -1,0 +1,14 @@
+viewof _pyodide_editor_{{block_id}} = {
+  const scriptContent = document.querySelector(`script[type=\"pyodide-{{block_id}}-contents\"]`).textContent;
+  const block = JSON.parse(atob(scriptContent));
+
+  const options = Object.assign({ id: `pyodide-{{block_id}}-contents` }, block.attr);
+  const editor = new pyodideOjs.PyodideExerciseEditor(
+    pyodideOjs.pyodidePromise,
+    block.code,
+    options
+  );
+
+  return editor.container;
+}
+_pyodide_value_{{block_id}} = pyodideOjs.process(_pyodide_editor_{{block_id}}, {{block_input}});

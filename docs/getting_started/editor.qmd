@@ -1,7 +1,6 @@
 ---
 title: Editor
 format: learn-html
-engine: knitr
 ---
 
 {{< include ../_extensions/learn/_knitr.qmd >}}
@@ -10,15 +9,11 @@ engine: knitr
 hist(rnorm(10000))
 ```
 
-
-
 ```{webr}
 #| caption: Immediate Execution
 #| runbutton: false
 rnorm(10)
 ```
-
-
 
 ```{webr}
 #| caption: No Start Over button

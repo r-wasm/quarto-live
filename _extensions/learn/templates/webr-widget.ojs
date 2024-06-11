@@ -1,7 +1,13 @@
 {
   // Wait for output to be written to the DOM, then trigger staticRender()
+  console.log('go0');
   await _webr_value_{{block_id}};
   if (window.HTMLWidgets) {
     window.HTMLWidgets.staticRender();
+  }
+  console.log('go1');
+  if (window.PagedTableDoc) {
+    console.log('go2');
+    PagedTableDoc.initAll();
   }
 }
