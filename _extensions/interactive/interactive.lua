@@ -138,7 +138,7 @@ function WebRCodeBlock(code)
     )
   end
 
-  -- Handle additional non-interactive execise blocks: setup, check, hint, solution
+  -- Supplementary execise blocks: setup, check, hint, solution
   if (block.attr.setup) then
     assertBlockExercise("setup", block)
     return pandoc.RawBlock(
@@ -170,31 +170,40 @@ function WebRCodeBlock(code)
 
   if (block.attr.solution) then
     assertBlockExercise("solution", block)
+    local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
+    local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
     return pandoc.Div(
       {
-        pandoc.Code(block.code, pandoc.Attr('', { 'solution-code', 'd-none' })),
-        pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
+        InterpolatedRBlock(plaincode, false),
+        InterpolatedRBlock(codeblock, true),
       },
-      pandoc.Attr( '',
+      pandoc.Attr('',
         { 'webr-ojs-exercise', 'exercise-solution', 'd-none' },
         { exercise = block.attr.exercise }
       )
     )
   end
 
-  -- Render appropriate OJS for the type of client-side block we're working with
-  local ojs_source = "webr-evaluate.ojs"
+
+  -- Prepare OJS attributes
   local input = "{" .. table.concat(block.attr.input or {}, ", ") .. "}"
   local ojs_vars = {
     block_id = block_id,
     block_input = input,
   }
 
+  -- Render appropriate OJS for the type of client-side block we're working with
+  local ojs_source = nil
   if (block.attr.exercise) then
+    -- Primary interactive exercise block
     ojs_source = "webr-exercise.ojs"
     ojs_vars["exercise_id"] = block.attr.exercise
   elseif (block.attr.edit) then
+    -- Editable non-exercise sandbox block
     ojs_source = "webr-editor.ojs"
+  else
+    -- Non-interactive evaluation block
+    ojs_source = "webr-evaluate.ojs"
   end
 
   append_ojs_template(ojs_source, ojs_vars)
@@ -212,7 +221,7 @@ function WebRCodeBlock(code)
   })
 end
 
-function InterpolatedRBlock(code)
+function InterpolatedRBlock(block, highlight)
   block_id = block_id + 1
 
   -- Reactively render OJS variables in codeblocks
@@ -222,7 +231,7 @@ function InterpolatedRBlock(code)
 
   -- Build map of OJS variable names to JS template literals
   local map = "{\n"
-  for var in code.text:gmatch("${([a-zA-Z_$][%w_$]+)}") do
+  for var in block.text:gmatch("${([a-zA-Z_$][%w_$]+)}") do
     map = map .. var .. ",\n"
   end
   map = map .. "}"
@@ -230,6 +239,7 @@ function InterpolatedRBlock(code)
   -- We add this OJS block for its side effect of updating the HTML element
   content = string.gsub(content, "{{block_id}}", block_id)
   content = string.gsub(content, "{{def_map}}", map)
+  content = string.gsub(content, "{{highlight}}", tostring(highlight))
   table.insert(ojs_definitions.contents, {
     methodName = "interpretQuiet",
     cellName = "webr-" .. block_id,
@@ -237,8 +247,8 @@ function InterpolatedRBlock(code)
     source = content,
   })
 
-  code.identifier = "webr-interpolate-" .. block_id
-  return code
+  block.identifier = "webr-interpolate-" .. block_id
+  return block
 end
 
 function CodeBlock(code)
@@ -249,7 +259,7 @@ function CodeBlock(code)
 
   if (code.classes:includes("r") and string.match(code.text, "${[a-zA-Z_$][%w_$]+}")) then
     -- Non-interactive code block containing OJS variables
-    return InterpolatedRBlock(code)
+    return InterpolatedRBlock(code, true)
   end
 end
 

@@ -44,17 +44,20 @@ export function highlightR(code: string) {
 }
 
 // Traverse a HTMLElement tree and replace text with highlighted replacement
-export function replaceHighlightR(el: Element, search: string, replace: string) {
+export function interpolateR(el: Element, search: string, replace: string, highlight: boolean) {
   if (el.textContent.includes(search)) {
     let found = false;
     for (let child of el.children) {
-      found ||= replaceHighlightR(child, search, replace);
+      found ||= interpolateR(child, search, replace, highlight);
     }
     // If `search` not found in children, replace this entire node.
     // `search` could span several syntax spans, so we re-highlight replacement
     if (!found) {
-      const highlighted = highlightR(el.textContent.replace(search, replace));
-      el.innerHTML = highlighted.innerHTML;
+      el.textContent = el.textContent.replace(search, replace);
+      if (highlight) {
+        const highlighted = highlightR(el.textContent);
+        el.innerHTML = highlighted.innerHTML;
+      }
     }
     return true;
   }

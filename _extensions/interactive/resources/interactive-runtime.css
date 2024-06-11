@@ -374,6 +374,11 @@ div.exercise-cell-output.cell-output-stderr pre code {
   word-wrap: break-word;
 }
 
+/* Hints and solutions */
+.tab-pane > .exercise-tab-pane-header {
+  margin-bottom: 1em;
+}
+
 /* Feedback alerts */
 .alert .exercise-feedback p:last-child {
   margin-bottom: 0;

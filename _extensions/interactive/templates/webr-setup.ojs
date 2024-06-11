@@ -1,6 +1,6 @@
 webROjs = {
   let { ExerciseEditor, WebREvaluator, EnvironmentManager, WebRGrader } = window._webr_ojs_runtime;
-  let { highlightR, replaceHighlightR, setupR } = window._webr_ojs_runtime;
+  let { highlightR, interpolateR, setupR } = window._webr_ojs_runtime;
   let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._webr_ojs_runtime.WebR;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
@@ -91,7 +91,7 @@ webROjs = {
     environmentManager,
     highlightR,
     process,
-    replaceHighlightR,
+    interpolateR,
     webRPromise,
     renderedOjs,
   };

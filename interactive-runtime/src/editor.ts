@@ -22,7 +22,7 @@ type ExerciseButtonSpec = {
   text: string;
   icon: string;
   className: string;
-  onclick?: ((ev: MouseEvent) => any);
+  onclick?: ((ev: Event) => any);
 }
 
 type ExerciseCompletionMethods = {
@@ -189,7 +189,7 @@ export class ExerciseEditor {
     }
   }
 
-  onViewUpdate (update: ViewUpdate) {
+  onViewUpdate(update: ViewUpdate) {
     if (!update.docChanged) return;
 
     this.code = update.state.doc.toString();
@@ -237,13 +237,16 @@ export class ExerciseEditor {
   }
 
   renderButton(spec: ExerciseButtonSpec) {
+    // TODO: Fix: we use <a> because Quarto adds its own styling to <button>
     const dom = document.createElement("a");
     const label = document.createElement("span");
     dom.className = `d-flex align-items-center gap-1 btn btn-exercise-editor ${spec.className} text-nowrap`;
+    dom.setAttribute("role", "button");
     label.innerText = spec.text;
     dom.innerHTML = icons[spec.icon];
     dom.appendChild(label);
     dom.onclick = spec.onclick || null;
+    dom.onkeydown = spec.onclick || null;
     return dom;
   }
 
@@ -261,6 +264,85 @@ export class ExerciseEditor {
     return dom;
   }
 
+  renderHintButton(hints: NodeListOf<Element>, initial: ExerciseButton | undefined) {
+    // Reduce over the hints, replacing each in a chain of click handlers
+    return Array.from(hints).reduceRight<ExerciseButton | null>(
+      (current, hint, idx, arr) => {
+        return this.renderButton({
+          text: idx === 0 ? "Show Hint" : "Next Hint",
+          icon: "lightbulb",
+          className: "btn-outline-dark btn-sm",
+          onclick: function () {
+            if (idx > 0) arr[idx - 1].classList.add("d-none");
+            hint.classList.remove("d-none");
+            if (current) {
+              this.replaceWith(current);
+            } else {
+              this.remove();
+            }
+          }
+        }
+        );
+      }, initial);
+  }
+
+  renderSolutionButton(solutions: NodeListOf<Element>, hide: NodeListOf<Element>) {
+    // Reveal all solution elements at once, optionally hiding other elements
+    return this.renderButton({
+      text: "Show Solution",
+      icon: "exclamation-circle",
+      className: "btn-exercise-solution btn-outline-dark btn-sm",
+      onclick: function () {
+        if (hide) hide.forEach((elem) => elem.classList.add('d-none'));
+        Array.from(solutions).forEach((solution) => {
+          solution.classList.remove("d-none");
+        });
+        this.remove();
+      }
+    });
+  }
+
+  renderHintsTabset(hints: NodeListOf<Element>, solutions: NodeListOf<Element>): null {
+    // Return nothing but with a side effect:
+    //   Add reveal buttons to the top of applicable tabset panes
+    const hintPanels = new Set<Element>();
+    hints.forEach((hint) => {
+      const parent = hint.parentElement;
+      if (parent.classList.contains("tab-pane")) {
+        hintPanels.add(parent);
+      }
+    });
+
+    const solutionPanels = new Set<Element>();
+    solutions.forEach((solution) => {
+      const parent = solution.parentElement;
+      if (parent.classList.contains("tab-pane")) {
+        solutionPanels.add(parent);
+      }
+    });
+
+    hintPanels.forEach((panel) => {
+      const header = document.createElement('div');
+      header.className = "d-flex justify-content-between exercise-tab-pane-header";
+      const innerHints = panel.querySelectorAll(
+        `.exercise-hint[data-exercise="${this.options.exercise}"]`
+      );
+      header.appendChild(this.renderHintButton(innerHints, null));
+      panel.prepend(header);
+    })
+
+    solutionPanels.forEach((panel) => {
+      const header = document.createElement('div');
+      header.className = "d-flex justify-content-between exercise-tab-pane-header";
+      const innerSolutions = panel.querySelectorAll(
+        `.exercise-solution[data-exercise="${this.options.exercise}"]`
+      );
+      header.appendChild(this.renderSolutionButton(innerSolutions, null));
+      panel.prepend(header);
+    })
+    return null;
+  }
+
   renderHints(): ExerciseButton | null {
     const hints = document.querySelectorAll(
       `.d-none.exercise-hint[data-exercise="${this.options.exercise}"]`
@@ -269,39 +351,24 @@ export class ExerciseEditor {
       `.d-none.exercise-solution[data-exercise="${this.options.exercise}"]`
     );
 
-    // Reveal hints and solution in order of appearance in DOM
-    // If there is a solution, terminate with a solution button
-    let terminal: ExerciseButton | undefined;
-    if (solutions.length > 0) {
-      terminal = this.renderButton({
-        text: "Show Solution",
-        icon: "exclamation-circle",
-        className: "btn-outline-dark",
-        onclick: function () {
-          Array.from(solutions).forEach((solution) => {
-            solution.classList.remove("d-none");
-          });
-          this.remove();
-        }
-      });
-    }
+    const inTabPane = Array.from(hints).some((hint) =>
+        hint.parentElement.classList.contains('tab-pane')
+      ) || Array.from(solutions).some((sol) => 
+        sol.parentElement.classList.contains('tab-pane')
+      );
 
-    // Next reduce over the hints, replacing each in a chain of click handlers
-    return Array.from(hints).reduceRight<ExerciseButton | null>((current, hint) => {
-      return this.renderButton({
-        text: "Show Hint",
-        icon: "lightbulb",
-        className: "btn-outline-dark",
-        onclick: function () {
-          hint.classList.remove("d-none");
-          if (current) {
-            this.replaceWith(current);
-          } else {
-            this.remove();
-          }
-        }
-      });
-    }, terminal);
+    if (inTabPane) {
+      // Reveal hints and solutions contained in the associated tab-panels
+      return this.renderHintsTabset(hints, solutions);
+    } else {
+      // Reveal hints and solution in order of appearance in DOM
+      // If there is a solution, terminate with a solution button
+      let initial: ExerciseButton | undefined;
+      if (solutions.length > 0) {
+        initial = this.renderSolutionButton(solutions, hints);
+      }
+      return this.renderHintButton(hints, initial);
+    }
   }
 
   render() {

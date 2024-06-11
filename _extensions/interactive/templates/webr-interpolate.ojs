@@ -9,6 +9,6 @@
   // Interpolate reactive OJS variables into established HTML element
   elem.innerHTML = elem.origHTML;
   Object.keys(def_map).forEach((def) =>
-    webROjs.replaceHighlightR(elem, "${" + def + "}", def_map[def])
+    webROjs.interpolateR(elem, "${" + def + "}", def_map[def], {{highlight}})
   );
 }

@@ -1,4 +1,4 @@
-import { WebR, RObject, RLogical, isRNull } from 'webr'
+import { WebR, RObject, RLogical, isRNull, isRList } from 'webr'
 import { RList, RNull } from 'webr'
 import { WebREvaluator, EvaluateOptions, EnvLabels, EvaluateContext } from "./evaluate"
 import { EnvironmentManager } from './environment'
@@ -71,10 +71,12 @@ export class WebRGrader {
     }
 
     // This is feedback contained in an R list object
-    const message = await result.get("message");
-    const correct = await result.get("correct");
-    if (!isRNull(message) && !isRNull(correct)) {
-      return await this.feedbackAsHtmlAlert(result);
+    if (isRList(result)) {
+      const message = await result.get("message");
+      const correct = await result.get("correct");
+      if (!isRNull(message) && !isRNull(correct)) {
+        return await this.feedbackAsHtmlAlert(result);
+      }
     }
     return container;
   }
