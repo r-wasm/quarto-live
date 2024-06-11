@@ -471,9 +471,26 @@ export class WebREvaluator implements ExerciseEvaluator {
       case "character": {
         const classes = await (await robj.class()).toArray();
         if (classes.includes('knit_asis')) {
-          var container = document.createElement('div');
-          container.innerHTML = await robj.toString();
-          return container.firstElementChild;
+          const html = await robj.toString();
+          const meta = await (await robj.attrs()).get("knit_meta") as RList | RNull;
+  
+          const outputDiv = document.createElement("div");
+          outputDiv.className = "cell-output";
+          outputDiv.innerHTML = html;
+  
+          // Dynamically load any dependencies into page (await & maintain ordering)
+          if (isRList(meta)) {
+            const deps = await meta.toArray();
+            for (let i = 0; i < deps.length; i++) {
+              await renderHtmlDependency(this.webR, deps[i] as RObject);
+            }
+          }
+          if (window.HTMLWidgets) {
+            setTimeout(() => {
+              window.HTMLWidgets.staticRender();
+            }, 250);
+          }
+          return outputDiv;
         }
       }
       case "logical":
