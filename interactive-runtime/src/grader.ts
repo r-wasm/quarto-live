@@ -2,6 +2,7 @@ import { WebR, RObject, RLogical, isRNull, isRList } from 'webr'
 import { RList, RNull } from 'webr'
 import { WebREvaluator, EvaluateOptions, EnvLabels, EvaluateContext } from "./evaluate"
 import { EnvironmentManager } from './environment'
+import { Indicator } from './indicator'
 
 export type ExerciseGraderCode = {
   code_check?: string;
@@ -57,28 +58,40 @@ export class WebRGrader {
     // TODO: run user provided `code_check`
 
     // Evaluate user code and check with provided `check`
-    checkResult = await this.evaluateExercise();
-    if (isRNull(checkResult)) {
-      return null;
+    let ind = this.context.indicator;
+    if (!this.context.indicator) {
+      ind = new Indicator();
     }
-    const container = await this.evaluator.asHtml(checkResult, this.options);
-    const result = await container.value.result as RObject;
-    const classList = await (await result.class()).toArray();
+    ind.running();
 
-    // Is this a feedback from gradethis
-    if (classList.includes("gradethis_graded") || classList.includes("gradethis_feedback")) {
-      return await this.feedbackAsHtmlAlert(result);
-    }
+    try {
+      checkResult = await this.evaluateExercise();
+      if (isRNull(checkResult)) {
+        return null;
+      }
+      const container = await this.evaluator.asHtml(checkResult, this.options);
+      const result = await container.value.result as RObject;
+      const classList = await (await result.class()).toArray();
 
-    // This is feedback contained in an R list object
-    if (isRList(result)) {
-      const message = await result.get("message");
-      const correct = await result.get("correct");
-      if (!isRNull(message) && !isRNull(correct)) {
+      // Is this a feedback from gradethis
+      if (classList.includes("gradethis_graded") || classList.includes("gradethis_feedback")) {
         return await this.feedbackAsHtmlAlert(result);
       }
+
+      // This is feedback contained in an R list object
+      if (isRList(result)) {
+        const message = await result.get("message");
+        const correct = await result.get("correct");
+        if (!isRNull(message) && !isRNull(correct)) {
+          return await this.feedbackAsHtmlAlert(result);
+        }
+      }
+
+      return container;
+    } finally {
+      ind.finished();
+      if (!this.context.indicator) ind.destroy();
     }
-    return container;
   }
 
   async parseCheck(code:string, error_check?: string): Promise<RList | RNull> {

@@ -1,5 +1,6 @@
 import type { WebR, RFunction } from 'webr'
-import type { OJSElement, EvaluateOptions } from './evaluate';
+import type { OJSElement, EvaluateOptions } from './evaluate'
+import { Indicator } from './indicator'
 import { basicSetup } from 'codemirror'
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view'
 import { EditorState, Compartment, Prec } from '@codemirror/state'
@@ -70,6 +71,7 @@ export class ExerciseEditor {
   view: EditorView;
   container: OJSElement;
   options: ExerciseOptions;
+  indicator: Indicator;
   webRPromise: Promise<WebR>;
   completionMethods: Promise<ExerciseCompletionMethods>;
   reactiveViewof = [
@@ -171,8 +173,31 @@ export class ExerciseEditor {
     this.container.value = {
       code: this.options.autorun ? code : null,
       options: this.options,
-      editor: this.container,
     };
+
+    // Evaluation indicators
+    this.container.value.indicator = this.indicator = new Indicator({
+      runningCallback: () => {
+        Array.from(
+          this.container.getElementsByClassName('exercise-editor-eval-indicator')
+        ).forEach((el) => el.classList.remove('d-none'));
+      },
+      finishedCallback: () => {
+        Array.from(
+          this.container.getElementsByClassName('exercise-editor-eval-indicator')
+        ).forEach((el) => el.classList.add('d-none'));
+      },
+      busyCallback: () => {
+        Array.from(
+          this.container.getElementsByClassName('exercise-editor-btn-run-code')
+        ).forEach((el) => el.classList.add('disabled'));
+      },
+      idleCallback: () => {
+        Array.from(
+          this.container.getElementsByClassName('exercise-editor-btn-run-code')
+        ).forEach((el) => el.classList.remove('disabled'));
+      }
+    });
   }
 
   onInput(ev: CustomEvent) {
@@ -308,7 +333,7 @@ export class ExerciseEditor {
     const hintPanels = new Set<Element>();
     hints.forEach((hint) => {
       const parent = hint.parentElement;
-      if (parent.classList.contains("tab-pane")) {
+      if (parent.id.includes("tabset-")) {
         hintPanels.add(parent);
       }
     });
@@ -316,7 +341,7 @@ export class ExerciseEditor {
     const solutionPanels = new Set<Element>();
     solutions.forEach((solution) => {
       const parent = solution.parentElement;
-      if (parent.classList.contains("tab-pane")) {
+      if (parent.id.includes("tabset-")) {
         solutionPanels.add(parent);
       }
     });
@@ -352,9 +377,9 @@ export class ExerciseEditor {
     );
 
     const inTabPane = Array.from(hints).some((hint) =>
-        hint.parentElement.classList.contains('tab-pane')
+        hint.parentElement.id.includes('tabset-')
       ) || Array.from(solutions).some((sol) => 
-        sol.parentElement.classList.contains('tab-pane')
+        sol.parentElement.id.includes('tabset-')
       );
 
     if (inTabPane) {

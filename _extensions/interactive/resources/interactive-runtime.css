@@ -248,7 +248,7 @@ pre > code.sourceCode span.tok-function-attributeName {
 }
 
 /* Button styling */
-.quarto-light .reveal .card.exercise-editor-card .btn.btn-primary {
+.quarto-light .reveal .btn.btn-exercise-editor.btn-primary {
   --exercise-btn-bg: var(--bs-btn-bg, #0d6efd);
   --exercise-btn-color: var(--bs-btn-color, #ffffff);
   --exercise-btn-border-color: var(--bs-btn-border-color, #0d6efd);
@@ -257,7 +257,7 @@ pre > code.sourceCode span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
 }
 
-.quarto-dark .reveal .card.exercise-editor-card .btn.btn-primary {
+.quarto-dark .reveal .btn.btn-exercise-editor.btn-primary {
   --exercise-btn-bg: var(--bs-btn-bg, #375a7f);
   --exercise-btn-color: var(--bs-btn-color, #ffffff);
   --exercise-btn-border-color: var(--bs-btn-border-color, #375a7f);
@@ -266,7 +266,7 @@ pre > code.sourceCode span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
 }
 
-.quarto-light .reveal .card.exercise-editor-card .btn.btn-outline-dark {
+.quarto-light .reveal .btn.btn-exercise-editor.btn-outline-dark {
   --exercise-btn-bg: var(--bs-btn-bg, transparent);
   --exercise-btn-color: var(--bs-btn-color, #333);
   --exercise-btn-border-color: var(--bs-btn-border-color, #333);
@@ -275,7 +275,7 @@ pre > code.sourceCode span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #ffffff);
 }
 
-.quarto-dark .reveal .card.exercise-editor-card .btn.btn-outline-dark {
+.quarto-dark .reveal .btn.btn-exercise-editor.btn-outline-dark {
   --exercise-btn-bg: var(--bs-btn-bg, transparent);
   --exercise-btn-color: var(--bs-btn-color, #f8f8f8);
   --exercise-btn-border-color: var(--bs-btn-border-color, #f8f8f8);
@@ -315,7 +315,7 @@ pre > code.sourceCode span.tok-function-attributeName {
   border-bottom-left-radius: 0
 }
 
-.reveal .card.exercise-editor-card .btn {
+.reveal .btn.btn-exercise-editor {
   display: inline-block;
   padding: 0.25rem 0.5rem;
   font-size: 1rem;
@@ -331,15 +331,15 @@ pre > code.sourceCode span.tok-function-attributeName {
   transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
-.reveal .card.exercise-editor-card .btn:hover {
+.reveal .btn.btn-exercise-editor:hover {
   color: var(--exercise-btn-hover-color);
   background-color: var(--exercise-btn-hover-bg);
   border-color: var(--exercise-btn-hover-border-color);
 }
 
-.reveal .card.exercise-editor-card.btn:disabled,
-.reveal .card.exercise-editor-card.btn.disabled,
-.reveal .card.exercise-editor-card fieldset:disabled .btn {
+.reveal .btn.btn-exercise-editor:disabled,
+.reveal .btn.btn-exercise-editor.disabled,
+.reveal .btn-exercise-editor fieldset:disabled .btn {
   pointer-events: none;
   opacity: 0.65;
 }

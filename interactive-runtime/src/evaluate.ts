@@ -1,9 +1,11 @@
 import type { WebR, Shelter, RObject, RList, RNull, REnvironment } from 'webr'
 import type { RCharacter, RLogical, RDouble, RRaw, RInteger } from 'webr'
-import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr';
+import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr'
 import { highlightR } from './highlighter'
+import { Indicator } from './indicator'
 import { renderHtmlDependency } from './render'
-import { EnvironmentManager } from './environment';
+import { EnvironmentManager } from './environment'
+import { ExerciseEditor } from './editor'
 
 declare global {
   interface Window {
@@ -38,7 +40,7 @@ export type EvaluateOptions = {
 export interface EvaluateContext {
   code: string,
   options: EvaluateOptions,
-  editor?: OJSElement,
+  indicator?: Indicator,
 };
 
 // prep - Environment after setup
@@ -116,6 +118,7 @@ export class WebREvaluator implements ExerciseEvaluator {
     }
     this.envManager = environmentManager;
   }
+
   async purge() {
     const shelter = await this.shelter;
     shelter.purge();
@@ -135,15 +138,22 @@ export class WebREvaluator implements ExerciseEvaluator {
       return;
     }
 
-    // Set OJS inputs in "prep" environment
-    const prep = await this.envManager.get(this.envLabels.prep);
-    await Promise.all(
-      Object.entries(inputs).map(async ([k, v]) => {
-        await prep.bind(k, v);
-      })
-    );
+    // Indicate processing
+    let ind = this.context.indicator;
+    if (!this.context.indicator) {
+      ind = new Indicator();
+    }
+    ind.running();
 
     try {
+      // Set OJS inputs in "prep" environment
+      const prep = await this.envManager.get(this.envLabels.prep);
+      await Promise.all(
+        Object.entries(inputs).map(async ([k, v]) => {
+          await prep.bind(k, v);
+        })
+      );
+
       // Run setup code, copy prep environment for result, run user code
       await this.evaluate(this.options.setup, "prep");
       await this.envManager.create(this.envLabels.result, this.envLabels.prep);
@@ -159,88 +169,84 @@ export class WebREvaluator implements ExerciseEvaluator {
       } else {
         this.container = await this.asHtml(result);
       }
+
+      // Grab objects from the webR OJS environment
+      const envir = await this.envManager.get(this.envLabels.result);
+      const ojs_envir = await this.webR.objs.globalEnv.get('.webr_ojs') as REnvironment;
+      const objs = await ojs_envir.toObject({ depth: -1 });
+
+      // Grab defined objects from the result environment
+      if (typeof this.options.define === 'string') {
+        objs[this.options.define] = await envir.get(this.options.define);
+      } else if (this.options.define) {
+        Object.assign(objs, Object.fromEntries(
+          await Promise.all(
+            this.options.define.map(async (name) => {
+              const obj = await envir.get(name);
+              return [name, obj];
+            })
+          )
+        ));
+      }
+
+      // Define the grabbed objects as OJS values
+      Object.keys(objs).forEach(async (key) => {
+        const jsValue = await this.asOjs(objs[key]);
+        if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
+          window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
+        } else {
+          window._ojs.ojsConnector.define(key)(jsValue);
+        }
+      });
+
+      // Clean up OJS values from R environment
+      await this.webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
     } finally {
       this.purge();
+      ind.finished();
+      if (!this.context.indicator) ind.destroy();
     }
-
-    // Grab objects from the webR OJS environment
-    const envir = await this.envManager.get(this.envLabels.result);
-    const ojs_envir = await this.webR.objs.globalEnv.get('.webr_ojs') as REnvironment;
-    const objs = await ojs_envir.toObject({ depth: -1 });
-
-    // Grab defined objects from the result environment
-    if (typeof this.options.define === 'string') {
-      objs[this.options.define] = await envir.get(this.options.define);
-    } else if (this.options.define) {
-      Object.assign(objs, Object.fromEntries(
-        await Promise.all(
-          this.options.define.map(async (name) => {
-            const obj = await envir.get(name);
-            return [name, obj];
-          })
-        )
-      ));
-    }
-
-    // Define the grabbed objects as OJS values
-    Object.keys(objs).forEach(async (key) => {
-      const jsValue = await this.asOjs(objs[key]);
-      if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
-        window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
-      } else {
-        window._ojs.ojsConnector.define(key)(jsValue);
-      }
-    });
-
-    // Clean up OJS values from R environment
-    await this.webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
   }
 
   async evaluate(code: string, envLabel: EnvLabel, options: EvaluateOptions = this.options) {
     // Early return if code is undefined, null, or if we're not evaluating
     if (code == null || !options.include) {
-      this.setIdle();
       return this.webR.objs.null;
     }
 
-    this.setRunning();
-    try {
-      const shelter = await this.shelter;
-      const capture = await shelter.captureR(`
-          setTimeLimit(elapsed = timelimit)
-          on.exit(setTimeLimit(elapsed = Inf))
+    const shelter = await this.shelter;
+    const capture = await shelter.captureR(`
+        setTimeLimit(elapsed = timelimit)
+        on.exit(setTimeLimit(elapsed = Inf))
 
-          evaluate::evaluate(
-            code,
-            envir = envir,
-            keep_message = warning,
-            keep_warning = warning,
-            stop_on_error = error,
-            output_handler = evaluate::new_output_handler(
-              value = function(x, visible) {
-                res <- if (visible) {
-                  withVisible(knitr::knit_print(x, options = list(screenshot.force = FALSE)))
-                } else list(value = x, visible = FALSE)
-                class(res) <- "result"
-                res
-              }
-            )
+        evaluate::evaluate(
+          code,
+          envir = envir,
+          keep_message = warning,
+          keep_warning = warning,
+          stop_on_error = error,
+          output_handler = evaluate::new_output_handler(
+            value = function(x, visible) {
+              res <- if (visible) {
+                withVisible(knitr::knit_print(x, options = list(screenshot.force = FALSE)))
+              } else list(value = x, visible = FALSE)
+              class(res) <- "result"
+              res
+            }
           )
-        `,
-        {
-          env: {
-            code,
-            timelimit: Number(options.timelimit),
-            envir: await this.envManager.get(this.envLabels[envLabel]),
-            warning: options.warning,
-            error: options.error ? 0 : 1,
-          }
+        )
+      `,
+      {
+        env: {
+          code,
+          timelimit: Number(options.timelimit),
+          envir: await this.envManager.get(this.envLabels[envLabel]),
+          warning: options.warning,
+          error: options.error ? 0 : 1,
         }
-      );
-      return capture.result as RList;
-    } finally {
-      this.setIdle();
-    }
+      }
+    );
+    return capture.result as RList;
   }
 
   asSourceHTML(code): HTMLDivElement {
@@ -406,7 +412,6 @@ export class WebREvaluator implements ExerciseEvaluator {
     // Attach final result to output value
     container.value.result = await result[result.length - 1].get('value');
     container.value.evaluate_result = value;
-    this.setIdle();
     return container;
   }
 
@@ -523,25 +528,5 @@ export class WebREvaluator implements ExerciseEvaluator {
       default:
         throw new Error(`Unsupported type: ${value._payload.obj.type}`);
     }
-  }
-
-  setRunning() {
-    if (this.context.editor) {
-      Array.from(
-        this.context.editor.getElementsByClassName('exercise-editor-eval-indicator')
-      ).forEach((el) => el.classList.remove('d-none'));
-    }
-    Array.from(
-      document.getElementsByClassName('exercise-editor-btn-run-code')
-    ).forEach((el) => el.classList.add('disabled'));
-  }
-
-  setIdle() {
-    Array.from(
-      document.getElementsByClassName('exercise-editor-eval-indicator')
-    ).forEach((el) => el.classList.add('d-none'));
-    Array.from(
-      document.getElementsByClassName('exercise-editor-btn-run-code')
-    ).forEach((el) => el.classList.remove('disabled'));
   }
 }
