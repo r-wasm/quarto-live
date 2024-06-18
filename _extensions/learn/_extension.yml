@@ -1,14 +1,14 @@
-title: Interactive
+title: Quarto Learn
 author: George Stagg
 version: 0.1.0-dev
 quarto-required: ">=1.4.0"
 contributes:
   filters:
-    - interactive.lua
+    - learn.lua
   formats:
     common:
       ojs-engine: true
       filters:
-        - interactive.lua
+        - learn.lua
     html: default
     revealjs: default

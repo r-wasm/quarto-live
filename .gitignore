@@ -1,5 +1,6 @@
 *_files
 *.html
+/template.ipynb
 /.luarc.json
 _site
 node_modules

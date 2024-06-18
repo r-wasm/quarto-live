@@ -1,6 +1,6 @@
 ---
-title: Quarto Interactive
-format: interactive-html
+title: Quarto Learn
+format: learn-html
 ---
 
 # Overview
