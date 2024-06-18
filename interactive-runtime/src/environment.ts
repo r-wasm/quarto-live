@@ -22,8 +22,8 @@ export class EnvironmentManager {
   }
 
   async create(target_id: string, parent_id: string) {
-    if (target_id === "global") {
-      return this.get("global");
+    if (target_id === parent_id || target_id === "global") {
+      return this.get(target_id);
     }
 
     if (target_id in this.env) {

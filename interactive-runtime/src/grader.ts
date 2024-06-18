@@ -192,11 +192,14 @@ export class WebRGrader {
       }
 
       await this.evaluator.bind(".checker_args", await new shelter.RList(args), "grading");
-      return await this.evaluator.evaluate(
+      const result = await this.evaluator.evaluate(
         "do.call(getOption('webr.exercise.checker'), .checker_args)",
         "grading",
         this.options
       );
+      // debug exercise checker
+      // this.evaluator.webR.evalR("print(result)", { env: { result }})
+      return result;
     } finally {
       shelter.purge();
     }

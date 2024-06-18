@@ -1,4 +1,4 @@
-import { build, context, BuildOptions, PluginBuild } from 'esbuild';
+import { build, context, BuildOptions } from 'esbuild';
 import process from 'process';
 
 let watch = false;
@@ -9,7 +9,7 @@ if (process.argv.includes("--watch")) {
 const options: BuildOptions = {
   entryPoints: ['./src/main.ts'],
   bundle: true,
-  outfile: '../_extensions/interactive/resources/interactive-runtime.js',
+  outfile: '../_extensions/learn/resources/interactive-runtime.js',
   minify: true,
   loader: { '.svg': 'text', '.R': 'text' },
   platform: 'browser',

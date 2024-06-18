@@ -101,12 +101,12 @@ export class WebREvaluator implements ExerciseEvaluator {
       context.options
     );
 
-    if (this.options.envir === "global") {
+    if (!this.options.exercise || this.options.envir === "global") {
       this.envLabels = {
-        prep: "global",
-        result: "global",
-        grading: "global",
-        solution: "global",
+        prep: this.options.envir,
+        result: this.options.envir,
+        grading: this.options.envir,
+        solution: this.options.envir,
       }
     } else {
       this.envLabels = {

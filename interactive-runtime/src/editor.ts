@@ -245,7 +245,7 @@ export class ExerciseEditor {
     if (from === to && !context.explicit) {
       return null;
     }
-    await completionMethods.assignLineBuffer(line);
+    await completionMethods.assignLineBuffer(line.replace(/\)+$/, ""));
     await completionMethods.assignToken(text);
     await completionMethods.assignStart(from + 1);
     await completionMethods.assignEnd(to + 1);
