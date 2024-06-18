@@ -1,12 +1,13 @@
 ---
 title: Quarto Learn
 format: learn-html
+webr:
+  packages:
+    - ggplot2
 ---
 
-# Overview
-
-Here is an editable code block.
-
 ```{webr}
-rnorm(100)
+library(ggplot2)
+ggplot(mpg, aes(displ, hwy, colour = class)) + 
+  geom_point()
 ```
