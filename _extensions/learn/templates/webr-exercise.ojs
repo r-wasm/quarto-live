@@ -26,9 +26,6 @@ _webr_feedback_{{block_id}} = {
   const emptyFeedback = document.createElement('div');
   const checkElement = document.querySelector(`script[type=\"webr-check-{{exercise_id}}-contents\"]`);
 
-  // Return empty block if there's no feedback code
-  if (!checkElement) return emptyFeedback;
-
   // Return empty block if there's no code submitted yet
   const result = await _webr_value_{{block_id}}.result;
   if (!result) return emptyFeedback;
@@ -36,7 +33,7 @@ _webr_feedback_{{block_id}} = {
   // Build grading definition
   const check = !checkElement ? {} : JSON.parse(atob(checkElement.textContent));
   const grading = {
-    check: check.code,
+    check: check.code || 'invisible(NULL)',
   };
 
   const grader = new webROjs.WebRGrader(
