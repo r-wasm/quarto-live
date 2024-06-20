@@ -1,0 +1,39 @@
+---
+title: Grading Solutions
+format: learn-html
+---
+
+## Fill in the blanks
+
+```{webr}
+#| caption: Sample Exercise 1
+#| exercise: example_1
+mtcars |> ______
+```
+
+## Grading R code
+
+Write a function to return the number 2.
+
+```{webr}
+#| caption: Sample Exercise 2
+#| exercise: example_2
+foo <- function () {
+  return(4)
+}
+```
+
+```{webr}
+#| exercise: example_2
+#| check: true
+if (!is.function(.result)) {
+  list(correct = FALSE, message = "I can't see your function!")
+} else if (.result() == 2) {
+  list(correct = TRUE, message = "Nice work!")
+} else if (.result() == 4) {
+  list(correct = FALSE, message = "Have you changed anything?")
+} else {
+  list(correct = FALSE, message = "Incorrect, sorry!")
+}
+```
+

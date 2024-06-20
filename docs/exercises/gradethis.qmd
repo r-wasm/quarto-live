@@ -1,0 +1,46 @@
+---
+title: Grading solutions using `gradethis`
+format: learn-html
+learn:
+  solution: false
+  hint: true
+webr:
+  grader: gradethis
+  packages:
+    - dplyr
+---
+
+{{< include ../_extensions/learn/_knitr.qmd >}}
+{{< include ../_extensions/learn/_gradethis.qmd >}}
+
+```{webr}
+#| edit: false
+#| output: false
+library(dplyr)
+```
+
+##  Grading R code with `gradethis`
+
+```{webr}
+#| caption: Sample Exercise
+#| exercise: example_1
+starwars |> ______
+```
+
+::: {.solution exercise="example_1"}
+
+**Solution:**
+
+```{webr}
+#| exercise: example_1
+#| solution: true
+starwars |> distinct(hair_color)
+```
+
+:::
+
+```{webr}
+#| exercise: example_1
+#| check: true
+gradethis::grade_this_code()
+```

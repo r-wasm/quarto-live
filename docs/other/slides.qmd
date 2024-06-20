@@ -1,0 +1,48 @@
+---
+format:
+  learn-revealjs:
+    theme: dark
+title: Example Slides
+webr:
+  cell-options:
+    fig-width: 720
+    fig-height: 432
+---
+
+```{webr}
+#| runbutton: false
+#| startover: false
+plot(rnorm(1000))
+```
+
+---
+
+```{webr}
+#| exercise: ex1
+#| caption: Exercise 1
+1+2
+```
+
+```{webr}
+#| exercise: ex1
+#| check: true
+if (.result == 3) {
+  list(message = "Great work!", correct = TRUE)
+} else {
+  list(message = "Oh no, that's incorrect!", correct = FALSE)
+}
+```
+
+::: { .hint exercise="ex1" }
+
+This is a **markdown** hint.
+
+:::
+
+::: { .solution exercise="ex1" }
+
+```r
+1 + 2
+```
+
+:::

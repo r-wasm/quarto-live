@@ -1,0 +1,84 @@
+---
+title: Reactivity
+format: learn-html
+---
+
+## Define OJS variables
+
+```{webr}
+#| define:
+#|   - foo
+#|   - bar
+foo <- 123
+bar <- rnorm(1)
+```
+
+```{ojs}
+foo
+bar
+```
+
+
+
+
+
+
+## Input OJS variables to code block
+
+```{ojs}
+baz = 123
+```
+
+```{webr}
+#| input:
+#|   - baz
+baz
+```
+
+
+
+
+## Reactivity using OJS
+
+```{ojs}
+//| echo: false
+viewof m = Inputs.range([10, 1000], {step: 1})
+```
+
+```{webr}
+#| input:
+#|   - m
+hist(rnorm(m))
+```
+
+
+
+
+
+
+
+
+
+---
+
+Faster:
+
+```{ojs}
+//| echo: false
+viewof n = Inputs.range([10, 1000], {step: 1})
+do_hist(n)
+```
+
+
+```{webr}
+#| edit: false
+#| echo: false
+#| define:
+#|   - do_hist
+do_hist <- function(n) {
+  hist(rnorm(n))
+}
+```
+
+
+

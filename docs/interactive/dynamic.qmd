@@ -1,0 +1,209 @@
+---
+title: Dynamic Exercises
+format: learn-html
+webr:
+  packages:
+    - dplyr
+    - ggplot2
+    - plotly
+    - tidyr
+    - palmerpenguins
+    - gradethis
+---
+
+{{< include ../_extensions/learn/_knitr.qmd >}}
+{{< include ../_extensions/learn/_gradethis.qmd >}}
+
+```{webr}
+#| edit: false
+#| echo: false
+#| output: false
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(tidyr)
+library(palmerpenguins)
+penguins_clean <- penguins |> drop_na()
+```
+
+Choose a species of penguin, we'll work with that species for the rest of the tutorial.
+
+```{ojs}
+//| echo: false
+viewof input_species = Inputs.select(["Adelie", "Chinstrap", "Gentoo"])
+penguin_info = {
+  const description = {
+    Adelie: md`The **Adelie** is the most widespread penguin species, and, along with the emperor penguin, is the most southerly distributed of all penguins.`,
+    Chinstrap: md`The **chinstrap** penguin's name stems from the narrow black band under its head, which makes it appear as if it were wearing a black helmet, making it easy to identify.`,
+    Gentoo: md`The **gentoo** penguin calls in a variety of ways, but the most frequently heard is a loud trumpeting, which the bird emits with its head thrown back.`,
+  }
+  return description[input_species]
+}
+```
+
+
+```{webr}
+#| edit: false
+#| echo: false
+#| input:
+#|  - input_species
+penguins_alpha <- penguins |>
+  drop_na() |>
+  mutate(alpha = ifelse(species == input_species, 0.8, 0.2))
+
+p <- ggplot(data = penguins_alpha, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(
+    aes(color = species, shape = species, alpha = alpha),
+    size = 3
+  ) +
+  scale_color_manual(values = c("darkorange","purple","cyan4")) +
+  scale_alpha(guide = 'none') +
+  labs(title = "Penguin size, Palmer Station LTER",
+       subtitle = "Flipper length and body mass for Adelie, Chinstrap and Gentoo Penguins",
+       x = "Flipper length (mm)",
+       y = "Body mass (g)",
+       color = "Penguin species",
+       shape = "Penguin species",
+       alpha = "Penguin species")
+
+ggplotly(p)
+```
+
+# Data manipulation with `dplyr`
+
+Filter your dataset so that it only contains the species of penguin you selected above, <strong>${input_species}</strong>.
+
+::: {.panel-tabset}
+
+## Exercise
+
+```{webr}
+#| exercise: ex2
+#| caption: Exercise 2
+#| input:
+#|  - input_species
+penguins_clean |> ______
+```
+
+```{webr}
+#| exercise: ex2
+#| check: true
+gradethis::grade_this_code()
+```
+
+## Hints
+
+::: { .hint exercise="ex2" }
+Filter datasets using dplyr's `filter()` function
+
+```r
+penguins_clean |> filter(______)
+```
+:::
+
+::: { .hint exercise="ex2" }
+Specify the column to filter over as the argument to the `filter()` function. Here we're using "non-standard evaluation".
+
+```r
+penguins_clean |> filter(species == ______)
+```
+:::
+
+## Solution
+
+::: { .solution exercise="ex2" }
+
+**Solution:**
+
+A full solution filtering for the ${input_species} species is shown below
+
+```{webr}
+#| exercise: ex2
+#| solution: true
+penguins_clean |> filter(species == "${input_species}")
+```
+
+:::
+
+:::
+
+
+## Example: Tangle
+
+### The Normal Distribution
+
+The normal distribution has 2 parameters, the mean $\mu$ and the standard deviation $\sigma$. For a normal distribution with mean $\mu =$
+`{ojs} meanTgl` and $\sigma =$ `{ojs} sdTgl`, here is a plot of the probability density:
+
+```{ojs}
+//| echo: false
+import {Tangle} from "@mbostock/tangle"
+
+// Setup Tangle reactive inputs
+viewof mean = Inputs.input(0);
+viewof sd = Inputs.input(1);
+meanTgl = Inputs.bind(Tangle({min: -5,max: 5,minWidth: "1em",step: 0.1}), viewof mean);
+sdTgl = Inputs.bind(Tangle({min: 0,minWidth: "1em",step: 0.01}), viewof sd);
+
+// draw plot in R
+draw_plot(mean, sd)
+```
+
+
+```{webr}
+#| edit: false
+#| output: false
+#| define:
+#|   - draw_plot
+draw_plot <- function(mean, sd) {
+  x <- seq(-5, 5, length = 100)
+  y <- dnorm(x, mean = mean, sd = sd)
+  plot(x, y, type = "l", lwd = 2, ylim = c(0,1))
+}
+```
+
+
+::: {.panel-tabset}
+
+## Exercise
+
+Recreate the plot above in base R graphics.
+
+```{webr}
+#| exercise: tangle
+#| input:
+#|  - mean
+#|  - sd
+#| caption: Plot Normal Distribution
+x <- seq(-5, 5, length = 100)
+y <- _____
+_____
+```
+
+```{webr}
+#| exercise: tangle
+#| check: true
+gradethis::grade_this_code()
+```
+
+## Solution
+
+::: {.solution exercise="tangle"}
+
+**Solution**:
+
+```{webr}
+#| exercise: tangle
+#| solution: true
+x <- seq(-5, 5, length = 100)                                 # <1>
+y <- dnorm(x, mean = ${mean}, sd = ${sd})                     # <2>
+plot(x, y, type = "l", lwd = 2, ylim = c(0,1))                # <3>
+```
+1. Generate values for the x axis.
+2. Generate values for the y axis using the normal distribution density function `dnorm()`, with mean ${mean} and standard deviation ${sd}.
+3. Plot the values as a line (`type = "l"`) and with thicker width (`lwd = 2`).
+
+:::
+
+:::
+

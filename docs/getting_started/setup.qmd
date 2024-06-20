@@ -1,0 +1,27 @@
+---
+title: Setup
+format: learn-html
+---
+
+```bash
+quarto add r-wasm/quarto-learn
+```
+
+```yaml
+---
+format: learn-html
+webr:
+  packages:
+    - ggplot2
+  cell-options:
+    fig-height: 300
+    fig-width: 600
+pyodide: [...etc]
+---
+```
+
+If using knitr engine (to be superseded by upcoming Quarto qmd-filter):
+
+```md
+{{{< include ./_extensions/r-wasm/learn/_knitr.qmd >}}}
+```

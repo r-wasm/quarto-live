@@ -1,0 +1,61 @@
+---
+title: Managing environments
+format: learn-html
+---
+
+```{webr}
+#| edit: false
+# Assignment in non-exercise blocks are put into the global environment
+foo <- c(1, 3, 5, 7)
+```
+
+----
+
+Exercises can see variables in both the global and exercise environment
+
+```{webr}
+#| exercise: example_1
+#| setup: true
+# Assignment in setup blocks are put into the exercise environment
+bar <- c(2, 4, 6, 8)
+```
+
+```{webr}
+#| caption: Sample Exercise
+#| exercise: example_1
+# Exercise can see setup and global variables
+foo
+bar
+```
+
+---
+
+Exercise environments don't leak into the global environment
+
+```{webr}
+#| caption: Global
+# Only global environment
+foo
+bar
+```
+
+----
+
+Environments can be managed manually, if you wish:
+
+```{webr}
+#| edit: false
+#| envir: myenv
+foo <- 7
+```
+
+```{webr}
+#| edit: false
+#| envir: myenv
+bar <- 5
+```
+
+```{webr}
+#| envir: myenv
+foo + bar
+```

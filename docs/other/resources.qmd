@@ -1,0 +1,14 @@
+---
+format: learn-html
+title: "Loading Resources"
+resources:
+  - "data"
+---
+
+```{webr}
+list.files("data")
+mt <- read.csv("data/mtcars.csv")
+mod <- glm(mpg ~ cyl, data = mt)
+summary(mod)
+plot(mod)
+```

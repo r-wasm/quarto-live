@@ -1,0 +1,9 @@
+---
+format: learn-html
+---
+
+## Installation
+
+```bash
+quarto add r-wasm/quarto-learn
+```

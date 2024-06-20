@@ -1,0 +1,25 @@
+---
+title: Build-time variable definition
+format: learn-html
+---
+
+{{< include ../_extensions/learn/_knitr.qmd >}}
+
+## Executed at build time by `knitr`
+```{r}
+foo <- rnorm(20)
+foo
+ojs_define(foo)
+```
+
+## Runtime
+
+```{ojs}
+foo
+```
+
+```{webr}
+#| input:
+#|   - foo
+plot(foo)
+```

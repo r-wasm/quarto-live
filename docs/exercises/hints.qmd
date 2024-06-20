@@ -1,0 +1,108 @@
+---
+title: Hints and Solutions
+format: learn-html
+webr:
+  packages:
+    - dplyr
+---
+
+{{< include ../_extensions/learn/_knitr.qmd >}}
+
+## Inline hints and solutions
+
+```{webr}
+#| caption: Sample Exercise 2
+#| exercise: example_2
+starwars |> ______
+```
+
+
+::: { .hint exercise="example_2" }
+Consider using the `filter()` function from `dplyr`.
+
+```r
+starwars |> filter(______)
+```
+:::
+
+
+```{webr}
+#| exercise: example_2
+#| hint: true
+starwars |> filter(species == ______)
+```
+
+::: { .solution exercise="example_2" }
+
+**Fully worked solution:**
+
+Use the `filter()` function from `dplyr`:
+
+```r
+starwars |>                                 #<1>
+    filter(species == "Droid")              #<2>
+```
+1. Take the `starwars` dataset, and then,
+2. Filter for the "Droid" species.
+
+:::
+
+
+---
+
+
+
+
+
+
+## Tabset-based hints and solutions
+
+::: {.panel-tabset}
+
+## Exercise
+
+```{webr}
+#| caption: Sample Exercise 3
+#| exercise: example_3
+starwars |> ______
+```
+
+
+## Hints
+
+::: { .hint exercise="example_3" }
+Consider using the `filter()` function from `dplyr`.
+
+```r
+starwars |> filter(______)
+```
+:::
+
+::: { .hint exercise="example_3" }
+Consider using the `filter()` function from `dplyr`.
+
+```r
+starwars |> filter(species == ______)
+```
+:::
+
+## Solution
+
+::: { .solution exercise="example_3" }
+
+**Fully worked solution:**
+
+Use the `filter()` function from `dplyr`:
+
+```{webr}
+#| exercise: example_3
+#| solution: true
+starwars |>                                 #<1>
+    filter(species == "Droid")              #<2>
+```
+1. Take the `starwars` dataset, and then,
+2. Filter for the "Droid" species.
+
+:::
+
+:::

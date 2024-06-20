@@ -1,0 +1,33 @@
+---
+title: Data conversion
+format: learn-html
+---
+
+```{ojs}
+alphabet
+```
+
+```{webr}
+#| input:
+#|   - alphabet
+class(alphabet)
+summary(alphabet)
+```
+
+----
+
+```{webr}
+#| edit: false
+#| define:
+#|   - mtcars
+data(mtcars)
+```
+
+```{ojs}
+mtcars
+Plot.plot({
+  x: {label: "Economy (mpg)"},
+  y: {label: "Power (hp)"},
+  marks: [ Plot.dot(mtcars, { x: "mpg", y: "hp"}) ]
+})
+```

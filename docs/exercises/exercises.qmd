@@ -1,0 +1,32 @@
+---
+title: Creating Exercises
+format: learn-html
+---
+
+# Example exercise
+
+```{webr}
+#| exercise: example_1
+hist(rnorm(10000))
+```
+
+
+
+---
+
+## Running setup code
+
+
+
+```{webr}
+#| caption: Example Exercise 2
+#| exercise: example_2
+foo + 1
+```
+
+
+```{webr}
+#| exercise: example_2
+#| setup: true
+foo <- c(2, 4, 6, 8)
+```

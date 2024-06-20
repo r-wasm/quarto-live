@@ -1,0 +1,61 @@
+---
+title: HTML and Widgets
+format: learn-html
+webr:
+  packages:
+    - rgl
+    - gt
+    - leaflet
+---
+
+```{webr}
+#| edit: false
+#| output: false
+library(htmltools)
+library(rgl)
+library(gt)
+library(leaflet)
+options(rgl.printRglwidget = TRUE)
+```
+
+```{webr}
+#| edit: false
+# Some HTML tags
+h1("Hello")
+tags$b("bold")
+tags$input(type="checkbox")
+```
+
+```{webr}
+#| output: asis
+"<span>This is a span</span>"
+```
+
+```{webr}
+knitr::kable(mtcars)
+# mtcars |> gt()
+```
+
+
+```{webr}
+leaflet() |>
+  addTiles() |>
+  addMarkers(lng=174.768, lat=-36.852, popup="The birthplace of R")
+```
+
+```{webr}
+theta <- seq(0, 6*pi, len=100)
+xyz <- cbind(sin(theta), cos(theta), theta)
+lineid <- plot3d(xyz, type="l", alpha = 1:0, 
+                 lwd = 5, col = "blue")["data"]
+
+browsable(tagList(
+  rglwidget(elementId = "example", width = 800, height = 400,
+            controllers = "player"),
+  playwidget("example", 
+             ageControl(births = theta, ages = c(0, 0, 1),
+                        objids = lineid, alpha = c(0, 1, 0)),
+                        start = 1, stop = 6*pi, step = 0.1, 
+                        rate = 6,elementId = "player")
+))
+```

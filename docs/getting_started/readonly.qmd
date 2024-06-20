@@ -1,0 +1,12 @@
+---
+title: Read-only Blocks
+format: learn-html
+---
+
+```{webr}
+#| edit: false
+foo <- 123
+foo
+summary(AirPassengers)
+summary(mtcars)
+```

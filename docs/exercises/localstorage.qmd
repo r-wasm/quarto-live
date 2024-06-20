@@ -1,0 +1,10 @@
+---
+title: Editor local storage
+format: learn-html
+---
+
+```{webr}
+#| localstorage: true
+123
+456
+```

@@ -1,0 +1,24 @@
+---
+title: Plotting
+format: learn-html
+webr:
+  packages:
+    - ggplot2
+---
+
+```{webr}
+#| edit: false
+#| output: false
+library(ggplot2)
+```
+
+```{webr}
+plot(rnorm(1e5), t='l')
+```
+
+```{webr}
+#| fig-width: 600
+#| fig-height: 100
+ggplot(mpg, aes(displ, hwy, colour = class)) + 
+  geom_point()
+```
