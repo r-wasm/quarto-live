@@ -1,11 +1,26 @@
 ---
 title: Editor
 format: learn-html
+pyodide:
+  packages:
+    - matplotlib
 ---
 
 ```{pyodide}
-import pyodide
-import random
-print(pyodide.__version__)
-random.randint(1,100)
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots()
+
+fruits = ['apple', 'blueberry', 'cherry', 'orange']
+counts = [40, 100, 30, 55]
+bar_labels = ['red', 'blue', 'red', 'orange']
+
+ax.bar(fruits, counts, label=bar_labels, color=bar_labels)
+
+ax.set_ylabel('fruit supply')
+ax.set_title('Fruit supply by kind and color')
+ax.legend(title='Fruit color')
+plt.title('title')
+plt.xlabel('xlabel')
+plt.show()
+
 ```
