@@ -23,6 +23,10 @@ webROjs = {
   const filesContent = document.querySelector(`script[type=\"vfs-file\"]`).textContent;
   const files = JSON.parse(atob(filesContent));
 
+  // Other webR startup options
+  const optionsContent = document.querySelector(`script[type=\"webr-options\"]`).textContent;
+  const options = JSON.parse(atob(optionsContent));
+
   // Initialise webR and setup for R code evaluation
   let webRPromise = (async (webR) => {
     statusText.textContent = `Downloading webR`;
@@ -71,7 +75,7 @@ webROjs = {
 
     statusContainer.classList.add("d-none");
     return webR;
-  })(new WebR({ baseUrl: "https://webr.r-wasm.org/latest/" }));
+  })(new WebR(options));
 
   // Storage for shared exercise environments
   const environmentManager = new EnvironmentManager(webRPromise);

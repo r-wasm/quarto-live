@@ -445,6 +445,17 @@ function setupWebR(doc)
     "<script type=\"webr-packages\">\n" .. json_as_b64(webr_packages) .. "\n</script>"
   ))
 
+  -- Other webR setup options
+  local options = {}
+  if (webr["base-url"]) then
+    options["baseUrl"] = pandoc.utils.stringify(webr["base-url"])
+  end
+
+  doc.blocks:insert(pandoc.RawBlock(
+    "html",
+    "<script type=\"webr-options\">\n" .. json_as_b64(options) .. "\n</script>"
+  ))
+
   return webr
 end
 

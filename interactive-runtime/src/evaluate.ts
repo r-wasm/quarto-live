@@ -1,7 +1,7 @@
 import type { PyodideInterface } from 'pyodide'
 import type { PyProxy } from "pyodide/ffi"
-import type { WebR, Shelter, RObject, RList, RNull, REnvironment } from 'webr'
-import type { RCharacter, RLogical, RDouble, RRaw, RInteger } from 'webr'
+import type { WebR, Shelter, RObject, RList, RNull, REnvironment,  } from 'webr'
+import type { RCall, RCharacter, RLogical, RDouble, RRaw, RInteger } from 'webr'
 import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr'
 import { highlightPython, highlightR } from './highlighter'
 import { Indicator } from './indicator'
@@ -377,9 +377,7 @@ export class WebREvaluator implements ExerciseEvaluator {
           // Conditions
           if (classes.includes('warning')) {
             const message = await result[i].get("message");
-            const call = await result[i].get("call");
-
-            /* @ts-expect-error: deparse not available yet, next release of webR */
+            const call = await result[i].get("call") as RCall;
             const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
 
             // TODO: add a switch for simple output
@@ -391,9 +389,7 @@ export class WebREvaluator implements ExerciseEvaluator {
             );
           } else if (classes.includes('error')) {
             const message = await result[i].get("message");
-            const call = await result[i].get("call");
-
-            /* @ts-expect-error: deparse not available yet, next release of webR */
+            const call = await result[i].get("call") as RCall;
             const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
 
             // TODO: add a switch for simple output

@@ -16,9 +16,9 @@
     "@types/node": "^20.12.7",
     "esbuild": "^0.20.2",
     "esbuild-plugin-copy": "^2.1.1",
+    "pyodide": "^0.26.1",
     "tsx": "^4.8.2",
-    "webr": "file:../../webr/src",
-    "pyodide": "^0.26.1"
+    "webr": "^0.4.0-rc.0"
   },
   "dependencies": {
     "@codemirror/state": "^6.4.1",
