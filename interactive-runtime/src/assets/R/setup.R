@@ -6,7 +6,7 @@ ojs_define <- function(...) {
   .webr_ojs <<- list2env(args, envir = .webr_ojs)
 }
 
-# webR graphical settings
+# webR graphics device settings
 options(webr.fig.width = 7, webr.fig.height = 5)
 options(device = function(...) {
   args <- list(bg = "white", ...)
@@ -19,8 +19,9 @@ options(pager = function(files, ...) {
   writeLines(gsub(".[\b]", "", readLines(files)))
 })
 
-# Set knitr options
+# Additional package options
 options(knitr.table.format = "html")
+options(rgl.printRglwidget = TRUE)
 
 # Default exercise grader
 # TODO: handle error_check & code_check stages

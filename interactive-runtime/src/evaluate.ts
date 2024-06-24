@@ -225,6 +225,7 @@ export class WebREvaluator implements ExerciseEvaluator {
           keep_message = warning,
           keep_warning = warning,
           stop_on_error = error,
+          filename = "User code",
           output_handler = evaluate::new_output_handler(
             value = function(x, visible) {
               res <- if (visible) {
@@ -281,7 +282,7 @@ export class WebREvaluator implements ExerciseEvaluator {
 
     const appendStdout = (content: string) => {
       const outputDiv = document.createElement("div");
-      outputDiv.className = "exercise-cell-output cell-output cell-output-stdout";
+      outputDiv.className = "exercise-cell-output cell-output cell-output-webr cell-output-stdout";
       outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
       if (options.output) {
@@ -292,12 +293,31 @@ export class WebREvaluator implements ExerciseEvaluator {
 
     const appendStderr = (content: string) => {
       const outputDiv = document.createElement("div");
-      outputDiv.className = "exercise-cell-output cell-output cell-output-stderr";
+      outputDiv.className = "exercise-cell-output cell-output cell-output-webr cell-output-stderr";
       outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
 
       if (options.output) {
         appendSource();
         container.appendChild(outputDiv);
+      }
+    }
+
+    const appendCallout = (classes: string, title: string, message: string) => {
+      if (options.output) {
+        appendSource();
+        const elem = document.createElement("div");
+        elem.innerHTML = `
+        <div class="${classes} callout callout-style-default callout-captioned">
+          <div class="callout-header d-flex align-content-center">
+            <div class="callout-icon-container"><i class="callout-icon"></i></div>
+            <div class="callout-caption-container flex-fill">${title}</div>
+          </div>
+          <div class="callout-body-container callout-body">
+            <p>${message}</p>
+          </div>
+        </div>
+        `;
+        container.appendChild(elem);
       }
     }
 
@@ -310,7 +330,7 @@ export class WebREvaluator implements ExerciseEvaluator {
       canvas.getContext('bitmaprenderer').transferFromImageBitmap(image);
 
       const outputDiv = document.createElement("div");
-      outputDiv.className = "cell-output-display";
+      outputDiv.className = "cell-output-display cell-output-webr";
       outputDiv.appendChild(canvas);
 
       if (options.output) {
@@ -325,7 +345,7 @@ export class WebREvaluator implements ExerciseEvaluator {
         const meta = await (await content.attrs()).get("knit_meta") as RList | RNull;
 
         const outputDiv = document.createElement("div");
-        outputDiv.className = "cell-output";
+        outputDiv.className = "cell-output cell-output-webr";
         outputDiv.innerHTML = html;
 
         // Add HTML output to the DOM
@@ -356,13 +376,32 @@ export class WebREvaluator implements ExerciseEvaluator {
           // Conditions
           if (classes.includes('warning')) {
             const message = await result[i].get("message");
-            appendStderr(`Warning: ${await message.toString()}`);
+            const call = await result[i].get("call");
+
+            /* @ts-expect-error: deparse not available yet, next release of webR */
+            const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
+
+            // TODO: add a switch for simple output
+            // appendStderr(`Warning: ${await message.toString()}`);
+            appendCallout(
+              "callout-warning",
+              `R Warning${callInfo}`,
+              `Warning: ${await message.toString()}`,
+            );
           } else if (classes.includes('error')) {
             const message = await result[i].get("message");
             const call = await result[i].get("call");
+
             /* @ts-expect-error: deparse not available yet, next release of webR */
-            const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\`: `;
-            appendStderr(`Error${callInfo}${await message.toString()}`);
+            const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
+
+            // TODO: add a switch for simple output
+            // appendStderr(`Error${callInfo}${await message.toString()}`);
+            appendCallout(
+              "callout-important",
+              `R Error${callInfo}`,
+              `Error: ${await message.toString()}`,
+            );
           } else if (classes.includes('condition')) {
             const message = await result[i].get("message");
             appendStderr(await message.toString());
@@ -605,9 +644,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       if (!this.options.output) {
         this.container.value.result = null;
       } else if (this.options.output === "asis") {
-        //const evaluateList = await result.toArray() as RObject[];
-        //const lastValue = await evaluateList[evaluateList.length - 1].get('value');
-        this.container.innerHTML = await result.stdout.join('\n');
+        this.container.innerHTML = await result.stdout;
       } else {
         this.container = await this.asHtml(result);
       }

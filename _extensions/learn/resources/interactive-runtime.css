@@ -374,6 +374,10 @@ div.exercise-cell-output.cell-output-stderr pre code {
   word-wrap: break-word;
 }
 
+div.exercise-cell-output.cell-output-stderr pre code {
+color: var(--bs-danger, #dc3545);
+}
+
 /* Hints and solutions */
 .tab-pane > .exercise-tab-pane-header {
   margin-bottom: 1em;
