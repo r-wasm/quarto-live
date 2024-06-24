@@ -1,6 +1,7 @@
 pyodideOjs = {
   const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.mjs");
-  let { PyodideEvaluator, PyodideExerciseEditor, highlightPython } = window._exercise_ojs_runtime;
+  let { PyodideEvaluator, PyodideExerciseEditor} = window._exercise_ojs_runtime;
+  let { setupPython, highlightPython } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
   const statusText = document.getElementById("exercise-loading-status");
@@ -32,11 +33,7 @@ pyodideOjs = {
     }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
     statusText.textContent = `Pyodide environment setup`;
-    await pyodide.runPythonAsync(`
-      import micropip
-      import pyodide_http
-      pyodide_http.patch_all()
-    `);
+    await setupPython(pyodide);
 
     statusContainer.classList.add("d-none");
     return pyodide;

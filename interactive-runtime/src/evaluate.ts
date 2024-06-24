@@ -1,4 +1,5 @@
 import type { PyodideInterface } from 'pyodide'
+import type { PyProxy } from "pyodide/ffi"
 import type { WebR, Shelter, RObject, RList, RNull, REnvironment } from 'webr'
 import type { RCharacter, RLogical, RDouble, RRaw, RInteger } from 'webr'
 import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr'
@@ -660,25 +661,32 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       return null;
     }
 
+    await this.pyodide.loadPackagesFromImports(code);
     const resultObject = await this.pyodide.runPythonAsync(`
+      from IPython.utils import capture
+      from IPython.core.interactiveshell import InteractiveShell
+      InteractiveShell().instance()
+
       import pyodide
-      from IPython.utils.capture import capture_output
-      value = None
-      with capture_output() as capture:
+      import matplotlib.pyplot as plt
+      plt.close("all")
+
+      with capture.capture_output() as output:
         value = pyodide.code.eval_code(code)
-        if (value):
-          print(value)
-      {
-        "stdout": capture.stdout,
-        "stderr": capture.stderr,
-        "value": value
-      }
+        if (value is not None):
+          display(value)
+
+      value, output.stdout, output.stderr, output.outputs
     `, {
       globals: this.pyodide.toPy({ code: code }),
     });
-    const result = resultObject.toJs({ depth: 1 })
-    console.log(result);
-    return result;
+    const [value, stdout, stderr, outputs] = resultObject.toJs({ depth: 1 });
+    return {
+      value: value as unknown,
+      stdout: stdout as string,
+      stderr: stderr as string,
+      outputs: outputs as PyProxy
+    };
   }
 
   asSourceHTML(code): HTMLDivElement {
@@ -692,9 +700,48 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     return sourceDiv;
   }
 
-  async asHtml(value: any, options: EvaluateOptions = this.options) {
+  async asHtml(
+    result: Awaited<ReturnType<PyodideEvaluator["evaluate"]>>,
+    options: EvaluateOptions = this.options
+  ) {
+    const appendImage = (image: ImageBitmap) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      canvas.className = "img-fluid figure-img";
+      canvas.style.width = `${2 * image.width / 3}px`;
+      canvas.getContext('bitmaprenderer').transferFromImageBitmap(image);
+
+      const outputDiv = document.createElement("div");
+      outputDiv.className = "cell-output-display cell-output-pyodide";
+      outputDiv.appendChild(canvas);
+
+      if (options.output) {
+        container.appendChild(outputDiv);
+      }
+    }
+
+    const appendPlainText = (content: string) => {
+      const outputDiv = document.createElement("div");
+      outputDiv.className = "cell-output cell-output-pyodide";
+      outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
+      container.appendChild(outputDiv);
+    }
+
+    const appendHtml = async (html: string) => {
+      if (options.output) {
+        const outputDiv = document.createElement("div");
+        outputDiv.className = "cell-output cell-output-pyodide";
+        outputDiv.innerHTML = html;
+        container.appendChild(outputDiv);
+      }
+    };
+
     const container: OJSElement = document.createElement("div");
-    container.value = { result: value };
+    container.value = {
+      result: result.value,
+      evaluate_result: result,
+    };
 
     if (options.echo) {
       const sourceDiv = document.createElement("div");
@@ -708,18 +755,29 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     }
 
     const outputDiv = document.createElement("div");
-    outputDiv.className = "exercise-cell-output cell-output cell-output-stdout";
-    outputDiv.innerHTML = `<pre><code>${value.stdout}</code></pre>`;
+    outputDiv.className = "exercise-cell-output cell-output cell-output-pyodide cell-output-stdout";
+    outputDiv.innerHTML = `<pre><code>${result.stdout}</code></pre>`;
     container.appendChild(outputDiv);
 
     const errorDiv = document.createElement("div");
-    errorDiv.className = "exercise-cell-output cell-output cell-output-stderr";
-    errorDiv.innerHTML = `<pre><code>${value.stderr}</code></pre>`;
+    errorDiv.className = "exercise-cell-output cell-output cell-output-pyodide cell-output-stderr";
+    errorDiv.innerHTML = `<pre><code>${result.stderr}</code></pre>`;
     container.appendChild(errorDiv);
 
-    // Attach final result to output value
-    //container.value.result = await result[result.length - 1].get('value');
-    //container.value.evaluate_result = value;
+    result.outputs.forEach((item) => {
+      const data = item.data.toJs({ depth: 1 });
+      const metadata = item.metadata.toJs({ depth: 1 });
+      console.log(data, metadata)
+      const keys = Array.from(data.keys());
+      if (keys.includes("application/html-imagebitmap")) {
+        appendImage(data.get("application/html-imagebitmap"));
+      } else if (keys.includes("text/html")) {
+        appendHtml(data.get("text/html"));
+      } else if (keys.includes("text/plain")) {
+        appendPlainText(data.get("text/plain"));
+      }
+    });
+
     return container;
   }
 }

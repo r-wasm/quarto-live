@@ -378,6 +378,26 @@ div.exercise-cell-output.cell-output-stderr pre code {
 color: var(--bs-danger, #dc3545);
 }
 
+div.cell-output-pyodide table {
+  border: none;
+  margin: 0 auto 1em auto;
+}
+
+div.cell-output-pyodide thead {
+  border-bottom: 1px solid var(--exercise-main-color);
+}
+
+div.cell-output-pyodide td,
+div.cell-output-pyodide th,
+div.cell-output-pyodide tr {
+  padding: 0.5em;
+  line-height: normal;
+}
+
+div.cell-output-pyodide th {
+  font-weight: bold;
+}
+
 /* Hints and solutions */
 .tab-pane > .exercise-tab-pane-header {
   margin-bottom: 1em;

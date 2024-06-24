@@ -11,7 +11,7 @@ const options: BuildOptions = {
   bundle: true,
   outfile: '../_extensions/learn/resources/interactive-runtime.js',
   minify: true,
-  loader: { '.svg': 'text', '.R': 'text' },
+  loader: { '.svg': 'text', '.R': 'text', '.py': 'text' },
   platform: 'browser',
   logLevel: 'info',
 };
