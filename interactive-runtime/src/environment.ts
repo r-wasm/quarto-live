@@ -1,6 +1,8 @@
+import { PyodideInterface } from 'pyodide';
+import { PyProxy } from 'pyodide/ffi';
 import type { REnvironment, Shelter, WebR } from 'webr'
 
-export class EnvironmentManager {
+export class WebREnvironmentManager {
   webRPromise: Promise<WebR>;
   shelter: Promise<Shelter>;
   env: { [key: string]: Promise<REnvironment>} = {};
@@ -47,6 +49,49 @@ export class EnvironmentManager {
     const shelter = await this.shelter;
     const env = await this.env[id];
     await shelter.destroy(env);
+    delete this.env[id];
+  }
+}
+
+export class PyodideEnvironmentManager {
+  pyodidePromise: Promise<PyodideInterface>;
+  env: { [key: string]: Promise<PyProxy>} = {};
+
+  constructor(pyodidePromise: Promise<PyodideInterface>) {
+    this.pyodidePromise = pyodidePromise;
+    this.env.global = pyodidePromise.then((pyodide) => pyodide.toPy({}));
+  }
+
+  async get(id: string = "global") {
+    const pyodide = await this.pyodidePromise;
+    if (!(id in this.env)) {
+      this.env[id] = pyodide.toPy({});
+    }
+    return await this.env[id];
+  }
+
+  async create(target_id: string, parent_id: string) {
+    if (target_id === parent_id || target_id === "global") {
+      return this.get(target_id);
+    }
+
+    if (target_id in this.env) {
+      await this.destroy(target_id);
+    }
+
+    const pyodide = await this.pyodidePromise;
+    const parent = await this.get(parent_id);
+    const parentCopy = Object.assign({}, parent.toJs({depth : 1}));
+    this.env[target_id] = pyodide.toPy(parentCopy);
+    return await this.env[target_id];
+  }
+
+  async destroy(id: string) {
+    if (id == "global" || !(id in this.env)) {
+      return;
+    }
+    const env = await this.env[id];
+    await env.destroy();
     delete this.env[id];
   }
 }

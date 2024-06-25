@@ -1,6 +1,7 @@
 pyodideOjs = {
-  const { loadPyodide } = await import("https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.mjs");
-  let { PyodideEvaluator, PyodideExerciseEditor} = window._exercise_ojs_runtime;
+  const pyodideBaseUrl = "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/"
+  const { loadPyodide } = await import(`${pyodideBaseUrl}pyodide.mjs`);
+  let { PyodideEvaluator, PyodideExerciseEditor, PyodideEnvironmentManager} = window._exercise_ojs_runtime;
   let { setupPython, highlightPython } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
@@ -25,7 +26,9 @@ pyodideOjs = {
 
   let pyodidePromise = (async () => {
     statusText.textContent = `Downloading Pyodide`;
-    const pyodide = await loadPyodide();
+    const pyodide = await loadPyodide({
+      indexURL: pyodideBaseUrl,
+    });
 
     await packages.pkgs.map((pkg) => () => {
       statusText.textContent = `Downloading package: ${pkg}`;
@@ -39,12 +42,15 @@ pyodideOjs = {
     return pyodide;
   })();
 
+  // Storage for shared exercise environments
+  const pyodideEnvironmentManager = new PyodideEnvironmentManager(pyodidePromise);
+
   // Keep track of initial OJS block render
   const renderedOjs = {};
 
   const process = async (context, inputs) => {
     const pyodide = await pyodidePromise;
-    const evaluator = new PyodideEvaluator(pyodide, null, context)
+    const evaluator = new PyodideEvaluator(pyodide, pyodideEnvironmentManager, context);
     await evaluator.process(inputs);
     return evaluator.container;
   }
@@ -52,6 +58,7 @@ pyodideOjs = {
   return {
     PyodideExerciseEditor,
     pyodidePromise,
+    pyodideEnvironmentManager,
     renderedOjs,
     process,
     highlightPython,

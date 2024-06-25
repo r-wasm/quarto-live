@@ -6,7 +6,7 @@ import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr'
 import { highlightPython, highlightR } from './highlighter'
 import { Indicator } from './indicator'
 import { renderHtmlDependency } from './render'
-import { EnvironmentManager } from './environment'
+import { PyodideEnvironmentManager, WebREnvironmentManager } from './environment'
 
 declare global {
   interface Window {
@@ -54,7 +54,7 @@ export type EnvLabels = {
   solution: string;
 }
 type EnvLabel = keyof EnvLabels;
-type EnvManager = EnvironmentManager;
+type EnvManager = WebREnvironmentManager | PyodideEnvironmentManager;
 
 // Build interleaved source code and HTML output
 // Use {evaluate}, so as to match {knitr} output
@@ -77,10 +77,10 @@ export class WebREvaluator implements ExerciseEvaluator {
   context: EvaluateContext;
   options: EvaluateOptions;
   envLabels: EnvLabels;
-  envManager: EnvManager;
+  envManager: WebREnvironmentManager;
   webR: WebR;
 
-  constructor(webR: WebR, environmentManager: EnvironmentManager, context: EvaluateContext) {
+  constructor(webR: WebR, environmentManager: WebREnvironmentManager, context: EvaluateContext) {
     this.container = document.createElement('div');
     this.container.value = { result: null, evaluator: this };
     this.webR = webR;
@@ -572,12 +572,12 @@ export class PyodideEvaluator implements ExerciseEvaluator {
   context: EvaluateContext;
   options: EvaluateOptions;
   envLabels: EnvLabels;
-  envManager: EnvManager;
+  envManager: PyodideEnvironmentManager;
   pyodide: PyodideInterface;
 
   constructor(
     pyodide: PyodideInterface,
-    environmentManager: EnvironmentManager,
+    environmentManager: PyodideEnvironmentManager,
     context: EvaluateContext
   ) {
     this.container = document.createElement('div');
@@ -635,6 +635,23 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     ind.running();
 
     try {
+      // Set OJS inputs in "prep" environment
+      const prep = await this.envManager.get(this.envLabels.prep);
+      await Promise.all(
+        Object.entries(inputs).map(async ([k, v]) => {
+          await prep.set(k, v);
+        })
+      );
+
+      // Cleanup any leftover matplotlib plots
+      await this.pyodide.runPythonAsync(`
+        import matplotlib.pyplot as plt
+        plt.close("all")
+      `)
+
+      // Run setup code, copy prep environment for result, run user code
+      await this.evaluate(this.options.setup, "prep");
+      await this.envManager.create(this.envLabels.result, this.envLabels.prep);
       const result = await this.evaluate(this.context.code, "result");
 
       // Once we have the evaluate result, render it's contents to HTML
@@ -645,6 +662,33 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       } else {
         this.container = await this.asHtml(result);
       }
+
+      // Grab defined objects from the result environment
+      const envir = await this.envManager.get(this.envLabels.result);
+      const objs: {[key: string]: PyProxy} = {};
+      if (typeof this.options.define === 'string') {
+        objs[this.options.define] = await envir.get(this.options.define)
+      } else if (this.options.define) {
+        Object.assign(objs, Object.fromEntries(
+          await Promise.all(
+            this.options.define.map(async (name) => {
+              const obj = await envir.get(name);
+              return [name, obj];
+            })
+          )
+        ));
+      }
+
+      // Define the grabbed objects as OJS values
+      Object.keys(objs).forEach(async (key) => {
+        const jsValue = await this.asOjs(objs[key]);
+        if (window._ojs.ojsConnector.mainModule._scope.has(key)) {
+          window._ojs.ojsConnector.mainModule.redefine(key, () => jsValue);
+        } else {
+          window._ojs.ojsConnector.define(key)(jsValue);
+        }
+      });
+
     } finally {
       ind.finished();
       if (!this.context.indicator) ind.destroy();
@@ -664,24 +708,24 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       InteractiveShell().instance()
 
       import pyodide
-      import matplotlib.pyplot as plt
-      plt.close("all")
-
       with capture.capture_output() as output:
-        value = pyodide.code.eval_code(code)
+        value = pyodide.code.eval_code(code, locals = code_locals)
         if (value is not None):
           display(value)
 
       value, output.stdout, output.stderr, output.outputs
     `, {
-      globals: this.pyodide.toPy({ code: code }),
+      globals: this.pyodide.toPy({
+        code,
+        code_locals: await this.envManager.get(this.envLabels[envLabel]),
+      }),
     });
     const [value, stdout, stderr, outputs] = resultObject.toJs({ depth: 1 });
     return {
       value: value as unknown,
       stdout: stdout as string,
       stderr: stderr as string,
-      outputs: outputs as PyProxy
+      outputs: outputs as PyProxy,
     };
   }
 
@@ -694,6 +738,14 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     sourcePre.appendChild(sourceCode);
     sourceDiv.appendChild(sourcePre);
     return sourceDiv;
+  }
+
+  // Convert pyodide Python object reference to OJS value
+  async asOjs(value: any): Promise<any> {
+    if (Object.getOwnPropertyNames(value).includes("toJs")) {
+      return value.toJs();
+    }
+    return value;
   }
 
   async asHtml(
@@ -762,8 +814,6 @@ export class PyodideEvaluator implements ExerciseEvaluator {
 
     result.outputs.forEach((item) => {
       const data = item.data.toJs({ depth: 1 });
-      const metadata = item.metadata.toJs({ depth: 1 });
-      console.log(data, metadata)
       const keys = Array.from(data.keys());
       if (keys.includes("application/html-imagebitmap")) {
         appendImage(data.get("application/html-imagebitmap"));

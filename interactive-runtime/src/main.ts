@@ -3,7 +3,7 @@ import type { PyodideInterface } from 'pyodide'
 import { WebRExerciseEditor, PyodideExerciseEditor } from './editor'
 import { highlightR, highlightPython, interpolateR } from './highlighter'
 import { WebREvaluator, PyodideEvaluator } from './evaluate'
-import { EnvironmentManager } from './environment'
+import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment'
 import { WebRGrader } from './grader'
 
 async function setupR(webR: WebR.WebR) {
@@ -32,11 +32,12 @@ declare global {
     _exercise_ojs_runtime?: {
       PyodideExerciseEditor: typeof PyodideExerciseEditor;
       PyodideEvaluator: typeof PyodideEvaluator;
+      PyodideEnvironmentManager: typeof PyodideEnvironmentManager;
       WebR: typeof WebR;
       WebRExerciseEditor: typeof WebRExerciseEditor;
       WebREvaluator: typeof WebREvaluator;
       WebRGrader: typeof WebRGrader;
-      EnvironmentManager: typeof EnvironmentManager;
+      WebREnvironmentManager: typeof WebREnvironmentManager;
       highlightR: typeof highlightR;
       highlightPython: typeof highlightPython;
       interpolateR: typeof interpolateR;
@@ -49,11 +50,12 @@ declare global {
 window._exercise_ojs_runtime = {
   PyodideExerciseEditor,
   PyodideEvaluator,
+  PyodideEnvironmentManager,
   WebR,
   WebRExerciseEditor,
   WebREvaluator,
   WebRGrader,
-  EnvironmentManager,
+  WebREnvironmentManager,
   highlightR,
   highlightPython,
   interpolateR,
@@ -64,11 +66,12 @@ window._exercise_ojs_runtime = {
 export {
   PyodideExerciseEditor,
   PyodideEvaluator,
+  PyodideEnvironmentManager,
   WebR,
   WebRExerciseEditor,
   WebREvaluator,
   WebRGrader,
-  EnvironmentManager,
+  WebREnvironmentManager,
   highlightR,
   highlightPython,
   interpolateR,

@@ -1,5 +1,5 @@
 webROjs = {
-  let { WebRExerciseEditor, WebREvaluator, EnvironmentManager, WebRGrader } = window._exercise_ojs_runtime;
+  let { WebRExerciseEditor, WebREvaluator, WebREnvironmentManager, WebRGrader } = window._exercise_ojs_runtime;
   let { highlightR, interpolateR, setupR } = window._exercise_ojs_runtime;
   let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._exercise_ojs_runtime.WebR;
 
@@ -78,14 +78,14 @@ webROjs = {
   })(new WebR(options));
 
   // Storage for shared exercise environments
-  const environmentManager = new EnvironmentManager(webRPromise);
+  const webREnvironmentManager = new WebREnvironmentManager(webRPromise);
 
   // Keep track of initial OJS block render
   const renderedOjs = {};
 
   const process = async (context, inputs) => {
     const webR = await webRPromise;
-    const evaluator = new WebREvaluator(webR, environmentManager, context)
+    const evaluator = new WebREvaluator(webR, webREnvironmentManager, context)
     await evaluator.process(inputs);
     return evaluator.container;
   }
@@ -94,7 +94,7 @@ webROjs = {
     WebRExerciseEditor,
     WebREvaluator,
     WebRGrader,
-    environmentManager,
+    webREnvironmentManager,
     highlightR,
     process,
     interpolateR,
