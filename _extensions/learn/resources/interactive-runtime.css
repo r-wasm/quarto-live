@@ -31,6 +31,13 @@ div.exercise-loading-indicator {
   border-top-left-radius: 5px;
 }
 
+/* Ease into disabled button opacity, avoids excessive flashing */
+.btn.btn-exercise-editor:disabled,
+.btn.btn-exercise-editor.disabled,
+.btn-exercise-editor fieldset:disabled .btn {
+  transition: opacity 500ms;
+}
+
 /* Editor header buttons */
 .card.exercise-editor-card .card-header a.btn {
   --bs-btn-padding-x: 0.5rem;
