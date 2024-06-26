@@ -1,6 +1,14 @@
 local tinyyaml = require "resources/tinyyaml"
 
-local webr_cell_options = { edit = true }
+local cell_options = {
+  webr = { edit = true },
+  pyodide = { edit = true },
+}
+
+local learn_options = {}
+learn_options["show-solutions"] = true
+learn_options["show-hints"] = true
+
 local ojs_definitions = {
   contents = {},
 }
@@ -42,7 +50,7 @@ local function tree(root)
   return gather(root, {})
 end
 
-function ParseBlock(block)
+function ParseBlock(block, engine)
   local attr = {}
   local param_lines = {}
   local code_lines = {}
@@ -57,7 +65,7 @@ function ParseBlock(block)
   local code = table.concat(code_lines, "\n")
 
   -- Include cell-options defaults
-  for k, v in pairs(webr_cell_options) do
+  for k, v in pairs(cell_options[engine]) do
     attr[k] = v
   end
 
@@ -126,7 +134,7 @@ function PyodideCodeBlock(code)
   end
 
   -- Parse codeblock contents for YAML header and Python code body
-  local block = ParseBlock(code)
+  local block = ParseBlock(code, "pyodide")
 
   if (block.attr.solution) then
     return pandoc.Div("")
@@ -192,7 +200,7 @@ function WebRCodeBlock(code)
   end
 
   -- Parse codeblock contents for YAML header and R code body
-  local block = ParseBlock(code)
+  local block = ParseBlock(code, "webr")
 
   if (block.attr.output == "asis") then
     quarto.log.warning(
@@ -222,31 +230,36 @@ function WebRCodeBlock(code)
 
   if (block.attr.hint) then
     assertBlockExercise("hint", block)
-    return pandoc.Div(
-      pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
-      pandoc.Attr('',
-        { 'webr-ojs-exercise', 'exercise-hint', 'd-none' },
-        { exercise = block.attr.exercise }
+    if learn_options["show-hints"] then
+      return pandoc.Div(
+        pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
+        pandoc.Attr('',
+          { 'webr-ojs-exercise', 'exercise-hint', 'd-none' },
+          { exercise = block.attr.exercise }
+        )
       )
-    )
+    end
+    return {}
   end
 
   if (block.attr.solution) then
     assertBlockExercise("solution", block)
-    local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
-    local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
-    return pandoc.Div(
-      {
-        InterpolatedRBlock(plaincode, false),
-        InterpolatedRBlock(codeblock, true),
-      },
-      pandoc.Attr('',
-        { 'webr-ojs-exercise', 'exercise-solution', 'd-none' },
-        { exercise = block.attr.exercise }
+    if learn_options["show-solutions"] then
+      local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
+      local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
+      return pandoc.Div(
+        {
+          InterpolatedRBlock(plaincode, false),
+          InterpolatedRBlock(codeblock, true),
+        },
+        pandoc.Attr('',
+          { 'webr-ojs-exercise', 'exercise-solution', 'd-none' },
+          { exercise = block.attr.exercise }
+        )
       )
-    )
+    end
+    return {}
   end
-
 
   -- Prepare OJS attributes
   local input = "{" .. table.concat(block.attr.input or {}, ", ") .. "}"
@@ -358,10 +371,14 @@ end
 function Div(block)
   -- Render exercise hints with display:none
   if (block.classes:includes("hint") and block.attributes["exercise"] ~= nil) then
-    block.classes:insert("webr-ojs-exercise")
-    block.classes:insert("exercise-hint")
-    block.classes:insert("d-none")
-    return block
+    if learn_options["show-hints"] then
+      block.classes:insert("webr-ojs-exercise")
+      block.classes:insert("exercise-hint")
+      block.classes:insert("d-none")
+      return block
+    else
+      return {}
+    end
   end
 end
 
@@ -375,10 +392,14 @@ function Proof(block)
       local solution = container.c[1]
       if (solution) then
         if (solution.attributes["exercise"] ~= nil) then
-          solution.classes:insert("webr-ojs-exercise")
-          solution.classes:insert("exercise-solution")
-          solution.classes:insert("d-none")
-          return solution
+          if learn_options["show-solutions"] then
+            solution.classes:insert("webr-ojs-exercise")
+            solution.classes:insert("exercise-solution")
+            solution.classes:insert("d-none")
+            return solution
+          else
+            return {}
+          end
         end
       end
     end
@@ -540,10 +561,26 @@ function Meta(meta)
 
   for k, v in pairs(cell_options) do
     if (type(v) == "table") then
-      webr_cell_options[k] = pandoc.utils.stringify(v)
+      cell_options.webr[k] = pandoc.utils.stringify(v)
     else
-      webr_cell_options[k] = v
+      cell_options.webr[k] = v
     end
+  end
+
+  local pyodide = meta.pyodide or {}
+  cell_options = pyodide["cell-options"] or {}
+
+  for k, v in pairs(cell_options) do
+    if (type(v) == "table") then
+      cell_options.pyodide[k] = pandoc.utils.stringify(v)
+    else
+      cell_options.pyodide[k] = v
+    end
+  end
+
+  local learn = meta.learn or {}
+  for k, v in pairs(learn) do
+    learn_options[k] = v
   end
 end
 

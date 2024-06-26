@@ -64,7 +64,36 @@ const highlightStyle = HighlightStyle.define([
   { tag: tags.function(tags.attributeName), color: "var(--exercise-editor-hl-at)" },
 ]);
 
- abstract class ExerciseEditor {
+// TODO: This should be made optional, or perhaps a less heavy handed approach.
+function hideEmptyPanels() {
+  // Look for tabset panels and hide any with no content
+  const panels = document.querySelectorAll('.tab-content > .tab-pane');
+  Array.from(panels).forEach((panel) => {
+    if (panel.innerHTML.trim() == '') {
+      panel.classList.add("d-none");
+      const nav = document.querySelector(`.nav-item > a[data-bs-target="#${panel.id}"]`);
+      nav?.parentElement?.classList.add("d-none");
+    }
+  });
+
+  // Is this the only tabset panel left? If so, drop the entire tabset container
+  const tabContents = document.querySelectorAll('.tab-content');
+  Array.from(tabContents).forEach((tabContent) => {
+    const numVisible = Array.from(tabContent.children)
+      .reduce((acc, panel) => {
+        return panel.classList.contains("d-none") ? acc : acc + 1;
+      }, 0);
+    if (numVisible == 1) {
+      const visible = tabContent.querySelector('.tab-pane:not(.d-none)');
+      const tabset = tabContent.parentElement;
+      tabset.appendChild(visible);
+      tabset.querySelector('.nav.nav-tabs').remove();
+      tabContent.remove();
+    }
+  });
+}
+
+abstract class ExerciseEditor {
   abstract defaultCaption: string;
   storageKey: string;
   code: string;
@@ -347,9 +376,10 @@ const highlightStyle = HighlightStyle.define([
         sol.parentElement.id.includes('tabset-')
       );
 
+    let elem = null;
     if (inTabPane) {
       // Reveal hints and solutions contained in the associated tab-panels
-      return this.renderHintsTabset(hints, solutions);
+      this.renderHintsTabset(hints, solutions);
     } else {
       // Reveal hints and solution in order of appearance in DOM
       // If there is a solution, terminate with a solution button
@@ -357,8 +387,13 @@ const highlightStyle = HighlightStyle.define([
       if (solutions.length > 0) {
         initial = this.renderSolutionButton(solutions, hints);
       }
-      return this.renderHintButton(hints, initial);
+      elem = this.renderHintButton(hints, initial);
     }
+
+    // Check for empty tabset panels and hide them
+    // This can happen if we have set e.g. `show-solutions: false`
+    hideEmptyPanels();
+    return elem;
   }
 
   render() {
