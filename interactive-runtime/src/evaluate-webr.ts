@@ -270,25 +270,6 @@ export class WebREvaluator implements ExerciseEvaluator {
       }
     }
 
-    const appendCallout = (classes: string, title: string, message: string) => {
-      if (options.output) {
-        appendSource();
-        const elem = document.createElement("div");
-        elem.innerHTML = `
-        <div class="${classes} callout callout-style-default callout-captioned">
-          <div class="callout-header d-flex align-content-center">
-            <div class="callout-icon-container"><i class="callout-icon"></i></div>
-            <div class="callout-caption-container flex-fill">${title}</div>
-          </div>
-          <div class="callout-body-container callout-body">
-            <p>${message}</p>
-          </div>
-        </div>
-        `;
-        container.appendChild(elem);
-      }
-    }
-
     const appendImage = (image: ImageBitmap) => {
       const canvas = document.createElement('canvas');
       canvas.width = image.width;
@@ -304,6 +285,48 @@ export class WebREvaluator implements ExerciseEvaluator {
       if (options.output) {
         appendSource();
         container.appendChild(outputDiv);
+      }
+    }
+
+    // Handle base R and rlang conditions
+    const appendCondition = async (cnd: RObject, type: string, heading: string) => {
+      if (options.output) {
+        appendSource();
+
+        // Format the condition for printing
+        const formatted = await shelter.evalR("format(cnd, backtrace = FALSE)", {
+          env: { cnd },
+        });
+        const names = await formatted.names();
+
+        let body = "";
+        let callInfo = "";
+        if (names && names.includes("message")) {
+          // This is likely a standard R condition
+          const message = await cnd.get("message");
+          const call = await cnd.get("call") as RCall;
+          callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
+          body = `${heading}: ${await message.toString()}`;
+        } else {
+          // This is likely an rlang condition
+          body = await formatted.toString();
+        }
+
+        // Output condition as a callout block, similar to OJS errors
+        const elem = document.createElement("div");
+        elem.innerHTML = `
+        <div class="callout-${type} callout callout-style-default callout-captioned">
+          <div class="callout-header d-flex align-content-center">
+            <div class="callout-icon-container"><i class="callout-icon"></i></div>
+            <div class="callout-caption-container flex-fill">R ${heading}${callInfo}</div>
+          </div>
+          <div class="callout-body-container callout-body">
+            <pre></pre>
+          </div>
+        </div>
+        `;
+        elem.querySelector(".callout-body pre").appendChild(document.createTextNode(body));
+        container.appendChild(elem);
       }
     }
 
@@ -341,31 +364,10 @@ export class WebREvaluator implements ExerciseEvaluator {
           break;
         }
         case 'list': {
-          // Conditions
           if (classes.includes('warning')) {
-            const message = await result[i].get("message");
-            const call = await result[i].get("call") as RCall;
-            const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
-
-            // TODO: add a switch for simple output
-            // appendStderr(`Warning: ${await message.toString()}`);
-            appendCallout(
-              "callout-warning",
-              `R Warning${callInfo}`,
-              `Warning: ${await message.toString()}`,
-            );
+            await appendCondition(result[i], "warning", "Warning");
           } else if (classes.includes('error')) {
-            const message = await result[i].get("message");
-            const call = await result[i].get("call") as RCall;
-            const callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
-
-            // TODO: add a switch for simple output
-            // appendStderr(`Error${callInfo}${await message.toString()}`);
-            appendCallout(
-              "callout-important",
-              `R Error${callInfo}`,
-              `Error: ${await message.toString()}`,
-            );
+            await appendCondition(result[i], "important", "Error");
           } else if (classes.includes('condition')) {
             const message = await result[i].get("message");
             appendStderr(await message.toString());
