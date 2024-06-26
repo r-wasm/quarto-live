@@ -2,9 +2,10 @@ import * as WebR from 'webr'
 import type { PyodideInterface } from 'pyodide'
 import { WebRExerciseEditor, PyodideExerciseEditor } from './editor'
 import { highlightR, highlightPython, interpolateR } from './highlighter'
-import { WebREvaluator, PyodideEvaluator } from './evaluate'
+import { WebREvaluator } from './evaluate-webr'
+import { PyodideEvaluator } from './evaluate-pyodide'
 import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment'
-import { WebRGrader } from './grader'
+import { WebRGrader, PyodideGrader } from './grader'
 
 async function setupR(webR: WebR.WebR) {
   return await webR.evalRVoid(require('./assets/R/setup.R'));
@@ -33,6 +34,7 @@ declare global {
       PyodideExerciseEditor: typeof PyodideExerciseEditor;
       PyodideEvaluator: typeof PyodideEvaluator;
       PyodideEnvironmentManager: typeof PyodideEnvironmentManager;
+      PyodideGrader: typeof PyodideGrader;
       WebR: typeof WebR;
       WebRExerciseEditor: typeof WebRExerciseEditor;
       WebREvaluator: typeof WebREvaluator;
@@ -51,6 +53,7 @@ window._exercise_ojs_runtime = {
   PyodideExerciseEditor,
   PyodideEvaluator,
   PyodideEnvironmentManager,
+  PyodideGrader,
   WebR,
   WebRExerciseEditor,
   WebREvaluator,
@@ -67,6 +70,7 @@ export {
   PyodideExerciseEditor,
   PyodideEvaluator,
   PyodideEnvironmentManager,
+  PyodideGrader,
   WebR,
   WebRExerciseEditor,
   WebREvaluator,

@@ -1,8 +1,7 @@
 pyodideOjs = {
   const pyodideBaseUrl = "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/"
   const { loadPyodide } = await import(`${pyodideBaseUrl}pyodide.mjs`);
-  let { PyodideEvaluator, PyodideExerciseEditor, PyodideEnvironmentManager} = window._exercise_ojs_runtime;
-  let { setupPython, highlightPython } = window._exercise_ojs_runtime;
+  const { PyodideEvaluator, PyodideEnvironmentManager, setupPython } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
   const statusText = document.getElementById("exercise-loading-status");
@@ -56,11 +55,8 @@ pyodideOjs = {
   }
 
   return {
-    PyodideExerciseEditor,
     pyodidePromise,
-    pyodideEnvironmentManager,
     renderedOjs,
     process,
-    highlightPython,
   };
 }

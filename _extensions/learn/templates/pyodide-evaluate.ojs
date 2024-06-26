@@ -1,4 +1,6 @@
 _pyodide_value_{{block_id}} = {
+  const { highlightPython } = window._exercise_ojs_runtime;
+
   const scriptContent = document.querySelector(`script[type=\"pyodide-{{block_id}}-contents\"]`).textContent;
   const block = JSON.parse(atob(scriptContent));
 
@@ -22,7 +24,7 @@ _pyodide_value_{{block_id}} = {
       const preElem = document.createElement("pre");
       container.className = "sourceCode";
       preElem.className = "sourceCode python";
-      preElem.appendChild(pyodideOjs.highlightPython(block.code));
+      preElem.appendChild(highlightPython(block.code));
       spinner.className = "spinner-grow spinner-grow-sm m-2 position-absolute top-0 end-0";
       preElem.appendChild(spinner);
       container.appendChild(preElem);

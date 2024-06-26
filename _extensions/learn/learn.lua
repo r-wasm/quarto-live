@@ -128,6 +128,10 @@ function PyodideCodeBlock(code)
   -- Parse codeblock contents for YAML header and Python code body
   local block = ParseBlock(code)
 
+  if (block.attr.solution) then
+    return pandoc.Div("")
+  end
+
   -- Prepare OJS attributes
   local input = "{" .. table.concat(block.attr.input or {}, ", ") .. "}"
   local ojs_vars = {

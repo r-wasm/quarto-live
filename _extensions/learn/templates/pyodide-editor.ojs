@@ -1,9 +1,11 @@
 viewof _pyodide_editor_{{block_id}} = {
+  const { PyodideExerciseEditor } = window._exercise_ojs_runtime;
+
   const scriptContent = document.querySelector(`script[type=\"pyodide-{{block_id}}-contents\"]`).textContent;
   const block = JSON.parse(atob(scriptContent));
 
   const options = Object.assign({ id: `pyodide-{{block_id}}-contents` }, block.attr);
-  const editor = new pyodideOjs.PyodideExerciseEditor(
+  const editor = new PyodideExerciseEditor(
     pyodideOjs.pyodidePromise,
     block.code,
     options

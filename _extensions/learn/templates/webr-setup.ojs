@@ -1,7 +1,6 @@
 webROjs = {
-  let { WebRExerciseEditor, WebREvaluator, WebREnvironmentManager, WebRGrader } = window._exercise_ojs_runtime;
-  let { highlightR, interpolateR, setupR } = window._exercise_ojs_runtime;
-  let { WebR, isRNull, isRCall, isRFunction, isRObject } = window._exercise_ojs_runtime.WebR;
+  const { WebR } = window._exercise_ojs_runtime.WebR;
+  const { WebREvaluator, WebREnvironmentManager, setupR } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
   const statusText = document.getElementById("exercise-loading-status");
@@ -37,7 +36,10 @@ webROjs = {
     packages.repos.push("https://repo.r-wasm.org")
     await packages.pkgs.map((pkg) => () => {
       statusText.textContent = `Downloading package: ${pkg}`;
-      return webR.evalR("webr::install(pkg, repos = repos)", { env: {
+      return webR.evalRVoid(`
+        webr::install(pkg, repos = repos)
+        library(pkg, character.only = TRUE)
+      `, { env: {
         pkg: pkg,
         repos: packages.repos,
       }});
@@ -91,13 +93,7 @@ webROjs = {
   }
 
   return {
-    WebRExerciseEditor,
-    WebREvaluator,
-    WebRGrader,
-    webREnvironmentManager,
-    highlightR,
     process,
-    interpolateR,
     webRPromise,
     renderedOjs,
   };

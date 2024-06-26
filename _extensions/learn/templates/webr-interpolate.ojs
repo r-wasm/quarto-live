@@ -1,4 +1,5 @@
 {
+  const { interpolateR } = window._exercise_ojs_runtime;
   const block_id = "{{block_id}}";
   const def_map = {{def_map}};
   const elem = document.getElementById(`webr-interpolate-${block_id}`);
@@ -9,6 +10,6 @@
   // Interpolate reactive OJS variables into established HTML element
   elem.innerHTML = elem.origHTML;
   Object.keys(def_map).forEach((def) =>
-    webROjs.interpolateR(elem, "${" + def + "}", def_map[def], {{highlight}})
+    interpolateR(elem, "${" + def + "}", def_map[def], {{highlight}})
   );
 }

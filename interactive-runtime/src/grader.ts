@@ -1,8 +1,12 @@
 import { WebR, RObject, RLogical, isRNull, isRList } from 'webr'
 import { RList, RNull } from 'webr'
-import { WebREvaluator, EvaluateOptions, EnvLabels, EvaluateContext } from "./evaluate"
-import { EnvironmentManager } from './environment'
+import { EvaluateOptions, EnvLabels, EvaluateContext } from "./evaluate"
+import { WebREvaluator } from "./evaluate-webr"
+import { PyodideEvaluator } from "./evaluate-pyodide"
+import { PyodideEnvironmentManager, WebREnvironmentManager } from './environment'
 import { Indicator } from './indicator'
+import { PyodideInterface } from 'pyodide'
+import { PyProxy } from 'pyodide/ffi'
 
 export type ExerciseGraderCode = {
   code_check?: string;
@@ -11,15 +15,15 @@ export type ExerciseGraderCode = {
   solution?: string;
 }
 
-export class WebRGrader {
-  evaluator: WebREvaluator;
+class ExerciseGrader {
+  evaluator: WebREvaluator | PyodideEvaluator;
+  envManager: WebREnvironmentManager | PyodideEnvironmentManager;
   context: EvaluateContext;
   graderCode: ExerciseGraderCode;
   options: EvaluateOptions;
   envLabels: EnvLabels;
-  envManager: EnvironmentManager;
-  webR: WebR;
-  constructor(evaluator: WebREvaluator, graderCode: ExerciseGraderCode) {
+  
+  constructor(evaluator: WebREvaluator | PyodideEvaluator, graderCode: ExerciseGraderCode) {
     this.graderCode = graderCode;
     this.evaluator = evaluator;
     this.envManager = this.evaluator.envManager;
@@ -37,6 +41,17 @@ export class WebRGrader {
       output: true,
       timelimit: 600,
     };
+  }
+}
+
+export class WebRGrader extends ExerciseGrader {
+  evaluator: WebREvaluator;
+  envManager: WebREnvironmentManager;
+  webR: WebR;
+
+  constructor(evaluator: WebREvaluator, graderCode: ExerciseGraderCode) {
+    super(evaluator, graderCode)
+    this.webR = this.evaluator.webR;
   }
 
   async gradeExercise() {
@@ -245,6 +260,220 @@ export class WebRGrader {
     } else {
       content.innerText = await message.toString();
     }
+
+    container.appendChild(content);
+    return container;
+  }
+}
+
+export class PyodideGrader extends ExerciseGrader {
+  evaluator: PyodideEvaluator;
+  envManager: PyodideEnvironmentManager;
+  pyodide: PyodideInterface;
+
+  constructor(evaluator: PyodideEvaluator, graderCode: ExerciseGraderCode) {
+    super(evaluator, graderCode);
+    this.pyodide = this.evaluator.pyodide;
+  }
+
+  async gradeExercise() {
+    const user_code = this.context.code;
+  
+    // Check for incomplete blanks in user code
+    let checkResult = await this.blankCheck(user_code);
+    if (checkResult) {
+      return await this.feedbackAsHtmlAlert(checkResult);
+    }
+
+    // Check for a parse error before evaluating user code
+    checkResult = await this.parseCheck(user_code);
+    if (checkResult) {
+      return await this.feedbackAsHtmlAlert(checkResult);
+    }
+
+    // Pre-evaluation code check
+    // TODO: run user provided `code_check`
+
+    // Evaluate user code and check with provided `check`
+    let ind = this.context.indicator;
+    if (!this.context.indicator) {
+      ind = new Indicator();
+    }
+    ind.running();
+
+    try {
+      const evaluateResult = await this.evaluateExercise();
+      if (!evaluateResult.value) {
+        return null;
+      }
+      const container = await this.evaluator.asHtml(evaluateResult, this.options);
+      const grade = await container.value.result.value;
+
+      let message, correct;
+
+      // Convert to JS if required
+      if (Object.getOwnPropertyNames(grade).includes("get")) {
+        message = await grade.get("message");
+        correct = await grade.get("correct");
+      }
+
+      // or, grab properties directly if already JS object
+      if ("message" in grade && "correct" in grade) {
+        message = await grade.message;
+        correct = await grade.correct;
+      }
+
+      // This is indeed some feedback contained within an object
+      if (message && correct) {
+        if (message && correct) {
+          return await this.feedbackAsHtmlAlert(this.pyodide.toPy(grade));
+        }
+      }
+
+      return container;
+    } finally {
+      ind.finished();
+      if (!this.context.indicator) ind.destroy();
+    }
+  }
+
+  async parseCheck(code:string, error_check?: string): Promise<PyProxy | null> {
+    try {
+      // Try to parse user code, catching any parse errors for feedback
+      await this.pyodide.runPythonAsync(`
+        from ast import parse
+        parse(user_code)
+      `, {
+        globals: this.pyodide.toPy({ user_code: code }),
+      });
+      return null;
+    } catch (e) {
+      // TODO: run user provided `error_check`
+      return await this.pyodide.toPy({
+        message: `
+          It looks like this might not be valid Python code.
+          Python cannot determine how to turn your text into a complete command.
+          Your code may be indented incorrectly, or you may have forgotten to
+          fill in a blank, to remove an underscore, to include a comma between
+          arguments, or to close an opening <code>&quot;</code>, <code>'</code>,
+          <code>(</code> or <code>{</code> with a matching <code>&quot;</code>,
+          <code>'</code>, <code>)</code> or <code>}</code>.
+        `,
+        correct: false,
+        location: "append",
+        type: "error",
+      })
+    }
+  }
+
+  async blankCheck(code: string): Promise<PyProxy | null> {
+    if (code.match(/_{6}_*/g)) {
+      return await this.pyodide.toPy({
+        message: "Please replace ______ with valid code.",
+        correct: false,
+        location: "append",
+        type: "info",
+      })
+    }
+    return null;
+  }
+
+  async evaluateSolution() {
+    const exId = this.evaluator.options.exercise;
+    const solutions = document.querySelectorAll(
+      `.exercise-solution[data-exercise="${exId}"] > code.solution-code`
+    );
+    if (solutions.length > 0) {
+      if (solutions.length > 1) {
+        console.warn(`Multiple solutions found for exercise "${exId}", using first solution.`);
+      }
+      await this.envManager.create(this.envLabels.solution, this.envLabels.prep);
+      
+      const envir = await this.envManager.get(this.envLabels.solution);
+      const code = solutions[0].textContent;
+
+      const result = await this.pyodide.runPythonAsync(code, { globals: envir });
+      return { envir, code, result };
+    }
+    return null;
+  }
+
+  async evaluateExercise() {
+    await this.envManager.create(this.envLabels.grading, this.envLabels.result);
+    const envir_result = await this.envManager.get(this.envLabels.result);
+    const evaluate_result = this.evaluator.container.value.evaluate_result;
+    const envir_prep = await this.envManager.get(this.envLabels.prep);
+    const last_value = this.evaluator.container.value.result;
+
+    const args: {[key: string]: any} = {
+      user_code: this.context.code,
+      stage: "check",
+      engine: "python",
+      label: this.context.options.exercise,
+      check_code: this.graderCode.check,
+      envir_result,
+      evaluate_result,
+      envir_prep,
+      last_value,
+      solution_code: null,
+      solution_code_all: null,
+      envir_solution: null,
+      solution: null,
+    }
+  
+    // Find the a solution for this exercise, if it exists
+    const solution = await this.evaluateSolution();
+    if (solution) {
+      args.solution_code = solution.code;
+      args.solution_code_all = [solution.code];
+      args.envir_solution = solution.envir;
+      args.solution = solution.result;
+    }
+
+    await this.evaluator.bind(".checker_args", await this.pyodide.toPy(args), "grading");
+    const result = await this.evaluator.evaluate(
+      "{ 'correct': True, 'message': 'Correct, well done!', 'type': 'success' }",
+      "grading",
+      this.options
+    );
+    return result;
+  }
+
+  async feedbackAsHtmlAlert(grade: PyProxy): Promise<HTMLElement> {
+    const container = document.createElement("div");
+    const typeCharacter = await grade.get('type') as PyProxy;
+    const correctLogical = await grade.get('correct') as PyProxy;
+    container.classList.add("alert");
+    container.classList.add("exercise-grade");
+
+    switch (await typeCharacter.toString()) {
+      case "success":
+        container.classList.add("alert-success");
+        break;
+      case "info":
+        container.classList.add("alert-info");
+        break;
+      case "warning":
+        container.classList.add("alert-warning");
+        break;
+      case "error":
+      case "danger":
+        container.classList.add("alert-danger");
+        break;
+      default: {
+        const correct = await correctLogical.toArray();
+        if (correct.length > 0 && correct[0]) {
+          container.classList.add("alert-success");
+        } else {
+          container.classList.add("alert-danger");
+        }
+      }
+    }
+
+    const content = document.createElement("span");
+    content.className = "exercise-feedback";
+    const message = await grade.get('message');
+    content.innerHTML = await message.toString();
 
     container.appendChild(content);
     return container;
