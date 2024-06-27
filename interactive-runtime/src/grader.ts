@@ -185,16 +185,16 @@ export class WebRGrader extends ExerciseGrader {
         user_code: this.context.code,
         stage: "check",
         engine: "r",
-        label: this.context.options.exercise,
-        check_code: this.graderCode.check,
+        label: this.context.options.exercise || this.webR.objs.null,
+        check_code: this.graderCode.check || this.webR.objs.null,
         envir_result,
         evaluate_result,
         envir_prep,
         last_value,
-        solution_code: null,
-        solution_code_all: null,
-        envir_solution: null,
-        solution: null,
+        solution_code: this.webR.objs.null,
+        solution_code_all: this.webR.objs.null,
+        envir_solution: this.webR.objs.null,
+        solution: this.webR.objs.null,
       }
     
       // Find the a solution for this exercise, if it exists
@@ -221,6 +221,8 @@ export class WebRGrader extends ExerciseGrader {
   }
 
   async feedbackAsHtmlAlert(grade: RObject): Promise<HTMLElement> {
+    const shelter = await this.evaluator.shelter;
+
     const container = document.createElement("div");
     const typeCharacter = await grade.get('type');
     const correctLogical = await grade.get('correct') as RLogical;
@@ -253,15 +255,43 @@ export class WebRGrader extends ExerciseGrader {
 
     const content = document.createElement("span");
     content.className = "exercise-feedback";
-    const message = await grade.get('message');
-    const classList = await (await message.class()).toArray();
-    if (classList.includes("html")) {
-      content.innerHTML = await message.toString();
-    } else {
-      content.innerText = await message.toString();
-    }
 
-    container.appendChild(content);
+    let message = await grade.get('message');
+    const knit = await shelter.captureR(
+      "knitr::knit_print(grade$message)"
+    , { env: { grade } });
+    message = knit.result;
+    let messageText = await message.toString();
+
+    // Main message text display
+    const elem = document.createElement("div");
+    elem.innerHTML = messageText;
+    container.append(...elem.childNodes);
+
+    const error = await grade.get('error');
+    if (!isRNull(error)) {
+      message = await error.get('message');
+      messageText = await message.toString();
+      const call = await error.get("call");
+      const gradethis_call = await error.get("gradethis_call");
+
+      // Error message display
+      let pElem = document.createElement("p");
+      let preElem = document.createElement("pre");
+      preElem.appendChild(document.createTextNode(`Error: ${messageText}`));
+      pElem.appendChild(preElem);
+      container.appendChild(pElem);
+
+      // Details element with additional call site information
+      let detailsElem = document.createElement("details");
+      preElem = document.createElement("pre");
+      preElem.appendChild(document.createTextNode(await call.toString()));
+      detailsElem.appendChild(preElem);
+      preElem = document.createElement("pre");
+      preElem.appendChild(document.createTextNode(await gradethis_call.toString()));
+      detailsElem.appendChild(preElem);
+      container.appendChild(detailsElem);
+    }
     return container;
   }
 }

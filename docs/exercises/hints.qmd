@@ -4,6 +4,10 @@ format: learn-html
 webr:
   packages:
     - dplyr
+learn:
+  show-hints: false
+  show-solutions: false
+  grading: false
 ---
 
 {{< include ../_extensions/learn/_knitr.qmd >}}
@@ -49,9 +53,6 @@ starwars |>                                 #<1>
 
 
 ---
-
-
-
 
 
 

@@ -1,9 +1,6 @@
 ---
 title: Grading solutions using `gradethis`
 format: learn-html
-learn:
-  solution: false
-  hint: true
 webr:
   grader: gradethis
   packages:

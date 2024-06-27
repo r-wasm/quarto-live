@@ -7,10 +7,34 @@ options(webr.exercise.checker = function(
   label, user_code, solution_code, check_code, envir_result, evaluate_result,
   envir_prep, last_value, engine, stage, ...
 ) {
-  gradethis::gradethis_exercise_checker(
-    label = label, solution_code = solution_code, user_code = user_code,
-    check_code = check_code, envir_result = envir_result,
-    evaluate_result = evaluate_result, envir_prep = envir_prep,
-    last_value = last_value, stage = stage, engine = engine)
+  if (is.null(check_code)) {
+    # No grading code, so just skip grading
+    invisible(NULL)
+  } else if (is.null(label)) {
+    list(
+      correct = FALSE,
+      type = "warning",
+      message = "All exercises must have a label."
+    )
+  } else if (is.null(solution_code)) {
+    list(
+      correct = FALSE,
+      type = "warning",
+      message = htmltools::tags$div(
+        htmltools::tags$p("A problem occurred grading this exercise."),
+        htmltools::tags$p(
+          "No solution code was found. Note that grading exercises using the ",
+          htmltools::tags$code("gradethis"),
+          "package requires a model solution to be included in the document."
+        )
+      )
+    )
+  } else {
+    gradethis::gradethis_exercise_checker(
+      label = label, solution_code = solution_code, user_code = user_code,
+      check_code = check_code, envir_result = envir_result,
+      evaluate_result = evaluate_result, envir_prep = envir_prep,
+      last_value = last_value, stage = stage, engine = engine)
+  }
 })
 ```

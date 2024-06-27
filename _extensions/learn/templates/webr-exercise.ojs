@@ -36,7 +36,7 @@ _webr_feedback_{{block_id}} = {
   // Build grading definition
   const check = !checkElement ? {} : JSON.parse(atob(checkElement.textContent));
   const grading = {
-    check: check.code || 'invisible(NULL)',
+    check: check.code,
   };
 
   const grader = new WebRGrader(

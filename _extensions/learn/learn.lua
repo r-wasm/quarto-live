@@ -8,6 +8,7 @@ local cell_options = {
 local learn_options = {}
 learn_options["show-solutions"] = true
 learn_options["show-hints"] = true
+learn_options["grading"] = true
 
 local ojs_definitions = {
   contents = {},
@@ -221,11 +222,15 @@ function WebRCodeBlock(code)
 
   if (block.attr.check) then
     assertBlockExercise("check", block)
-    return pandoc.RawBlock(
+    if learn_options["grading"] then
+      return pandoc.RawBlock(
         "html",
         "<script type=\"webr-check-" .. block.attr.exercise .. "-contents\">\n" ..
         json_as_b64(block) .. "\n</script>"
       )
+    else
+      return {}
+    end
   end
 
   if (block.attr.hint) then

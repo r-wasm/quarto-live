@@ -137,82 +137,78 @@ div.exercise-loading-indicator {
   --exercise-editor-hl-wa: var(--quarto-hl-wa-color);
 }
 
-pre > code.sourceCode span.tok-keyword {
+pre>code.sourceCode span.tok-keyword {
   color: var(--exercise-editor-hl-kw);
 }
 
-pre > code.sourceCode span.tok-operator {
+pre>code.sourceCode span.tok-operator {
   color: var(--exercise-editor-hl-op);
 }
 
-pre > code.sourceCode span.tok-definitionOperator {
+pre>code.sourceCode span.tok-definitionOperator {
   color: var(--exercise-editor-hl-ot);
 }
 
-pre > code.sourceCode span.tok-compareOperator {
+pre>code.sourceCode span.tok-compareOperator {
   color: var(--exercise-editor-hl-ot);
 }
 
-pre > code.sourceCode span.tok-attributeName {
+pre>code.sourceCode span.tok-attributeName {
   color: var(--exercise-editor-hl-at);
 }
 
-pre > code.sourceCode span.tok-controlKeyword {
+pre>code.sourceCode span.tok-controlKeyword {
   color: var(--exercise-editor-hl-cf);
 }
 
-pre > code.sourceCode span.tok-comment {
+pre>code.sourceCode span.tok-comment {
   color: var(--exercise-editor-hl-co);
 }
 
-pre > code.sourceCode span.tok-comment {
+pre>code.sourceCode span.tok-comment {
   color: var(--exercise-editor-hl-co);
 }
 
-pre > code.sourceCode span.tok-string {
+pre>code.sourceCode span.tok-string {
   color: var(--exercise-editor-hl-st);
 }
 
-pre > code.sourceCode span.tok-string2 {
+pre>code.sourceCode span.tok-string2 {
   color: var(--exercise-editor-hl-ss);
 }
 
-pre > code.sourceCode span.tok-variableName {
+pre>code.sourceCode span.tok-variableName {
   color: var(--exercise-editor-hl-va);
 }
 
-pre > code.sourceCode span.tok-bool,
-pre > code.sourceCode span.tok-literal,
-pre > code.sourceCode span.tok-separator
-{
+pre>code.sourceCode span.tok-bool,
+pre>code.sourceCode span.tok-literal,
+pre>code.sourceCode span.tok-separator {
   color: var(--exercise-editor-hl-cn);
 }
 
-pre > code.sourceCode span.tok-bool,
-pre > code.sourceCode span.tok-literal
-{
+pre>code.sourceCode span.tok-bool,
+pre>code.sourceCode span.tok-literal {
   color: var(--exercise-editor-hl-cn);
 }
 
-pre > code.sourceCode span.tok-number,
-pre > code.sourceCode span.tok-integer
-{
+pre>code.sourceCode span.tok-number,
+pre>code.sourceCode span.tok-integer {
   color: var(--exercise-editor-hl-dv);
 }
 
-pre > code.sourceCode span.tok-function-variableName {
+pre>code.sourceCode span.tok-function-variableName {
   color: var(--exercise-editor-hl-fu);
 }
 
-pre > code.sourceCode span.tok-function-attributeName {
+pre>code.sourceCode span.tok-function-attributeName {
   color: var(--exercise-editor-hl-at);
 }
 
 /* Revealjs (to match editor with bootstrap) */
 /* Container card */
 .reveal .d-none,
-.reveal .webr-ojs-exercise.d-none
-.reveal .exercise-loading-indicator.d-none {
+.reveal .webr-ojs-exercise.d-none .reveal .exercise-loading-indicator.d-none {
   display: none !important;
 }
 
@@ -382,7 +378,7 @@ div.exercise-cell-output.cell-output-stderr pre code {
 }
 
 div.exercise-cell-output.cell-output-stderr pre code {
-color: var(--bs-danger, #dc3545);
+  color: var(--bs-danger, #dc3545);
 }
 
 div.cell-output-pyodide table {
@@ -406,7 +402,7 @@ div.cell-output-pyodide th {
 }
 
 /* Hints and solutions */
-.tab-pane > .exercise-tab-pane-header {
+.tab-pane>.exercise-tab-pane-header {
   margin-bottom: 1em;
 }
 
@@ -485,4 +481,13 @@ div.cell-output-pyodide th {
   --exercise-alert-bg: #e74c3c;
   --exercise-alert-border-color: #e74c3c;
   --exercise-alert-link-color: #ffffff;
+}
+
+.alert.exercise-grade p:last-child {
+  margin-bottom: 0;
+}
+
+.alert.exercise-grade pre {
+  white-space: pre-wrap;
+  color: inherit;
 }

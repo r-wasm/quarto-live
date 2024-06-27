@@ -43,6 +43,11 @@ options(webr.exercise.checker = function(
   .engine <- engine
   .stage <- stage
 
+  if (is.null(.check_code)) {
+    # No grading code, so just skip grading
+    return(invisible(NULL))
+  }
+
   tryCatch({
     # Parse provided check code
     parsed_check_code <- parse(text = check_code)
