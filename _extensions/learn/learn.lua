@@ -5,10 +5,12 @@ local cell_options = {
   pyodide = { edit = true },
 }
 
-local learn_options = {}
-learn_options["show-solutions"] = true
-learn_options["show-hints"] = true
-learn_options["grading"] = true
+local learn_options = {
+  ["show-solutions"] = true,
+  ["show-hints"] = true,
+  ["grading"] = true,
+}
+
 
 local ojs_definitions = {
   contents = {},
@@ -451,6 +453,7 @@ function setupWebR(doc)
   assert(file)
   local content = file:read("*a")
 
+  -- List of webR R packages and repositories to install
   local webr_packages = {
     pkgs = {"evaluate", "knitr", "htmltools"},
     repos = {}
@@ -462,6 +465,33 @@ function setupWebR(doc)
     table.insert(webr_packages.repos, pandoc.utils.stringify(repo))
   end
 
+  -- Data frame rendering
+  if (webr["render-df"]) then
+    local method = pandoc.utils.stringify(webr["render-df"])
+    local pkg = {
+      paged_table = "rmarkdown",
+      gt = "gt",
+      gt_interactive = "gt",
+      DT = "DT",
+      reactable = "reactable",
+    }
+    if (pkg[method]) then
+      table.insert(webr_packages.pkgs, pkg[method])
+    end
+  end
+
+  -- Initial webR startup options
+  local webr_options = {}
+  if (webr["base-url"]) then
+    webr_options["baseUrl"] = pandoc.utils.stringify(webr["base-url"])
+  end
+
+  local data = {
+    packages = webr_packages,
+    options = webr_options,
+    render_df = pandoc.utils.stringify(webr["render-df"]),
+  }
+
   table.insert(ojs_definitions.contents, {
     methodName = "interpretQuiet",
     cellName = "webr-prelude",
@@ -469,21 +499,9 @@ function setupWebR(doc)
     source = content,
   })
 
-  -- List of webR R packages and repositories to install
   doc.blocks:insert(pandoc.RawBlock(
     "html",
-    "<script type=\"webr-packages\">\n" .. json_as_b64(webr_packages) .. "\n</script>"
-  ))
-
-  -- Other webR setup options
-  local options = {}
-  if (webr["base-url"]) then
-    options["baseUrl"] = pandoc.utils.stringify(webr["base-url"])
-  end
-
-  doc.blocks:insert(pandoc.RawBlock(
-    "html",
-    "<script type=\"webr-options\">\n" .. json_as_b64(options) .. "\n</script>"
+    "<script type=\"webr-data\">\n" .. json_as_b64(data) .. "\n</script>"
   ))
 
   return webr

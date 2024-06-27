@@ -7,7 +7,19 @@ import { PyodideEvaluator } from './evaluate-pyodide'
 import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment'
 import { WebRGrader, PyodideGrader } from './grader'
 
-async function setupR(webR: WebR.WebR) {
+type WebRInitData = {
+  packages: {
+    pkgs: string[],
+    repos: string[],
+  }
+  options: WebR.WebROptions,
+  render_df: string;
+}
+
+async function setupR(webR: WebR.WebR, data: WebRInitData) {
+  await webR.evalRVoid('options("webr.render.df" = x)', {
+    env: { x: data.render_df || "default" },
+  });
   return await webR.evalRVoid(require('./assets/R/setup.R'));
 }
 

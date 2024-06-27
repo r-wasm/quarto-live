@@ -30,6 +30,35 @@ options(pager = function(files, ...) {
   writeLines(gsub(".[\\b]", "", readLines(files)))
 })
 
+# Custom renderer for evaluate
+options("webr.evaluate.handler" = evaluate::new_output_handler(
+  value = function(x, visible) {
+    res <- if (visible) {
+      withVisible(if ("data.frame" %in% class(x)) {
+        method <- getOption("webr.render.df")
+        if (method == "kable") {
+          knitr::knit_print(knitr::kable(x))
+        } else if (method == "paged_table") {
+          knitr::knit_print(rmarkdown::paged_table(x))
+        } else if (method == "gt") {
+          knitr::knit_print(gt::gt(x))
+        } else if (method == "gt_interactive") {
+          knitr::knit_print(x |> gt::gt() |> gt::opt_interactive())
+        } else if (method == "reactable") {
+          knitr::knit_print(
+            reactable::reactable(x),
+            options = list(screenshot.force = FALSE)
+          )
+        }
+      } else {
+        knitr::knit_print(x, options = list(screenshot.force = FALSE))
+      })
+    } else list(value = x, visible = FALSE)
+    class(res) <- "result"
+    res
+  }
+))
+
 # Additional package options
 options(knitr.table.format = "html")
 options(rgl.printRglwidget = TRUE)
@@ -251,15 +280,7 @@ class _BackendWasmCoreAgg(_Backend):
           keep_warning = warning,
           stop_on_error = error,
           filename = "User code",
-          output_handler = evaluate::new_output_handler(
-            value = function(x, visible) {
-              res <- if (visible) {
-                withVisible(knitr::knit_print(x, options = list(screenshot.force = FALSE)))
-              } else list(value = x, visible = FALSE)
-              class(res) <- "result"
-              res
-            }
-          )
+          output_handler = getOption("webr.evaluate.handler")
         )
       `,{env:{code:e,timelimit:Number(n.timelimit),envir:await this.envManager.get(this.envLabels[t]),warning:n.warning,error:n.error?0:1}})).result}asSourceHTML(e){let t=document.createElement("div"),n=document.createElement("pre");t.className="sourceCode",n.className="sourceCode r";let s=pn(e);return n.appendChild(s),t.appendChild(n),t}async asHtml(e,t=this.options){let n=[],s=document.createElement("div");s.value={result:null,evaluator:this};let r=()=>{if(t.echo&&n.length){let d=document.createElement("div"),m=document.createElement("pre");d.className="sourceCode",m.className="sourceCode r";let p=pn(n.join(""));m.appendChild(p),d.appendChild(m),s.appendChild(d)}n.length=0},o=d=>{let m=document.createElement("div");m.className="exercise-cell-output cell-output cell-output-webr cell-output-stdout",m.innerHTML=`<pre><code>${d}</code></pre>`,t.output&&(r(),s.appendChild(m))},l=d=>{let m=document.createElement("div");m.className="exercise-cell-output cell-output cell-output-webr cell-output-stderr",m.innerHTML=`<pre><code>${d}</code></pre>`,t.output&&(r(),s.appendChild(m))},a=d=>{let m=document.createElement("canvas");m.width=d.width,m.height=d.height,m.className="img-fluid figure-img",m.style.width=`${2*d.width/3}px`,m.getContext("bitmaprenderer").transferFromImageBitmap(d);let p=document.createElement("div");p.className="cell-output-display cell-output-webr",p.appendChild(m),t.output&&(r(),s.appendChild(p))},h=async(d,m,p)=>{if(t.output){r();let g=await u.evalR("format(cnd, backtrace = FALSE)",{env:{cnd:d}}),y=await g.names(),O="",S="";if(y&&y.includes("message")){let b=await d.get("message"),P=await d.get("call");S=await P.type()==="null"?": ":` in \`${await P.deparse()}\``,O=`${p}: ${await b.toString()}`}else O=await g.toString();let x=document.createElement("div");x.innerHTML=`
         <div class="callout-${m} callout callout-style-default callout-captioned">
@@ -312,7 +333,7 @@ class _BackendWasmCoreAgg(_Backend):
           arguments, or to close an opening <code>&quot;</code>, <code>'</code>,
           <code>(</code> or <code>{</code> with a matching <code>&quot;</code>,
           <code>'</code>, <code>)</code> or <code>}</code>.
-        `,correct:!1,location:"append",type:"error"})}}async blankCheck(e){return e.match(/_{6}_*/g)?await this.pyodide.toPy({message:"Please replace ______ with valid code.",correct:!1,location:"append",type:"info"}):null}async evaluateSolution(){let e=this.evaluator.options.exercise,t=document.querySelectorAll(`.exercise-solution[data-exercise="${e}"] > code.solution-code`);if(t.length>0){t.length>1&&console.warn(`Multiple solutions found for exercise "${e}", using first solution.`),await this.envManager.create(this.envLabels.solution,this.envLabels.prep);let n=await this.envManager.get(this.envLabels.solution),s=t[0].textContent,r=await this.pyodide.runPythonAsync(s,{globals:n});return{envir:n,code:s,result:r}}return null}async evaluateExercise(){await this.envManager.create(this.envLabels.grading,this.envLabels.result);let e=await this.envManager.get(this.envLabels.result),t=this.evaluator.container.value.evaluate_result,n=await this.envManager.get(this.envLabels.prep),s=this.evaluator.container.value.result,r={user_code:this.context.code,stage:"check",engine:"python",label:this.context.options.exercise,check_code:this.graderCode.check,envir_result:e,evaluate_result:t,envir_prep:n,last_value:s,solution_code:null,solution_code_all:null,envir_solution:null,solution:null},o=await this.evaluateSolution();return o&&(r.solution_code=o.code,r.solution_code_all=[o.code],r.envir_solution=o.envir,r.solution=o.result),await this.evaluator.bind(".checker_args",await this.pyodide.toPy(r),"grading"),await this.evaluator.evaluate("{ 'correct': True, 'message': 'Correct, well done!', 'type': 'success' }","grading",this.options)}async feedbackAsHtmlAlert(e){let t=document.createElement("div"),n=await e.get("type"),s=await e.get("correct");switch(t.classList.add("alert"),t.classList.add("exercise-grade"),await n.toString()){case"success":t.classList.add("alert-success");break;case"info":t.classList.add("alert-info");break;case"warning":t.classList.add("alert-warning");break;case"error":case"danger":t.classList.add("alert-danger");break;default:{let l=await s.toArray();l.length>0&&l[0]?t.classList.add("alert-success"):t.classList.add("alert-danger")}}let r=document.createElement("span");r.className="exercise-feedback";let o=await e.get("message");return r.innerHTML=await o.toString(),t.appendChild(r),t}};async function Ox(i){return await i.evalRVoid(og())}async function yx(i){let e=lg();i.FS.mkdir("/pyodide"),i.FS.writeFile("/pyodide/matplotlib_display.py",e),await i.runPythonAsync(`
+        `,correct:!1,location:"append",type:"error"})}}async blankCheck(e){return e.match(/_{6}_*/g)?await this.pyodide.toPy({message:"Please replace ______ with valid code.",correct:!1,location:"append",type:"info"}):null}async evaluateSolution(){let e=this.evaluator.options.exercise,t=document.querySelectorAll(`.exercise-solution[data-exercise="${e}"] > code.solution-code`);if(t.length>0){t.length>1&&console.warn(`Multiple solutions found for exercise "${e}", using first solution.`),await this.envManager.create(this.envLabels.solution,this.envLabels.prep);let n=await this.envManager.get(this.envLabels.solution),s=t[0].textContent,r=await this.pyodide.runPythonAsync(s,{globals:n});return{envir:n,code:s,result:r}}return null}async evaluateExercise(){await this.envManager.create(this.envLabels.grading,this.envLabels.result);let e=await this.envManager.get(this.envLabels.result),t=this.evaluator.container.value.evaluate_result,n=await this.envManager.get(this.envLabels.prep),s=this.evaluator.container.value.result,r={user_code:this.context.code,stage:"check",engine:"python",label:this.context.options.exercise,check_code:this.graderCode.check,envir_result:e,evaluate_result:t,envir_prep:n,last_value:s,solution_code:null,solution_code_all:null,envir_solution:null,solution:null},o=await this.evaluateSolution();return o&&(r.solution_code=o.code,r.solution_code_all=[o.code],r.envir_solution=o.envir,r.solution=o.result),await this.evaluator.bind(".checker_args",await this.pyodide.toPy(r),"grading"),await this.evaluator.evaluate("{ 'correct': True, 'message': 'Correct, well done!', 'type': 'success' }","grading",this.options)}async feedbackAsHtmlAlert(e){let t=document.createElement("div"),n=await e.get("type"),s=await e.get("correct");switch(t.classList.add("alert"),t.classList.add("exercise-grade"),await n.toString()){case"success":t.classList.add("alert-success");break;case"info":t.classList.add("alert-info");break;case"warning":t.classList.add("alert-warning");break;case"error":case"danger":t.classList.add("alert-danger");break;default:{let l=await s.toArray();l.length>0&&l[0]?t.classList.add("alert-success"):t.classList.add("alert-danger")}}let r=document.createElement("span");r.className="exercise-feedback";let o=await e.get("message");return r.innerHTML=await o.toString(),t.appendChild(r),t}};async function Ox(i,e){return await i.evalRVoid('options("webr.render.df" = x)',{env:{x:e.render_df||"default"}}),await i.evalRVoid(og())}async function yx(i){let e=lg();i.FS.mkdir("/pyodide"),i.FS.writeFile("/pyodide/matplotlib_display.py",e),await i.runPythonAsync(`
     import sys
     import os
     import micropip

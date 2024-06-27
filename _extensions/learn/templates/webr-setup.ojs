@@ -14,17 +14,13 @@ webROjs = {
     document.querySelector(".reveal > .slides").appendChild(revealStatus);
   }
 
-  // Grab list of R packages to be pre-installed
-  const pkgsContent = document.querySelector(`script[type=\"webr-packages\"]`).textContent;
-  const packages = JSON.parse(atob(pkgsContent));
+  // webR supplemental data and options
+  const dataContent = document.querySelector(`script[type=\"webr-data\"]`).textContent;
+  const data = JSON.parse(atob(dataContent));
 
   // Grab list of resources to be downloaded
   const filesContent = document.querySelector(`script[type=\"vfs-file\"]`).textContent;
   const files = JSON.parse(atob(filesContent));
-
-  // Other webR startup options
-  const optionsContent = document.querySelector(`script[type=\"webr-options\"]`).textContent;
-  const options = JSON.parse(atob(optionsContent));
 
   // Initialise webR and setup for R code evaluation
   let webRPromise = (async (webR) => {
@@ -33,15 +29,15 @@ webROjs = {
 
     // Install provided list of packages
     // Ensure webR default repo is included
-    packages.repos.push("https://repo.r-wasm.org")
-    await packages.pkgs.map((pkg) => () => {
+    data.packages.repos.push("https://repo.r-wasm.org")
+    await data.packages.pkgs.map((pkg) => () => {
       statusText.textContent = `Downloading package: ${pkg}`;
       return webR.evalRVoid(`
         webr::install(pkg, repos = repos)
         library(pkg, character.only = TRUE)
       `, { env: {
         pkg: pkg,
-        repos: packages.repos,
+        repos: data.packages.repos,
       }});
     }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
@@ -73,11 +69,11 @@ webROjs = {
     await webR.evalRVoid(`webr::shim_install()`);
 
     statusText.textContent = `WebR environment setup`;
-    await setupR(webR);
+    await setupR(webR, data);
 
     statusContainer.classList.add("d-none");
     return webR;
-  })(new WebR(options));
+  })(new WebR(data.options));
 
   // Storage for shared exercise environments
   const webREnvironmentManager = new WebREnvironmentManager(webRPromise);

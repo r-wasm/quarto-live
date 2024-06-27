@@ -194,15 +194,7 @@ export class WebREvaluator implements ExerciseEvaluator {
           keep_warning = warning,
           stop_on_error = error,
           filename = "User code",
-          output_handler = evaluate::new_output_handler(
-            value = function(x, visible) {
-              res <- if (visible) {
-                withVisible(knitr::knit_print(x, options = list(screenshot.force = FALSE)))
-              } else list(value = x, visible = FALSE)
-              class(res) <- "result"
-              res
-            }
-          )
+          output_handler = getOption("webr.evaluate.handler")
         )
       `,
       {

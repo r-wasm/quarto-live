@@ -1,6 +1,8 @@
 ---
 title: Editor
 format: learn-html
+webr:
+  render-df: reactable
 ---
 
 {{< include ../_extensions/learn/_knitr.qmd >}}
@@ -21,3 +23,13 @@ rnorm(10)
 #| timelimit: 3
 rnorm(10)
 ```
+
+::: {#lst-ref}
+
+```{.webr}
+mtcars
+```
+
+:::
+
+Referencing @lst-ref...
