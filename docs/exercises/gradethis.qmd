@@ -2,7 +2,6 @@
 title: Grading solutions using `gradethis`
 format: learn-html
 webr:
-  grader: gradethis
   packages:
     - dplyr
 ---

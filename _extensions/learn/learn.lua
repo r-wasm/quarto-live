@@ -562,9 +562,8 @@ end
 
 function Meta(meta)
   local webr = meta.webr or {}
-  local cell_options = webr["cell-options"] or {}
 
-  for k, v in pairs(cell_options) do
+  for k, v in pairs(webr["cell-options"] or {}) do
     if (type(v) == "table") then
       cell_options.webr[k] = pandoc.utils.stringify(v)
     else
@@ -573,9 +572,8 @@ function Meta(meta)
   end
 
   local pyodide = meta.pyodide or {}
-  cell_options = pyodide["cell-options"] or {}
 
-  for k, v in pairs(cell_options) do
+  for k, v in pairs(pyodide["cell-options"] or {}) do
     if (type(v) == "table") then
       cell_options.pyodide[k] = pandoc.utils.stringify(v)
     else
