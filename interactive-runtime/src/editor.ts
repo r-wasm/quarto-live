@@ -3,6 +3,7 @@ import type { PyodideInterface } from 'pyodide';
 import type { OJSElement, EvaluateOptions } from './evaluate'
 import { Indicator } from './indicator'
 import { basicSetup } from 'codemirror'
+import { tagHighlighterTok } from './highlighter';
 import { EditorView, ViewUpdate, keymap } from '@codemirror/view'
 import { EditorState, Compartment, Prec } from '@codemirror/state'
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
@@ -44,25 +45,6 @@ const icons = {
   lightbulb: require('./assets/lightbulb.svg') as string,
   play: require('./assets/play.svg') as string,
 }
-
-const highlightStyle = HighlightStyle.define([
-  { tag: tags.keyword, color: "var(--exercise-editor-hl-kw)" },
-  { tag: tags.operator, color: "var(--exercise-editor-hl-op)" },
-  { tag: tags.definitionOperator, color: "var(--exercise-editor-hl-ot)" },
-  { tag: tags.compareOperator, color: "var(--exercise-editor-hl-sc)" },
-  { tag: tags.attributeName, color: "var(--exercise-editor-hl-at)" },
-  { tag: tags.controlKeyword, color: "var(--exercise-editor-hl-cf)" },
-  { tag: tags.comment, color: "var(--exercise-editor-hl-co)" },
-  { tag: tags.string, color: "var(--exercise-editor-hl-st)" },
-  { tag: tags.regexp, color: "var(--exercise-editor-hl-ss)" },
-  { tag: tags.variableName, color: "var(--exercise-editor-hl-va)" },
-  { tag: tags.bool, color: "var(--exercise-editor-hl-cn)" },
-  { tag: tags.separator, color: "var(--exercise-editor-hl-cn)" },
-  { tag: tags.literal, color: "var(--exercise-editor-hl-cn)" },
-  { tag: [tags.number, tags.integer], color: "var(--exercise-editor-hl-dv)" },
-  { tag: tags.function(tags.variableName), color: "var(--exercise-editor-hl-fu)" },
-  { tag: tags.function(tags.attributeName), color: "var(--exercise-editor-hl-at)" },
-]);
 
 // TODO: This should be made optional, or perhaps a less heavy handed approach.
 function hideEmptyPanels() {
@@ -138,7 +120,7 @@ abstract class ExerciseEditor {
     const tabSize = new Compartment();
     const extensions = [
       basicSetup,
-      syntaxHighlighting(highlightStyle),
+      syntaxHighlighting(tagHighlighterTok),
       language.of(r()),
       tabSize.of(EditorState.tabSize.of(2)),
       Prec.high(

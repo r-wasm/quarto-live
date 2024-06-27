@@ -2,7 +2,7 @@ import { parser as r } from "lezer-r"
 import { parser as python } from "@lezer/python"
 import { highlightCode, tagHighlighter, tags } from "@lezer/highlight"
 
-const tagHighlighterTok = tagHighlighter([
+export const tagHighlighterTok = tagHighlighter([
   { tag: tags.keyword, class: "tok-keyword" },
   { tag: tags.operator, class: "tok-operator" },
   { tag: tags.definitionOperator, class: "tok-definitionOperator" },
