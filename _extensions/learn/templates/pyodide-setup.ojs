@@ -29,9 +29,12 @@ pyodideOjs = {
       indexURL: pyodideBaseUrl,
     });
 
+    statusText.textContent = `Downloading package: micropip`;
+    await pyodide.loadPackage("micropip")
+    const micropip = pyodide.pyimport("micropip");
     await packages.pkgs.map((pkg) => () => {
       statusText.textContent = `Downloading package: ${pkg}`;
-      return pyodide.loadPackage(pkg);
+      return micropip.install(pkg);
     }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
     statusText.textContent = `Pyodide environment setup`;

@@ -13,6 +13,7 @@ website:
           - getting_started/packages.qmd
           - getting_started/plotting.qmd
           - getting_started/readonly.qmd
+          - getting_started/python.qmd
       - section: Exercises and Grading
         contents:
           - exercises/exercises.qmd

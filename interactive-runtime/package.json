@@ -23,6 +23,7 @@
   "dependencies": {
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.26.3",
+    "@jupyter-widgets/html-manager": "^1.0.11",
     "@lezer/python": "^1.1.14",
     "codemirror": "^6.0.1",
     "codemirror-lang-r": "^0.1.0-2",

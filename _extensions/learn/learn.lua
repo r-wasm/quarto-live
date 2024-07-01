@@ -547,6 +547,14 @@ function Pandoc(doc)
     }
   })
 
+  if (pyodide) then
+    -- Additional runtime dependencies for Pyodide
+    quarto.doc.add_html_dependency({
+      name = 'interactive-runtime-pyodide',
+      scripts = { "resources/require.min.js" },
+    })
+  end
+
   -- Copy resources for upload to VFS at runtime
   local vfs_files = {}
   if (webr and webr.resources) then

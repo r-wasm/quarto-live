@@ -15,11 +15,24 @@ import {
 
 declare global {
   interface Window {
+    require: (
+      (modules: string[], callback?: (...modules: any[]) => any) => any
+    ) & {
+      config: (options: { paths: { [key: string]: string } }) => void;
+    };
     _ojs: {
       ojsConnector: any;
     }
   }
 }
+
+let stateElement: HTMLScriptElement | undefined;
+const requireHtmlManager = {
+  paths: {
+    "@jupyter-widgets/html-manager/dist/libembed-amd":
+      "https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@1.0.11/dist/libembed-amd"
+  },
+};
 
 export class PyodideEvaluator implements ExerciseEvaluator {
   container: OJSElement;
@@ -114,8 +127,6 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       await this.envManager.create(this.envLabels.result, this.envLabels.prep);
       const result = await this.evaluate(this.context.code, "result");
 
-      console.log("process", result);
-
       // Once we have the evaluate result, render it's contents to HTML
       if (!this.options.output) {
         this.container.value.result = null;
@@ -127,7 +138,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
 
       // Grab defined objects from the result environment
       const envir = await this.envManager.get(this.envLabels.result);
-      const objs: {[key: string]: PyProxy} = {};
+      const objs: { [key: string]: PyProxy } = {};
       if (typeof this.options.define === 'string') {
         objs[this.options.define] = await envir.get(this.options.define)
       } else if (this.options.define) {
@@ -174,7 +185,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       with capture.capture_output() as output:
         value = None
         try:
-          value = pyodide.code.eval_code(code, locals = code_locals)
+          value = pyodide.code.eval_code(code, globals = code_globals)
         except Exception as err:
           print(err, file=sys.stderr)
         if (value is not None):
@@ -184,7 +195,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     `, {
       globals: this.pyodide.toPy({
         code,
-        code_locals: await this.envManager.get(this.envLabels[envLabel]),
+        code_globals: await this.envManager.get(this.envLabels[envLabel]),
       }),
     });
     const [value, stdout, stderr, outputs] = resultObject.toJs({ depth: 1 });
@@ -244,10 +255,39 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     }
 
     const appendPlainText = (content: string) => {
-      const outputDiv = document.createElement("div");
-      outputDiv.className = "cell-output cell-output-pyodide";
-      outputDiv.innerHTML = `<pre><code>${content}</code></pre>`;
-      container.appendChild(outputDiv);
+      if (options.output) {
+        const outputDiv = document.createElement("div");
+        outputDiv.appendChild(document.createTextNode(content));
+        outputDiv.className = "cell-output cell-output-pyodide";
+        outputDiv.innerHTML = `<pre><code>${outputDiv.innerHTML}</code></pre>`;
+        container.appendChild(outputDiv);
+      }
+    }
+
+    const appendJupyterWidget = (widget: PyProxy) => {
+      // TODO: Hook this up to the running Python process for reactivity
+      // c.f. https://github.com/jupyter-widgets/ipywidgets/tree/main/examples/web3
+      const widgets = this.pyodide.pyimport("ipywidgets");
+      const json = this.pyodide.pyimport("json");
+      const state = json.dumps(widgets.Widget.get_manager_state());
+
+      if (!stateElement) {
+        stateElement = document.createElement('script');
+        stateElement.type = "application/vnd.jupyter.widget-state+json";
+        stateElement = document.body.appendChild(stateElement);
+        window.require.config(requireHtmlManager);
+      }
+      stateElement.innerHTML = state;
+
+      const widgetJson = json.dumps(widget);
+      const widgetElement = document.createElement('script');
+      widgetElement.type = "application/vnd.jupyter.widget-view+json"
+      widgetElement.innerHTML = widgetJson;
+      container.appendChild(widgetElement);
+
+      window.require(['@jupyter-widgets/html-manager/dist/libembed-amd'], function (m) {
+        m.renderWidgets();
+      });
     }
 
     const appendHtml = async (html: string) => {
@@ -291,6 +331,8 @@ export class PyodideEvaluator implements ExerciseEvaluator {
         appendImage(data.get("application/html-imagebitmap"));
       } else if (keys.includes("text/html")) {
         appendHtml(data.get("text/html"));
+      } else if (keys.includes("application/vnd.jupyter.widget-view+json")) {
+        appendJupyterWidget(data.get("application/vnd.jupyter.widget-view+json"))
       } else if (keys.includes("text/plain")) {
         appendPlainText(data.get("text/plain"));
       }
@@ -298,7 +340,6 @@ export class PyodideEvaluator implements ExerciseEvaluator {
 
     // Attach final result to output value
     container.value.result = result;
-    console.log("asHtml", container.value)
     return container;
   }
 }
