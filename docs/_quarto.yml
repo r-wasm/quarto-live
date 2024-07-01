@@ -30,6 +30,7 @@ website:
           - interactive/define.qmd
       - section: Other Features
         contents:
+          - other/tables.qmd
           - other/resources.qmd
           - other/html.qmd
           - other/slides.qmd

@@ -1,0 +1,10 @@
+---
+format: learn-html
+title: "Tables"
+webr:
+  render-df: gt-interactive
+---
+
+```{webr}
+mtcars
+```

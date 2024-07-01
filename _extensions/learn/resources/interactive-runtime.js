@@ -38,11 +38,11 @@ options("webr.evaluate.handler" = evaluate::new_output_handler(
         method <- getOption("webr.render.df")
         if (method == "kable") {
           knitr::knit_print(knitr::kable(x))
-        } else if (method == "paged_table") {
+        } else if (method == "paged-table") {
           knitr::knit_print(rmarkdown::paged_table(x))
         } else if (method == "gt") {
           knitr::knit_print(gt::gt(x))
-        } else if (method == "gt_interactive") {
+        } else if (method == "gt-interactive") {
           knitr::knit_print(x |> gt::gt() |> gt::opt_interactive())
         } else if (method == "reactable") {
           knitr::knit_print(

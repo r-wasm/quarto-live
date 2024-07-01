@@ -86,16 +86,6 @@ abstract class ExerciseEditor {
   options: ExerciseOptions;
   indicator: Indicator;
   completionMethods: Promise<ExerciseCompletionMethods>;
-  reactiveViewof = [
-    EditorView.updateListener.of((update: ViewUpdate) => {
-      if (!update.docChanged) return;
-      this.code = update.state.doc.toString();
-      this.container.value.code = this.code;
-      this.container.dispatchEvent(new CustomEvent('input', {
-        detail: { manual: false }
-      }));
-    }),
-  ];
 
   constructor(code: string, options: ExerciseOptions) {
     if (typeof code !== "string") {

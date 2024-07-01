@@ -466,17 +466,18 @@ function setupWebR(doc)
   end
 
   -- Data frame rendering
+  local webr_render_df = "default"
   if (webr["render-df"]) then
-    local method = pandoc.utils.stringify(webr["render-df"])
+    webr_render_df = pandoc.utils.stringify(webr["render-df"])
     local pkg = {
-      paged_table = "rmarkdown",
-      gt = "gt",
-      gt_interactive = "gt",
-      DT = "DT",
-      reactable = "reactable",
+      ["paged-table"] = "rmarkdown",
+      ["gt"] = "gt",
+      ["gt-interactive"] = "gt",
+      ["DT"] = "DT",
+      ["reactable"] = "reactable",
     }
-    if (pkg[method]) then
-      table.insert(webr_packages.pkgs, pkg[method])
+    if (pkg[webr_render_df]) then
+      table.insert(webr_packages.pkgs, pkg[webr_render_df])
     end
   end
 
@@ -489,7 +490,7 @@ function setupWebR(doc)
   local data = {
     packages = webr_packages,
     options = webr_options,
-    render_df = pandoc.utils.stringify(webr["render-df"]),
+    render_df = webr_render_df,
   }
 
   table.insert(ojs_definitions.contents, {

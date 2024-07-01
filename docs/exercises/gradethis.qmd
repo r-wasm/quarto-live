@@ -15,7 +15,7 @@ webr:
 library(dplyr)
 ```
 
-##  Grading R code with `gradethis`
+## Grading R code with `gradethis`
 
 ```{webr}
 #| caption: Sample Exercise
