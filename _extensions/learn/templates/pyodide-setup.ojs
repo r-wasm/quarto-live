@@ -1,7 +1,11 @@
 pyodideOjs = {
-  const pyodideBaseUrl = "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/"
-  const { loadPyodide } = await import(`${pyodideBaseUrl}pyodide.mjs`);
-  const { PyodideEvaluator, PyodideEnvironmentManager, setupPython } = window._exercise_ojs_runtime;
+  const pyodideBaseUrl = "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/";
+  const {
+    PyodideEvaluator,
+    PyodideEnvironmentManager,
+    setupPython,
+    startPyodideWorker,
+  } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-indicator");
   const statusText = document.getElementById("exercise-loading-status");
@@ -25,17 +29,18 @@ pyodideOjs = {
 
   let pyodidePromise = (async () => {
     statusText.textContent = `Downloading Pyodide`;
-    const pyodide = await loadPyodide({
+    const pyodide = await startPyodideWorker({
       indexURL: pyodideBaseUrl,
     });
 
     statusText.textContent = `Downloading package: micropip`;
-    await pyodide.loadPackage("micropip")
-    const micropip = pyodide.pyimport("micropip");
+    await pyodide.loadPackage("micropip");
+    const micropip = await pyodide.pyimport("micropip");
     await packages.pkgs.map((pkg) => () => {
       statusText.textContent = `Downloading package: ${pkg}`;
       return micropip.install(pkg);
     }).reduce((cur, next) => cur.then(next), Promise.resolve());
+    await micropip.destroy();
 
     statusText.textContent = `Pyodide environment setup`;
     await setupPython(pyodide);

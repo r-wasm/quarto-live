@@ -1,7 +1,6 @@
 import { PyodideEnvironmentManager } from './environment';
 import { Indicator } from './indicator';
 import { highlightPython } from './highlighter';
-import { PyodideInterface } from 'pyodide';
 import type { PyProxy } from 'pyodide/ffi';
 import {
   EnvLabel,
@@ -11,6 +10,7 @@ import {
   ExerciseEvaluator,
   OJSElement
 } from "./evaluate";
+import { PyodideInterfaceWorker } from './pyodide-worker';
 
 
 declare global {
@@ -40,10 +40,10 @@ export class PyodideEvaluator implements ExerciseEvaluator {
   options: EvaluateOptions;
   envLabels: EnvLabels;
   envManager: PyodideEnvironmentManager;
-  pyodide: PyodideInterface;
+  pyodide: PyodideInterfaceWorker;
 
   constructor(
-    pyodide: PyodideInterface,
+    pyodide: PyodideInterfaceWorker,
     environmentManager: PyodideEnvironmentManager,
     context: EvaluateContext
   ) {
@@ -175,6 +175,11 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     }
 
     await this.pyodide.loadPackagesFromImports(code);
+    const locals = await this.pyodide.toPy({
+      code,
+      environment: await this.envManager.get(this.envLabels[envLabel]),
+    });
+
     const resultObject = await this.pyodide.runPythonAsync(`
       from IPython.utils import capture
       from IPython.core.interactiveshell import InteractiveShell
@@ -185,20 +190,26 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       with capture.capture_output() as output:
         value = None
         try:
-          value = pyodide.code.eval_code(code, globals = code_globals)
+          value = pyodide.code.eval_code(code, globals = environment)
         except Exception as err:
           print(err, file=sys.stderr)
         if (value is not None):
           display(value)
 
-      value, output.stdout, output.stderr, output.outputs
-    `, {
-      globals: this.pyodide.toPy({
-        code,
-        code_globals: await this.envManager.get(this.envLabels[envLabel]),
-      }),
-    });
-    const [value, stdout, stderr, outputs] = resultObject.toJs({ depth: 1 });
+      {
+        "value": value,
+        "stdout": output.stdout,
+        "stderr": output.stderr,
+        "outputs": output.outputs,
+      }
+    `, { locals });
+    locals.destroy();
+
+    const value = await resultObject.get("value");
+    const stdout = await resultObject.get("stdout");
+    const stderr = await resultObject.get("stderr");
+    const outputs = await resultObject.get("outputs");
+
     return {
       value: value as unknown,
       stdout: stdout as string,
@@ -264,12 +275,14 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       }
     }
 
-    const appendJupyterWidget = (widget: PyProxy) => {
+    const appendJupyterWidget = async (widget: PyProxy) => {
       // TODO: Hook this up to the running Python process for reactivity
       // c.f. https://github.com/jupyter-widgets/ipywidgets/tree/main/examples/web3
-      const widgets = this.pyodide.pyimport("ipywidgets");
-      const json = this.pyodide.pyimport("json");
-      const state = json.dumps(widgets.Widget.get_manager_state());
+      const state = await this.pyodide.runPythonAsync(`
+        import ipywidgets as widgets
+        import json
+        json.dumps(widgets.Widget.get_manager_state())
+      `)
 
       if (!stateElement) {
         stateElement = document.createElement('script');
@@ -279,7 +292,12 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       }
       stateElement.innerHTML = state;
 
-      const widgetJson = json.dumps(widget);
+      const locals = await this.pyodide.toPy({ widget });
+      const widgetJson = await this.pyodide.runPythonAsync(`
+        import json
+        json.dumps(widget)
+      `, { locals });
+      locals.destroy();
       const widgetElement = document.createElement('script');
       widgetElement.type = "application/vnd.jupyter.widget-view+json"
       widgetElement.innerHTML = widgetJson;
@@ -324,19 +342,23 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       container.appendChild(errorDiv);
     }
 
-    result.outputs.forEach((item) => {
-      const data = item.data.toJs({ depth: 1 });
-      const keys = Array.from(data.keys());
-      if (keys.includes("application/html-imagebitmap")) {
-        appendImage(data.get("application/html-imagebitmap"));
-      } else if (keys.includes("text/html")) {
-        appendHtml(data.get("text/html"));
-      } else if (keys.includes("application/vnd.jupyter.widget-view+json")) {
-        appendJupyterWidget(data.get("application/vnd.jupyter.widget-view+json"))
-      } else if (keys.includes("text/plain")) {
-        appendPlainText(data.get("text/plain"));
+    for(let i = 0; i < await result.outputs.length; i++) {
+      const item = await result.outputs.get(i);
+      const imagebitmap = await item._repr_mime_("application/html-imagebitmap");
+      const html = await item._repr_mime_("text/html");
+      const widget = await item._repr_mime_("application/vnd.jupyter.widget-view+json");
+      const plain = await item._repr_mime_("text/plain");
+      if (imagebitmap) {
+        appendImage(imagebitmap);
+      } else if (html) {
+        appendHtml(html);
+      } else if (widget) {
+        appendJupyterWidget(widget);
+      } else if (plain) {
+        appendPlainText(plain);
       }
-    });
+      item.destroy();
+    }
 
     // Attach final result to output value
     container.value.result = result;

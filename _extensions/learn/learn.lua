@@ -422,7 +422,7 @@ function setupPyodide(doc)
   local content = file:read("*a")
 
   local pyodide_packages = {
-    pkgs = {"pyodide_http", "micropip", "ipython"},
+    pkgs = {"pyodide_http", "micropip", "ipython", "matplotlib"},
   }
   for _, pkg in pairs(packages) do
     table.insert(pyodide_packages.pkgs, pandoc.utils.stringify(pkg))
@@ -539,8 +539,9 @@ function Pandoc(doc)
   quarto.doc.add_html_dependency({
     name = 'interactive-runtime',
     scripts = {
-      "resources/interactive-runtime.js"
+      { path = "resources/interactive-runtime.js", attribs = { type = "module"} },
     },
+    resources = { "resources/pyodide-worker.js" },
     stylesheets = {
       "resources/highlighting.css",
       "resources/interactive-runtime.css"

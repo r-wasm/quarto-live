@@ -1,11 +1,13 @@
 import * as WebR from 'webr'
-import type { PyodideInterface } from 'pyodide'
+import * as Comlink from 'comlink';
+import type { PyodideInterfaceWorker, PyodideWorker } from './pyodide-worker';
 import { WebRExerciseEditor, PyodideExerciseEditor } from './editor'
 import { highlightR, highlightPython, interpolateR } from './highlighter'
 import { WebREvaluator } from './evaluate-webr'
 import { PyodideEvaluator } from './evaluate-pyodide'
 import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment'
 import { WebRGrader, PyodideGrader } from './grader'
+import { comlinkTransfer, imageBitmapTransfer, mapTransfer, proxyTransfer } from './pyodide-proxy';
 
 type WebRInitData = {
   packages: {
@@ -23,10 +25,11 @@ async function setupR(webR: WebR.WebR, data: WebRInitData) {
   return await webR.evalRVoid(require('./assets/R/setup.R'));
 }
 
-async function setupPython(pyodide: PyodideInterface) {
+async function setupPython(pyodide: PyodideInterfaceWorker) {
   const matplotlib_display = require('./assets/Python/matplotlib_display.py');
-  pyodide.FS.mkdir('/pyodide')
-  pyodide.FS.writeFile('/pyodide/matplotlib_display.py', matplotlib_display);
+
+  await pyodide.FS.mkdir('/pyodide');
+  await pyodide.FS.writeFile('/pyodide/matplotlib_display.py', matplotlib_display);
   await pyodide.runPythonAsync(`
     import sys
     import os
@@ -38,6 +41,18 @@ async function setupPython(pyodide: PyodideInterface) {
     sys.path.insert(0, "/pyodide/")
     matplotlib.use("module://matplotlib_display")
   `)
+}
+
+async function startPyodideWorker(options) {
+  const workerUrl = new URL("./pyodide-worker.js", import.meta.url);
+  const worker = new Worker(workerUrl, { type: "module" });
+  const pyodideWorker = Comlink.wrap<PyodideWorker>(worker);
+  const pyodide = await pyodideWorker.init(options);
+  Comlink.transferHandlers.set("PyProxy", proxyTransfer);
+  Comlink.transferHandlers.set("Comlink", comlinkTransfer);
+  Comlink.transferHandlers.set("ImageBitmap", imageBitmapTransfer);
+  Comlink.transferHandlers.set("Map", mapTransfer);
+  return pyodide;
 }
 
 declare global {
@@ -57,6 +72,7 @@ declare global {
       interpolateR: typeof interpolateR;
       setupR: typeof setupR;
       setupPython: typeof setupPython;
+      startPyodideWorker: typeof startPyodideWorker;
     };
   }
 }
@@ -76,6 +92,7 @@ window._exercise_ojs_runtime = {
   interpolateR,
   setupR,
   setupPython,
+  startPyodideWorker,
 };
 
 export {
@@ -93,4 +110,5 @@ export {
   interpolateR,
   setupR,
   setupPython,
+  startPyodideWorker,
 }

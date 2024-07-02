@@ -6,13 +6,24 @@ if (process.argv.includes("--watch")) {
   watch = true;
 }
 
+const external = [
+  'node:child_process',
+  'node:crypto',
+  'node:fs',
+  'node:path',
+  'node:url',
+  'node:vm',
+]
+
 const options: BuildOptions = {
-  entryPoints: ['./src/main.ts'],
+  entryPoints: ['./src/interactive-runtime.ts', './src/pyodide-worker.ts'],
+  external,
   bundle: true,
-  outfile: '../_extensions/learn/resources/interactive-runtime.js',
+  outdir: '../_extensions/learn/resources',
   minify: true,
   loader: { '.svg': 'text', '.R': 'text', '.py': 'text' },
   platform: 'browser',
+  format: 'esm',
   logLevel: 'info',
 };
 

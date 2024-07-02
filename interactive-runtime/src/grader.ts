@@ -7,6 +7,7 @@ import { PyodideEnvironmentManager, WebREnvironmentManager } from './environment
 import { Indicator } from './indicator'
 import { PyodideInterface } from 'pyodide'
 import { PyProxy } from 'pyodide/ffi'
+import { isPyProxy } from './pyodide-proxy'
 
 export type ExerciseGraderCode = {
   code_check?: string;
@@ -338,28 +339,12 @@ export class PyodideGrader extends ExerciseGrader {
       }
       const container = await this.evaluator.asHtml(evaluateResult, this.options);
       const grade = await container.value.result.value;
+      const message = await grade.get("message");
+      const correct = await grade.get("correct");
 
-      let message, correct;
-
-      // Convert to JS if required
-      if (Object.getOwnPropertyNames(grade).includes("get")) {
-        message = await grade.get("message");
-        correct = await grade.get("correct");
+      if (message && correct !== undefined) {
+        return await this.feedbackAsHtmlAlert(grade);
       }
-
-      // or, grab properties directly if already JS object
-      if ("message" in grade && "correct" in grade) {
-        message = await grade.message;
-        correct = await grade.correct;
-      }
-
-      // This is indeed some feedback contained within an object
-      if (message && correct) {
-        if (message && correct) {
-          return await this.feedbackAsHtmlAlert(this.pyodide.toPy(grade));
-        }
-      }
-
       return container;
     } finally {
       ind.finished();
@@ -374,7 +359,7 @@ export class PyodideGrader extends ExerciseGrader {
         from ast import parse
         parse(user_code)
       `, {
-        globals: this.pyodide.toPy({ user_code: code }),
+        locals: await this.pyodide.toPy({ user_code: code }),
       });
       return null;
     } catch (e) {
@@ -471,12 +456,13 @@ export class PyodideGrader extends ExerciseGrader {
 
   async feedbackAsHtmlAlert(grade: PyProxy): Promise<HTMLElement> {
     const container = document.createElement("div");
-    const typeCharacter = await grade.get('type') as PyProxy;
-    const correctLogical = await grade.get('correct') as PyProxy;
+    const type = await grade.get('type') as string;
+    const correct = await grade.get('correct') as boolean;
+    const message = await grade.get('message') as string;
     container.classList.add("alert");
     container.classList.add("exercise-grade");
 
-    switch (await typeCharacter.toString()) {
+    switch (type) {
       case "success":
         container.classList.add("alert-success");
         break;
@@ -491,20 +477,13 @@ export class PyodideGrader extends ExerciseGrader {
         container.classList.add("alert-danger");
         break;
       default: {
-        const correct = await correctLogical.toArray();
-        if (correct.length > 0 && correct[0]) {
-          container.classList.add("alert-success");
-        } else {
-          container.classList.add("alert-danger");
-        }
+        container.classList.add(correct ? "alert-success" : "alert-danger");
       }
     }
 
     const content = document.createElement("span");
     content.className = "exercise-feedback";
-    const message = await grade.get('message');
-    content.innerHTML = await message.toString();
-
+    content.innerHTML = message;
     container.appendChild(content);
     return container;
   }
