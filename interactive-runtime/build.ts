@@ -21,7 +21,7 @@ const options: BuildOptions = {
   bundle: true,
   outdir: '../_extensions/learn/resources',
   minify: true,
-  loader: { '.svg': 'text', '.R': 'text', '.py': 'text' },
+  loader: { '.svg': 'text', '.R': 'base64', '.py': 'base64' },
   platform: 'browser',
   format: 'esm',
   logLevel: 'info',

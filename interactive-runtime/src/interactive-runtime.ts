@@ -23,12 +23,11 @@ async function setupR(webR: WebR.WebR, data: WebRInitData) {
   await webR.evalRVoid('options("webr.render.df" = x)', {
     env: { x: data.render_df || "default" },
   });
-  return await webR.evalRVoid(require('./assets/R/setup.R'));
+  return await webR.evalRVoid(atob(require('./assets/R/setup.R')));
 }
 
 async function setupPython(pyodide: PyodideInterfaceWorker) {
-  const matplotlib_display = require('./assets/Python/matplotlib_display.py');
-
+  const matplotlib_display = atob(require('./assets/Python/matplotlib_display.py'));
   await pyodide.FS.mkdir('/pyodide');
   await pyodide.FS.writeFile('/pyodide/matplotlib_display.py', matplotlib_display);
   await pyodide.runPythonAsync(`
