@@ -1,6 +1,6 @@
 ---
 title: HTML and Widgets
-format: learn-html
+format: live-html
 webr:
   packages:
     - rgl

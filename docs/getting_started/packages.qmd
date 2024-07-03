@@ -1,6 +1,6 @@
 ---
 title: Packages
-format: learn-html
+format: live-html
 webr:
   packages:
     - dplyr

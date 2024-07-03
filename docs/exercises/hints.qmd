@@ -1,16 +1,16 @@
 ---
 title: Hints and Solutions
-format: learn-html
+format: live-html
 webr:
   packages:
     - dplyr
-learn:
+live:
   show-hints: true
   show-solutions: true
   grading: true
 ---
 
-{{< include ../_extensions/learn/_knitr.qmd >}}
+{{< include ../_extensions/live/_knitr.qmd >}}
 
 ## Inline hints and solutions
 

@@ -16,10 +16,10 @@ const external = [
 ]
 
 const options: BuildOptions = {
-  entryPoints: ['./src/interactive-runtime.ts', './src/pyodide-worker.ts'],
+  entryPoints: ['./src/live-runtime.ts', './src/pyodide-worker.ts'],
   external,
   bundle: true,
-  outdir: '../_extensions/learn/resources',
+  outdir: '../_extensions/live/resources',
   minify: true,
   loader: { '.svg': 'text', '.R': 'base64', '.py': 'base64' },
   platform: 'browser',

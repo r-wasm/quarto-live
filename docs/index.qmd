@@ -1,9 +1,9 @@
 ---
-format: learn-html
+format: live-html
 ---
 
 ## Installation
 
 ```bash
-quarto add r-wasm/quarto-learn
+quarto add r-wasm/quarto-live
 ```

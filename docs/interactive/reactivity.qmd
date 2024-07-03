@@ -1,6 +1,6 @@
 ---
 title: Reactivity
-format: learn-html
+format: live-html
 ---
 
 ## Define OJS variables
@@ -17,11 +17,6 @@ bar <- rnorm(1)
 foo
 bar
 ```
-
-
-
-
-
 
 ## Input OJS variables to code block
 

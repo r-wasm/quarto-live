@@ -1,6 +1,6 @@
 ---
 title: Plotting
-format: learn-html
+format: live-html
 webr:
   packages:
     - ggplot2

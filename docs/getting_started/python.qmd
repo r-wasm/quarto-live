@@ -1,6 +1,6 @@
 ---
 title: Python
-format: learn-html
+format: live-html
 pyodide:
   packages:
     - matplotlib

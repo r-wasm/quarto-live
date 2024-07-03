@@ -1,6 +1,6 @@
 ---
 title: Managing environments
-format: learn-html
+format: live-html
 ---
 
 ```{webr}

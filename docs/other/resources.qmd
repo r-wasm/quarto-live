@@ -1,5 +1,5 @@
 ---
-format: learn-html
+format: live-html
 title: "Loading Resources"
 resources:
   - "data"

@@ -1,14 +1,14 @@
-title: Quarto Learn
+title: Quarto Live
 author: George Stagg
-version: 0.1.0-dev
+version: 0.1.1-dev
 quarto-required: ">=1.4.0"
 contributes:
   filters:
-    - learn.lua
+    - live.lua
   formats:
     common:
       ojs-engine: true
       filters:
-        - learn.lua
+        - live.lua
     html: default
     revealjs: default

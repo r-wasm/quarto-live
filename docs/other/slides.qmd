@@ -1,6 +1,6 @@
 ---
 format:
-  learn-revealjs:
+  live-revealjs:
     theme: dark
 title: Example Slides
 webr:

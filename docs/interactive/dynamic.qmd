@@ -1,6 +1,6 @@
 ---
 title: Dynamic Exercises
-format: learn-html
+format: live-html
 webr:
   packages:
     - dplyr
@@ -11,8 +11,8 @@ webr:
     - gradethis
 ---
 
-{{< include ../_extensions/learn/_knitr.qmd >}}
-{{< include ../_extensions/learn/_gradethis.qmd >}}
+{{< include ../_extensions/live/_knitr.qmd >}}
+{{< include ../_extensions/live/_gradethis.qmd >}}
 
 ```{webr}
 #| edit: false

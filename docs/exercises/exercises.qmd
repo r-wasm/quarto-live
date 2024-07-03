@@ -1,6 +1,6 @@
 ---
 title: Creating Exercises
-format: learn-html
+format: live-html
 ---
 
 # Example exercise

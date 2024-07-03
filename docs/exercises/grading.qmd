@@ -1,6 +1,6 @@
 ---
 title: Grading Solutions
-format: learn-html
+format: live-html
 ---
 
 ## Fill in the blanks

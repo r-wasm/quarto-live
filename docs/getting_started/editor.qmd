@@ -1,9 +1,9 @@
 ---
 title: Editor
-format: learn-html
+format: live-html
 ---
 
-{{< include ../_extensions/learn/_knitr.qmd >}}
+{{< include ../_extensions/live/_knitr.qmd >}}
 
 ```{webr}
 hist(rnorm(10000))

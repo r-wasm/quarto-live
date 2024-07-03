@@ -5,7 +5,7 @@ local cell_options = {
   pyodide = { edit = true },
 }
 
-local learn_options = {
+local live_options = {
   ["show-solutions"] = true,
   ["show-hints"] = true,
   ["grading"] = true,
@@ -165,7 +165,7 @@ function PyodideCodeBlock(code)
 
   if (block.attr.check) then
     assertBlockExercise("check", "pyodide", block)
-    if learn_options["grading"] then
+    if live_options["grading"] then
       return pandoc.RawBlock(
         "html",
         "<script type=\"exercise-check-" .. block.attr.exercise .. "-contents\">\n" ..
@@ -178,7 +178,7 @@ function PyodideCodeBlock(code)
 
   if (block.attr.hint) then
     assertBlockExercise("hint", "pyodide", block)
-    if learn_options["show-hints"] then
+    if live_options["show-hints"] then
       return pandoc.Div(
         InterpolatedBlock(
           pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'})),
@@ -195,7 +195,7 @@ function PyodideCodeBlock(code)
 
   if (block.attr.solution) then
     assertBlockExercise("solution", "pyodide", block)
-    if learn_options["show-solutions"] then
+    if live_options["show-solutions"] then
       local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
       local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'}))
       return pandoc.Div(
@@ -286,7 +286,7 @@ function WebRCodeBlock(code)
 
   if (block.attr.check) then
     assertBlockExercise("check", "webr", block)
-    if learn_options["grading"] then
+    if live_options["grading"] then
       return pandoc.RawBlock(
         "html",
         "<script type=\"exercise-check-" .. block.attr.exercise .. "-contents\">\n" ..
@@ -299,7 +299,7 @@ function WebRCodeBlock(code)
 
   if (block.attr.hint) then
     assertBlockExercise("hint", "webr", block)
-    if learn_options["show-hints"] then
+    if live_options["show-hints"] then
       return pandoc.Div(
         InterpolatedBlock(
           pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
@@ -316,7 +316,7 @@ function WebRCodeBlock(code)
 
   if (block.attr.solution) then
     assertBlockExercise("solution", "webr", block)
-    if learn_options["show-solutions"] then
+    if live_options["show-solutions"] then
       local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
       local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
       return pandoc.Div(
@@ -447,7 +447,7 @@ end
 function Div(block)
   -- Render exercise hints with display:none
   if (block.classes:includes("hint") and block.attributes["exercise"] ~= nil) then
-    if learn_options["show-hints"] then
+    if live_options["show-hints"] then
       block.classes:insert("webr-ojs-exercise")
       block.classes:insert("exercise-hint")
       block.classes:insert("d-none")
@@ -468,7 +468,7 @@ function Proof(block)
       local solution = container.c[1]
       if (solution) then
         if (solution.attributes["exercise"] ~= nil) then
-          if learn_options["show-solutions"] then
+          if live_options["show-solutions"] then
             solution.classes:insert("webr-ojs-exercise")
             solution.classes:insert("exercise-solution")
             solution.classes:insert("d-none")
@@ -606,21 +606,21 @@ function Pandoc(doc)
 
   -- Exercise runtime dependencies
   quarto.doc.add_html_dependency({
-    name = 'interactive-runtime',
+    name = 'live-runtime',
     scripts = {
-      { path = "resources/interactive-runtime.js", attribs = { type = "module"} },
+      { path = "resources/live-runtime.js", attribs = { type = "module"} },
     },
     resources = { "resources/pyodide-worker.js" },
     stylesheets = {
       "resources/highlighting.css",
-      "resources/interactive-runtime.css"
+      "resources/live-runtime.css"
     }
   })
 
   if (pyodide) then
     -- Additional runtime dependencies for Pyodide
     quarto.doc.add_html_dependency({
-      name = 'interactive-runtime-pyodide',
+      name = 'require-js',
       scripts = { "resources/require.min.js" },
     })
   end
@@ -678,9 +678,9 @@ function Meta(meta)
     end
   end
 
-  local learn = meta.learn or {}
-  for k, v in pairs(learn) do
-    learn_options[k] = v
+  local live = meta.live or {}
+  for k, v in pairs(live) do
+    live_options[k] = v
   end
 end
 

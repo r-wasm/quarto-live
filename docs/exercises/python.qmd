@@ -1,6 +1,6 @@
 ---
 title: Grading Solutions in Python
-format: learn-html
+format: live-html
 ---
 
 ## Grading Python code
@@ -10,13 +10,22 @@ format: learn-html
 goal = Math.floor(Math.random() * 100);
 ```
 
+```{ojs}
+goal2
+```
+
+
 Write a function to return the number ${goal}.
 
 ```{pyodide}
 #| caption: Sample Exercise 1
 #| input:
 #|   - goal
+#| define:
+#|   - goal2
 #| exercise: example_1
+display(goal)
+goal2 = goal + 1
 def foo():
     return 2
 ```

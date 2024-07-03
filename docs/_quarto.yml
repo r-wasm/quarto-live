@@ -2,7 +2,8 @@ project:
   type: website
 
 website:
-  title: "Quarto Learn"
+  title: "Quarto Live Documentation"
+  description: "Interactive code blocks and exercises, powered by WebAssembly."
   sidebar:
     contents:
       - href: index.qmd

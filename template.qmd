@@ -1,6 +1,6 @@
 ---
-title: Quarto Learn
-format: learn-html
+title: Quarto Live
+format: live-html
 webr:
   packages:
     - ggplot2

@@ -1,11 +1,11 @@
 {
-  "name": "interactive-runtime",
+  "name": "live-runtime",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.1.1-dev",
   "files": [
     "dist"
   ],
-  "main": "./dist/interactive-runtime.js",
+  "main": "./dist/live-runtime.js",
   "private": true,
   "license": "mit",
   "scripts": {

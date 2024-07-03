@@ -1,15 +1,15 @@
 ---
 title: Setup
-format: learn-html
+format: live-html
 ---
 
 ```bash
-quarto add r-wasm/quarto-learn
+quarto add r-wasm/quarto-live
 ```
 
 ```yaml
 ---
-format: learn-html
+format: live-html
 webr:
   packages:
     - ggplot2
@@ -23,5 +23,5 @@ pyodide: [...etc]
 If using knitr engine (to be superseded by upcoming Quarto qmd-filter):
 
 ```md
-{{{< include ./_extensions/r-wasm/learn/_knitr.qmd >}}}
+{{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}}
 ```

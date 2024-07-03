@@ -1,6 +1,6 @@
 ---
 title: Data conversion
-format: learn-html
+format: live-html
 ---
 
 ```{ojs}

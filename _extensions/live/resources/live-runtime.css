@@ -424,8 +424,8 @@ div.cell-output-pyodide th {
 }
 
 /* Hints and solutions */
-.tab-pane>.exercise-tab-pane-header {
-  margin-bottom: 1em;
+.tab-pane>.exercise-tab-pane-header + div.webr-ojs-exercise {
+  margin-top: 1em;
 }
 
 /* Feedback alerts */
