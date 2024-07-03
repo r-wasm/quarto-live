@@ -30,13 +30,14 @@ local function tree(root)
     -- Is there a better OS agnostic way to do this?
     local ok, err, code = os.rename(path .. "/", path .. "/")
     if not ok then
-       if code == 13 then
-          -- Permission denied, but it exists
-          return true
-       end
+      if code == 13 then
+        -- Permission denied, but it exists
+        return true
+      end
     end
     return ok, err
   end
+
   function gather(path, list)
     if (isdir(path)) then
       -- For each item in this dir, recurse for subdir content
@@ -50,6 +51,7 @@ local function tree(root)
     end
     return list
   end
+
   return gather(root, {})
 end
 
@@ -134,7 +136,7 @@ function PyodideCodeBlock(code)
     for k, v in pairs(template_vars) do
       content = string.gsub(content, "{{" .. k .. "}}", v)
     end
-  
+
     table.insert(ojs_definitions.contents, 1, {
       methodName = "interpret",
       cellName = "pyodide-" .. block_id,
@@ -157,10 +159,10 @@ function PyodideCodeBlock(code)
   if (block.attr.setup) then
     assertBlockExercise("setup", "pyodide", block)
     return pandoc.RawBlock(
-        "html",
-        "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
-        json_as_b64(block) .. "\n</script>"
-      )
+      "html",
+      "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
+      json_as_b64(block) .. "\n</script>"
+    )
   end
 
   if (block.attr.check) then
@@ -181,7 +183,7 @@ function PyodideCodeBlock(code)
     if live_options["show-hints"] then
       return pandoc.Div(
         InterpolatedBlock(
-          pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'})),
+          pandoc.CodeBlock(block.code, pandoc.Attr('', { 'python', 'cell-code' })),
           "python"
         ),
         pandoc.Attr('',
@@ -196,8 +198,8 @@ function PyodideCodeBlock(code)
   if (block.attr.solution) then
     assertBlockExercise("solution", "pyodide", block)
     if live_options["show-solutions"] then
-      local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
-      local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'}))
+      local plaincode = pandoc.Code(block.code, pandoc.Attr('', { 'solution-code', 'd-none' }))
+      local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', { 'python', 'cell-code' }))
       return pandoc.Div(
         {
           InterpolatedBlock(plaincode, "none"),
@@ -242,7 +244,6 @@ function PyodideCodeBlock(code)
       json_as_b64(block) .. "\n</script>"
     )
   })
-
 end
 
 function WebRCodeBlock(code)
@@ -255,7 +256,7 @@ function WebRCodeBlock(code)
     for k, v in pairs(template_vars) do
       content = string.gsub(content, "{{" .. k .. "}}", v)
     end
-  
+
     table.insert(ojs_definitions.contents, 1, {
       methodName = "interpret",
       cellName = "webr-" .. block_id,
@@ -278,10 +279,10 @@ function WebRCodeBlock(code)
   if (block.attr.setup) then
     assertBlockExercise("setup", "webr", block)
     return pandoc.RawBlock(
-        "html",
-        "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
-        json_as_b64(block) .. "\n</script>"
-      )
+      "html",
+      "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
+      json_as_b64(block) .. "\n</script>"
+    )
   end
 
   if (block.attr.check) then
@@ -302,7 +303,7 @@ function WebRCodeBlock(code)
     if live_options["show-hints"] then
       return pandoc.Div(
         InterpolatedBlock(
-          pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
+          pandoc.CodeBlock(block.code, pandoc.Attr('', { 'r', 'cell-code' })),
           "r"
         ),
         pandoc.Attr('',
@@ -317,8 +318,8 @@ function WebRCodeBlock(code)
   if (block.attr.solution) then
     assertBlockExercise("solution", "webr", block)
     if live_options["show-solutions"] then
-      local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
-      local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
+      local plaincode = pandoc.Code(block.code, pandoc.Attr('', { 'solution-code', 'd-none' }))
+      local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', { 'r', 'cell-code' }))
       return pandoc.Div(
         {
           InterpolatedBlock(plaincode, "none"),
@@ -400,20 +401,20 @@ end
 
 function CodeBlock(code)
   if (
-    code.classes:includes("{webr}") or
-    code.classes:includes("webr") or
-    code.classes:includes("{webr-r}")
-  ) then
+        code.classes:includes("{webr}") or
+        code.classes:includes("webr") or
+        code.classes:includes("{webr-r}")
+      ) then
     -- Client side R code block
     include_webr = true
     return WebRCodeBlock(code)
   end
 
   if (
-    code.classes:includes("{pyodide}") or
-    code.classes:includes("pyodide") or
-    code.classes:includes("{pyodide-python}")
-  ) then
+        code.classes:includes("{pyodide}") or
+        code.classes:includes("pyodide") or
+        code.classes:includes("{pyodide-python}")
+      ) then
     -- Client side Python code block
     include_pyodide = true
     return PyodideCodeBlock(code)
@@ -461,7 +462,7 @@ end
 function Proof(block)
   -- Quarto wraps solution blocks in a Proof structure
   -- Dig into the expected shape and look for our own exercise solutions
-  if(block["type"] == "Solution") then
+  if (block["type"] == "Solution") then
     local content = block["__quarto_custom_node"]
     local container = content.c[1]
     if (container) then
@@ -491,7 +492,7 @@ function setupPyodide(doc)
   local content = file:read("*a")
 
   local pyodide_packages = {
-    pkgs = {"pyodide_http", "micropip", "ipython"},
+    pkgs = { "pyodide_http", "micropip", "ipython" },
   }
   for _, pkg in pairs(packages) do
     table.insert(pyodide_packages.pkgs, pandoc.utils.stringify(pkg))
@@ -524,7 +525,7 @@ function setupWebR(doc)
 
   -- List of webR R packages and repositories to install
   local webr_packages = {
-    pkgs = {"evaluate", "knitr", "htmltools"},
+    pkgs = { "evaluate", "knitr", "htmltools" },
     repos = {}
   }
   for _, pkg in pairs(packages) do
@@ -598,9 +599,9 @@ function Pandoc(doc)
     pandoc.Div(
       pandoc.Div({
         pandoc.Div({}, pandoc.Attr("exercise-loading-status")),
-        pandoc.Div({}, pandoc.Attr("", {"spinner-grow", "spinner-grow-sm"})),
-      }, pandoc.Attr("", {"d-flex", "align-items-center", "gap-2"})),
-      pandoc.Attr("exercise-loading-indicator", {"d-none", "exercise-loading-indicator"})
+        pandoc.Div({}, pandoc.Attr("", { "spinner-grow", "spinner-grow-sm" })),
+      }, pandoc.Attr("", { "d-flex", "align-items-center", "gap-2" })),
+      pandoc.Attr("exercise-loading-indicator", { "d-none", "exercise-loading-indicator" })
     )
   )
 
@@ -608,7 +609,7 @@ function Pandoc(doc)
   quarto.doc.add_html_dependency({
     name = 'live-runtime',
     scripts = {
-      { path = "resources/live-runtime.js", attribs = { type = "module"} },
+      { path = "resources/live-runtime.js", attribs = { type = "module" } },
     },
     resources = { "resources/pyodide-worker.js" },
     stylesheets = {
@@ -679,8 +680,12 @@ function Meta(meta)
   end
 
   local live = meta.live or {}
-  for k, v in pairs(live) do
-    live_options[k] = v
+  if (type(live) == "table") then
+    for k, v in pairs(live) do
+      live_options[k] = v
+    end
+  else
+    quarto.log.error("Invalid value for document yaml key: `live`.")
   end
 end
 
