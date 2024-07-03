@@ -7,10 +7,11 @@ pyodideOjs = {
     startPyodideWorker,
   } = window._exercise_ojs_runtime;
 
-  const statusContainer = document.getElementById("exercise-loading-indicator");
-  const statusText = document.getElementById("exercise-loading-status");
+  const statusContainer = document.getElementById("exercise-loading-status");
+  let statusText = document.createElement("div")
+  statusText.classList = "exercise-loading-details";
+  statusText = statusContainer.appendChild(statusText);
   statusText.textContent = `Initialise`;
-  statusContainer.classList.remove("d-none");
 
   // Hoist indicator out from final slide when running under reveal
   const revealStatus = document.querySelector(".reveal .exercise-loading-indicator");
@@ -45,7 +46,10 @@ pyodideOjs = {
     statusText.textContent = `Pyodide environment setup`;
     await setupPython(pyodide);
 
-    statusContainer.classList.add("d-none");
+    statusText.remove();
+    if (statusContainer.children.length == 0) {
+      statusContainer.parentNode.remove();
+    }
     return pyodide;
   })();
 

@@ -20,7 +20,7 @@
 }
 
 /* Client-side loading indicator */
-div.exercise-loading-indicator {
+#exercise-loading-indicator {
   position: fixed;
   bottom: 0;
   right: 0;
@@ -29,6 +29,10 @@ div.exercise-loading-indicator {
   border: 1px solid var(--exercise-default);
   background-color: var(--exercise-cap-bg);
   border-top-left-radius: 5px;
+}
+
+.exercise-loading-details + .exercise-loading-details::before {
+  content: "/ ";
 }
 
 /* Ease into disabled button opacity, avoids excessive flashing */
@@ -229,12 +233,11 @@ span.tok-function-attributeName {
 
 /* Revealjs (to match editor with bootstrap) */
 /* Container card */
-.reveal .d-none,
-.reveal .webr-ojs-exercise.d-none .reveal .exercise-loading-indicator.d-none {
+.reveal .d-none {
   display: none !important;
 }
 
-.reveal .card.exercise-editor-card .d-flex {
+.reveal .d-flex {
   display: flex !important;
 }
 

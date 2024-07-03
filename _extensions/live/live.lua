@@ -596,13 +596,13 @@ function Pandoc(doc)
 
   -- Loading indicator
   doc.blocks:insert(
-    pandoc.Div(
-      pandoc.Div({
-        pandoc.Div({}, pandoc.Attr("exercise-loading-status")),
-        pandoc.Div({}, pandoc.Attr("", { "spinner-grow", "spinner-grow-sm" })),
-      }, pandoc.Attr("", { "d-flex", "align-items-center", "gap-2" })),
-      pandoc.Attr("exercise-loading-indicator", { "d-none", "exercise-loading-indicator" })
-    )
+    pandoc.Div({
+      pandoc.Div({}, pandoc.Attr("exercise-loading-status", { "d-flex", "gap-2" })),
+      pandoc.Div({}, pandoc.Attr("", { "spinner-grow", "spinner-grow-sm" })),
+    }, pandoc.Attr(
+      "exercise-loading-indicator",
+      { "exercise-loading-indicator", "d-flex", "align-items-center", "gap-2" }
+    ))
   )
 
   -- Exercise runtime dependencies
