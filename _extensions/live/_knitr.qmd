@@ -12,4 +12,14 @@ knitr::knit_engines$set(webr = function(options) {
     "```"
   ))
 })
+
+# Pyodide
+knitr::knit_engines$set(pyodide = function(options) {
+  knitr:::one_string(c(
+    "```{pyodide}",
+    options$yaml.code,
+    options$code,
+    "```"
+  ))
+})
 ```
