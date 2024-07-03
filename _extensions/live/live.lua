@@ -612,10 +612,7 @@ function Pandoc(doc)
       { path = "resources/live-runtime.js", attribs = { type = "module" } },
     },
     resources = { "resources/pyodide-worker.js" },
-    stylesheets = {
-      "resources/highlighting.css",
-      "resources/live-runtime.css"
-    }
+    stylesheets = { "resources/live-runtime.css" },
   })
 
   if (pyodide) then

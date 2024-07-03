@@ -9,6 +9,8 @@ import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment
 import { WebRGrader } from './grader-webr';
 import { PyodideGrader } from './grader-pyodide';
 import { comlinkTransfer, imageBitmapTransfer, mapTransfer, proxyTransfer } from './pyodide-proxy';
+import './css/live-runtime.css';
+import './css/highlighting.css';
 
 type WebRInitData = {
   packages: {
@@ -23,12 +25,12 @@ async function setupR(webR: WebR.WebR, data: WebRInitData) {
   await webR.evalRVoid('options("webr.render.df" = x)', {
     env: { x: data.render_df || "default" },
   });
-  return await webR.evalRVoid(atob(require('./assets/R/setup.R')));
+  return await webR.evalRVoid(atob(require('./scripts/R/setup.R')));
 }
 
 async function setupPython(pyodide: PyodideInterfaceWorker) {
-  await pyodide.runPythonAsync(atob(require('./assets/Python/setup.py')))
-  const matplotlib_display = atob(require('./assets/Python/matplotlib_display.py'));
+  await pyodide.runPythonAsync(atob(require('./scripts/Python/setup.py')))
+  const matplotlib_display = atob(require('./scripts/Python/matplotlib_display.py'));
   await pyodide.FS.mkdir('/pyodide');
   await pyodide.FS.writeFile('/pyodide/matplotlib_display.py', matplotlib_display);
 }
