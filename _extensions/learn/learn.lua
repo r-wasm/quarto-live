@@ -158,7 +158,7 @@ function PyodideCodeBlock(code)
     assertBlockExercise("setup", "pyodide", block)
     return pandoc.RawBlock(
         "html",
-        "<script type=\"pyodide-setup-" .. block.attr.exercise .. "-contents\">\n" ..
+        "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
         json_as_b64(block) .. "\n</script>"
       )
   end
@@ -168,7 +168,7 @@ function PyodideCodeBlock(code)
     if learn_options["grading"] then
       return pandoc.RawBlock(
         "html",
-        "<script type=\"pyodide-check-" .. block.attr.exercise .. "-contents\">\n" ..
+        "<script type=\"exercise-check-" .. block.attr.exercise .. "-contents\">\n" ..
         json_as_b64(block) .. "\n</script>"
       )
     else
@@ -180,7 +180,10 @@ function PyodideCodeBlock(code)
     assertBlockExercise("hint", "pyodide", block)
     if learn_options["show-hints"] then
       return pandoc.Div(
-        pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'})),
+        InterpolatedBlock(
+          pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'})),
+          "python"
+        ),
         pandoc.Attr('',
           { 'pyodide-ojs-exercise', 'exercise-hint', 'd-none' },
           { exercise = block.attr.exercise }
@@ -197,8 +200,8 @@ function PyodideCodeBlock(code)
       local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'}))
       return pandoc.Div(
         {
-          InterpolatedBlock(plaincode, false, "pyodide"),
-          InterpolatedBlock(codeblock, true, "pyodide"),
+          InterpolatedBlock(plaincode, "none"),
+          InterpolatedBlock(codeblock, "python"),
         },
         pandoc.Attr('',
           { 'pyodide-ojs-exercise', 'exercise-solution', 'd-none' },
@@ -221,7 +224,6 @@ function PyodideCodeBlock(code)
   if (block.attr.exercise) then
     -- Primary interactive exercise block
     ojs_source = "pyodide-exercise.ojs"
-    ojs_vars["exercise_id"] = block.attr.exercise
   elseif (block.attr.edit) then
     -- Editable non-exercise sandbox block
     ojs_source = "pyodide-editor.ojs"
@@ -277,7 +279,7 @@ function WebRCodeBlock(code)
     assertBlockExercise("setup", "webr", block)
     return pandoc.RawBlock(
         "html",
-        "<script type=\"webr-setup-" .. block.attr.exercise .. "-contents\">\n" ..
+        "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
         json_as_b64(block) .. "\n</script>"
       )
   end
@@ -287,7 +289,7 @@ function WebRCodeBlock(code)
     if learn_options["grading"] then
       return pandoc.RawBlock(
         "html",
-        "<script type=\"webr-check-" .. block.attr.exercise .. "-contents\">\n" ..
+        "<script type=\"exercise-check-" .. block.attr.exercise .. "-contents\">\n" ..
         json_as_b64(block) .. "\n</script>"
       )
     else
@@ -299,7 +301,10 @@ function WebRCodeBlock(code)
     assertBlockExercise("hint", "webr", block)
     if learn_options["show-hints"] then
       return pandoc.Div(
-        pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
+        InterpolatedBlock(
+          pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
+          "r"
+        ),
         pandoc.Attr('',
           { 'webr-ojs-exercise', 'exercise-hint', 'd-none' },
           { exercise = block.attr.exercise }
@@ -316,8 +321,8 @@ function WebRCodeBlock(code)
       local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
       return pandoc.Div(
         {
-          InterpolatedBlock(plaincode, false, "webr"),
-          InterpolatedBlock(codeblock, true, "webr"),
+          InterpolatedBlock(plaincode, "none"),
+          InterpolatedBlock(codeblock, "r"),
         },
         pandoc.Attr('',
           { 'webr-ojs-exercise', 'exercise-solution', 'd-none' },
@@ -340,7 +345,6 @@ function WebRCodeBlock(code)
   if (block.attr.exercise) then
     -- Primary interactive exercise block
     ojs_source = "webr-exercise.ojs"
-    ojs_vars["exercise_id"] = block.attr.exercise
   elseif (block.attr.edit) then
     -- Editable non-exercise sandbox block
     ojs_source = "webr-editor.ojs"
@@ -364,11 +368,11 @@ function WebRCodeBlock(code)
   })
 end
 
-function InterpolatedBlock(block, highlight, engine)
+function InterpolatedBlock(block, language)
   block_id = block_id + 1
 
   -- Reactively render OJS variables in codeblocks
-  file = io.open(quarto.utils.resolve_path("templates/" .. engine .. "-interpolate.ojs"), "r")
+  file = io.open(quarto.utils.resolve_path("templates/interpolate.ojs"), "r")
   assert(file)
   content = file:read("*a")
 
@@ -382,15 +386,15 @@ function InterpolatedBlock(block, highlight, engine)
   -- We add this OJS block for its side effect of updating the HTML element
   content = string.gsub(content, "{{block_id}}", block_id)
   content = string.gsub(content, "{{def_map}}", map)
-  content = string.gsub(content, "{{highlight}}", tostring(highlight))
+  content = string.gsub(content, "{{language}}", language)
   table.insert(ojs_definitions.contents, {
     methodName = "interpretQuiet",
-    cellName = engine .. "-" .. block_id,
+    cellName = "interpolate-" .. block_id,
     inline = false,
     source = content,
   })
 
-  block.identifier = engine .. "-interpolate-" .. block_id
+  block.identifier = "interpolate-" .. block_id
   return block
 end
 
@@ -415,10 +419,15 @@ function CodeBlock(code)
     return PyodideCodeBlock(code)
   end
 
-  if (code.classes:includes("r") and string.match(code.text, "${[a-zA-Z_$][%w_$]+}")) then
-    -- Non-interactive code block containing OJS variables
-    include_webr = true
-    return InterpolatedBlock(code, true, "webr")
+  -- Non-interactive code block containing OJS variables
+  if (string.match(code.text, "${[a-zA-Z_$][%w_$]+}")) then
+    if (code.classes:includes("r")) then
+      include_webr = true
+      return InterpolatedBlock(code, "r")
+    elseif (code.classes:includes("python")) then
+      include_pyodide = true
+      return InterpolatedBlock(code, "python")
+    end
   end
 end
 

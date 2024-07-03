@@ -85,6 +85,20 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     this.envManager = environmentManager;
   }
 
+  getSetupCode(): string | undefined {
+    const exId = this.options.exercise;
+    const setup = document.querySelectorAll(
+      `script[type=\"exercise-setup-${exId}-contents\"]`
+    );
+    if (setup.length > 0) {
+      if (setup.length > 1) {
+        console.warn(`Multiple \`setup\` blocks found for exercise "${exId}", using the first.`);
+      }
+      const block = JSON.parse(atob(setup[0].textContent));
+      return block.code;
+    }
+  }
+
   // Setup environment, execute setup code, execute user code, define outputs
   async process(inputs: { [key: string]: any }) {
     // If we're not evaluating, just print the source directly
@@ -117,7 +131,8 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       `)
 
       // Run setup code, copy prep environment for result, run user code
-      await this.evaluate(this.options.setup, "prep");
+      const setup = this.getSetupCode();
+      await this.evaluate(setup, "prep");
       await this.envManager.create(this.envLabels.result, this.envLabels.prep);
       const result = await this.evaluate(this.context.code, "result");
 

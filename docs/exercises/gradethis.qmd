@@ -38,5 +38,8 @@ starwars |> distinct(hair_color)
 ```{webr}
 #| exercise: example_1
 #| check: true
-gradethis::grade_this_code()
+gradethis::grade_this_code(
+#  correct = "Correct!",
+#  incorrect = "Incorrect.",
+)
 ```

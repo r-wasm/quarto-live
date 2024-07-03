@@ -5,9 +5,9 @@ webr:
   packages:
     - dplyr
 learn:
-  show-hints: false
-  show-solutions: false
-  grading: false
+  show-hints: true
+  show-solutions: true
+  grading: true
 ---
 
 {{< include ../_extensions/learn/_knitr.qmd >}}

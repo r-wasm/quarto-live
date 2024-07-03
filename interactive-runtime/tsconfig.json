@@ -3,7 +3,7 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "types": [ "node" ],
-    "target": "es2020",
+    "target": "es2021",
     "module": "es2022",
   }
 }

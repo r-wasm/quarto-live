@@ -1,0 +1,43 @@
+---
+title: Grading Solutions in Python
+format: learn-html
+---
+
+## Grading Python code
+
+```{ojs}
+//| output: false
+goal = Math.floor(Math.random() * 100);
+```
+
+Write a function to return the number ${goal}.
+
+```{pyodide}
+#| caption: Sample Exercise 1
+#| input:
+#|   - goal
+#| exercise: example_1
+def foo():
+    return 2
+```
+
+```{pyodide}
+#| exercise: example_1
+#| solution: true
+def foo():
+    return ${goal}
+```
+
+```{pyodide}
+#| exercise: example_1
+#| check: true
+feedback = None
+if (not "foo" in locals() or not callable(foo)):
+    feedback = { "correct": False, "message": "I can't see your function!" }
+elif (foo() == goal):
+    feedback = { "correct": True, "message": "Nice work!" }
+else:
+    feedback = { "correct": False, "message": "Incorrect, sorry!" }
+feedback
+```
+

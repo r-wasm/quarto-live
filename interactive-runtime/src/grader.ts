@@ -7,7 +7,6 @@ import { PyodideEnvironmentManager, WebREnvironmentManager } from './environment
 import { Indicator } from './indicator'
 import { PyodideInterface } from 'pyodide'
 import { PyProxy } from 'pyodide/ffi'
-import { isPyProxy } from './pyodide-proxy'
 
 export type ExerciseGraderCode = {
   code_check?: string;
@@ -20,12 +19,10 @@ class ExerciseGrader {
   evaluator: WebREvaluator | PyodideEvaluator;
   envManager: WebREnvironmentManager | PyodideEnvironmentManager;
   context: EvaluateContext;
-  graderCode: ExerciseGraderCode;
   options: EvaluateOptions;
   envLabels: EnvLabels;
   
-  constructor(evaluator: WebREvaluator | PyodideEvaluator, graderCode: ExerciseGraderCode) {
-    this.graderCode = graderCode;
+  constructor(evaluator: WebREvaluator | PyodideEvaluator) {
     this.evaluator = evaluator;
     this.envManager = this.evaluator.envManager;
     this.envLabels = this.evaluator.envLabels;
@@ -43,6 +40,20 @@ class ExerciseGrader {
       timelimit: 600,
     };
   }
+
+  getCheckingAlgorithm(): string | undefined {
+    const exId = this.evaluator.options.exercise;
+    const check = document.querySelectorAll(
+      `script[type=\"exercise-check-${exId}-contents\"]`
+    );
+    if (check.length > 0) {
+      if (check.length > 1) {
+        console.warn(`Multiple \`check\` blocks found for exercise "${exId}", using the first.`);
+      }
+      const block = JSON.parse(atob(check[0].textContent));
+      return block.code;
+    }
+  }
 }
 
 export class WebRGrader extends ExerciseGrader {
@@ -50,8 +61,8 @@ export class WebRGrader extends ExerciseGrader {
   envManager: WebREnvironmentManager;
   webR: WebR;
 
-  constructor(evaluator: WebREvaluator, graderCode: ExerciseGraderCode) {
-    super(evaluator, graderCode)
+  constructor(evaluator: WebREvaluator) {
+    super(evaluator)
     this.webR = this.evaluator.webR;
   }
 
@@ -187,7 +198,7 @@ export class WebRGrader extends ExerciseGrader {
         stage: "check",
         engine: "r",
         label: this.context.options.exercise || this.webR.objs.null,
-        check_code: this.graderCode.check || this.webR.objs.null,
+        check_code: this.getCheckingAlgorithm() || this.webR.objs.null,
         envir_result,
         evaluate_result,
         envir_prep,
@@ -303,8 +314,8 @@ export class PyodideGrader extends ExerciseGrader {
   envManager: PyodideEnvironmentManager;
   pyodide: PyodideInterface;
 
-  constructor(evaluator: PyodideEvaluator, graderCode: ExerciseGraderCode) {
-    super(evaluator, graderCode);
+  constructor(evaluator: PyodideEvaluator) {
+    super(evaluator);
     this.pyodide = this.evaluator.pyodide;
   }
 
@@ -431,7 +442,7 @@ export class PyodideGrader extends ExerciseGrader {
       stage: "check",
       engine: "python",
       label: this.context.options.exercise,
-      check_code: this.graderCode.check,
+      check_code: this.getCheckingAlgorithm(),
       envir_result,
       evaluate_result,
       envir_prep,

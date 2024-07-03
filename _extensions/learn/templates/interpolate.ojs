@@ -1,8 +1,9 @@
 {
-  const { interpolateR } = window._exercise_ojs_runtime;
+  const { interpolate } = window._exercise_ojs_runtime;
   const block_id = "{{block_id}}";
+  const language = "{{language}}";
   const def_map = {{def_map}};
-  const elem = document.getElementById(`webr-interpolate-${block_id}`);
+  const elem = document.getElementById(`interpolate-${block_id}`);
 
   // Store original templated HTML for reference in future reactive updates
   if (!elem.origHTML) elem.origHTML = elem.innerHTML;
@@ -10,6 +11,6 @@
   // Interpolate reactive OJS variables into established HTML element
   elem.innerHTML = elem.origHTML;
   Object.keys(def_map).forEach((def) =>
-    interpolateR(elem, "${" + def + "}", def_map[def], {{highlight}})
+    interpolate(elem, "${" + def + "}", def_map[def], language)
   );
 }

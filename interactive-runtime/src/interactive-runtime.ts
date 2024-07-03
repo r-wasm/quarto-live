@@ -2,7 +2,7 @@ import * as WebR from 'webr'
 import * as Comlink from 'comlink';
 import type { PyodideInterfaceWorker, PyodideWorker } from './pyodide-worker';
 import { WebRExerciseEditor, PyodideExerciseEditor } from './editor'
-import { highlightR, highlightPython, interpolateR } from './highlighter'
+import { highlightR, highlightPython, interpolate } from './highlighter'
 import { WebREvaluator } from './evaluate-webr'
 import { PyodideEvaluator } from './evaluate-pyodide'
 import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment'
@@ -69,7 +69,7 @@ declare global {
       WebREnvironmentManager: typeof WebREnvironmentManager;
       highlightR: typeof highlightR;
       highlightPython: typeof highlightPython;
-      interpolateR: typeof interpolateR;
+      interpolate: typeof interpolate;
       setupR: typeof setupR;
       setupPython: typeof setupPython;
       startPyodideWorker: typeof startPyodideWorker;
@@ -89,7 +89,7 @@ window._exercise_ojs_runtime = {
   WebREnvironmentManager,
   highlightR,
   highlightPython,
-  interpolateR,
+  interpolate,
   setupR,
   setupPython,
   startPyodideWorker,
@@ -107,7 +107,7 @@ export {
   WebREnvironmentManager,
   highlightR,
   highlightPython,
-  interpolateR,
+  interpolate,
   setupR,
   setupPython,
   startPyodideWorker,

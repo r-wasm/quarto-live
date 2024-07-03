@@ -2,10 +2,7 @@ viewof _pyodide_editor_{{block_id}} = {
   const { PyodideExerciseEditor } = window._exercise_ojs_runtime;
 
   const scriptContent = document.querySelector(`script[type=\"pyodide-{{block_id}}-contents\"]`).textContent;
-  const setupElement = document.querySelector(`script[type=\"pyodide-setup-{{exercise_id}}-contents\"]`);
-
   const block = JSON.parse(atob(scriptContent));
-  const setup = !setupElement ? {} : JSON.parse(atob(setupElement.textContent));
 
   // Default exercise configuration
   const options = Object.assign(
@@ -15,7 +12,6 @@ viewof _pyodide_editor_{{block_id}} = {
       error: false,
       autorun: false,
       caption: 'Exercise',
-      setup: setup.code,
     },
     block.attr
   );
@@ -27,24 +23,14 @@ viewof _pyodide_value_{{block_id}} = pyodideOjs.process(_pyodide_editor_{{block_
 _pyodide_feedback_{{block_id}} = {
   const { PyodideGrader } = window._exercise_ojs_runtime;
 
-  const emptyFeedback = document.createElement('div');
-  const checkElement = document.querySelector(`script[type=\"pyodide-check-{{exercise_id}}-contents\"]`);
-
   // Return empty block if there's no code submitted yet
+  const emptyFeedback = document.createElement('div');
   const result = await _pyodide_value_{{block_id}}.result;
   if (!result) return emptyFeedback;
-
-  // Build grading definition
-  const check = !checkElement ? {} : JSON.parse(atob(checkElement.textContent));
-  const grading = {
-    check: check.code,
-  };
   
-  const grader = new PyodideGrader(
-    _pyodide_value_{{block_id}}.evaluator,
-    grading,
-  );
-  const grade = await grader.gradeExercise();
-  if (!grade) return emptyFeedback;
-  return grade;
+  // Grade user submitted code
+  const grader = new PyodideGrader(_pyodide_value_{{block_id}}.evaluator);
+  const feedback = await grader.gradeExercise();
+  if (!feedback) return emptyFeedback;
+  return feedback;
 }

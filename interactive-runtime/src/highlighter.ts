@@ -7,7 +7,7 @@ export const tagHighlighterTok = tagHighlighter([
   { tag: tags.operator, class: "tok-operator" },
   { tag: tags.definitionOperator, class: "tok-definitionOperator" },
   { tag: tags.compareOperator, class: "tok-compareOperator" },
-  { tag: tags.attributeName, class: "tok-attributeName"},
+  { tag: tags.attributeName, class: "tok-attributeName" },
   { tag: tags.controlKeyword, class: "tok-controlKeyword" },
   { tag: tags.comment, class: "tok-comment" },
   { tag: tags.string, class: "tok-string" },
@@ -68,19 +68,34 @@ export function highlightPython(code: string) {
 }
 
 // Traverse a HTMLElement tree and replace text with highlighted replacement
-export function interpolateR(el: Element, search: string, replace: string, highlight: boolean) {
+export function interpolate(
+  el: Element,
+  search: string,
+  replace: string,
+  language: "none" | "r" | "python",
+) {
   if (el.textContent.includes(search)) {
     let found = false;
     for (let child of el.children) {
-      found ||= interpolateR(child, search, replace, highlight);
+      found ||= interpolate(child, search, replace, language);
     }
     // If `search` not found in children, replace this entire node.
     // `search` could span several syntax spans, so we re-highlight replacement
     if (!found) {
-      el.textContent = el.textContent.replace(search, replace);
-      if (highlight) {
-        const highlighted = highlightR(el.textContent);
-        el.innerHTML = highlighted.innerHTML;
+      el.textContent = el.textContent.replaceAll(search, () => replace);
+      switch (language) {
+        case "none":
+          break;
+        case "r":
+          el.innerHTML = highlightR(el.textContent).innerHTML;
+          break;
+        case "python":
+          el.innerHTML = highlightPython(el.textContent).innerHTML;
+          break;
+        default:
+          throw new Error(
+            `Can't highlight interpolation, unknown language \`${language}\`.`
+          );
       }
     }
     return true;
