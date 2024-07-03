@@ -19,8 +19,8 @@ from matplotlib.colors import colorConverter, rgb2hex
 from matplotlib.path import Path
 from matplotlib.transforms import Affine2D
 from IPython.display import display
-from js import ImageData, OffscreenCanvas
-from pyodide.ffi import create_proxy
+from js import ImageData, OffscreenCanvas # type: ignore[attr-defined]
+from pyodide.ffi import create_proxy # type: ignore[attr-defined]
 
 _capstyle_d = {"projecting": "square", "butt": "butt", "round": "round"}
 _font_set = set()
