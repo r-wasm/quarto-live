@@ -126,8 +126,11 @@ export class PyodideEvaluator implements ExerciseEvaluator {
 
       // Cleanup any leftover matplotlib plots
       await this.pyodide.runPythonAsync(`
-        import matplotlib.pyplot as plt
-        plt.close("all")
+        try:
+          import matplotlib.pyplot as plt
+          plt.close("all")
+        except ModuleNotFoundError:
+          pass
       `)
 
       // Run setup code, copy prep environment for result, run user code

@@ -27,20 +27,10 @@ async function setupR(webR: WebR.WebR, data: WebRInitData) {
 }
 
 async function setupPython(pyodide: PyodideInterfaceWorker) {
+  await pyodide.runPythonAsync(atob(require('./assets/Python/setup.py')))
   const matplotlib_display = atob(require('./assets/Python/matplotlib_display.py'));
   await pyodide.FS.mkdir('/pyodide');
   await pyodide.FS.writeFile('/pyodide/matplotlib_display.py', matplotlib_display);
-  await pyodide.runPythonAsync(`
-    import sys
-    import os
-    import micropip
-    import pyodide_http
-    import matplotlib
-
-    pyodide_http.patch_all()
-    sys.path.insert(0, "/pyodide/")
-    matplotlib.use("module://matplotlib_display")
-  `)
 }
 
 async function startPyodideWorker(options) {

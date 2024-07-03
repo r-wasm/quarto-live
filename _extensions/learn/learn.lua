@@ -491,7 +491,7 @@ function setupPyodide(doc)
   local content = file:read("*a")
 
   local pyodide_packages = {
-    pkgs = {"pyodide_http", "micropip", "ipython", "matplotlib"},
+    pkgs = {"pyodide_http", "micropip", "ipython"},
   }
   for _, pkg in pairs(packages) do
     table.insert(pyodide_packages.pkgs, pandoc.utils.stringify(pkg))
