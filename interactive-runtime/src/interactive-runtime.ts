@@ -1,12 +1,13 @@
-import * as WebR from 'webr'
+import * as WebR from 'webr';
 import * as Comlink from 'comlink';
 import type { PyodideInterfaceWorker, PyodideWorker } from './pyodide-worker';
-import { WebRExerciseEditor, PyodideExerciseEditor } from './editor'
-import { highlightR, highlightPython, interpolate } from './highlighter'
-import { WebREvaluator } from './evaluate-webr'
-import { PyodideEvaluator } from './evaluate-pyodide'
-import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment'
-import { WebRGrader, PyodideGrader } from './grader'
+import { WebRExerciseEditor, PyodideExerciseEditor } from './editor';
+import { highlightR, highlightPython, interpolate } from './highlighter';
+import { WebREvaluator } from './evaluate-webr';
+import { PyodideEvaluator } from './evaluate-pyodide';
+import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment';
+import { WebRGrader } from './grader-webr';
+import { PyodideGrader } from './grader-pyodide';
 import { comlinkTransfer, imageBitmapTransfer, mapTransfer, proxyTransfer } from './pyodide-proxy';
 
 type WebRInitData = {
