@@ -117,6 +117,13 @@ function ParseBlock(block, engine)
   }
 end
 
+function assertBlockExercise(type, engine, block)
+  if (not block.attr.exercise) then
+    error("Can't create `" .. engine .. "` " .. type ..
+      " block, `exercise` not defined in cell options.")
+  end
+end
+
 function PyodideCodeBlock(code)
   block_id = block_id + 1
 
@@ -139,8 +146,67 @@ function PyodideCodeBlock(code)
   -- Parse codeblock contents for YAML header and Python code body
   local block = ParseBlock(code, "pyodide")
 
+  if (block.attr.output == "asis") then
+    quarto.log.warning(
+      "For `pyodide` code blocks, using `output: asis` renders Python output as HTML.",
+      "Markdown rendering is not currently supported."
+    )
+  end
+
+  -- Supplementary execise blocks: setup, check, hint, solution
+  if (block.attr.setup) then
+    assertBlockExercise("setup", "pyodide", block)
+    return pandoc.RawBlock(
+        "html",
+        "<script type=\"pyodide-setup-" .. block.attr.exercise .. "-contents\">\n" ..
+        json_as_b64(block) .. "\n</script>"
+      )
+  end
+
+  if (block.attr.check) then
+    assertBlockExercise("check", "pyodide", block)
+    if learn_options["grading"] then
+      return pandoc.RawBlock(
+        "html",
+        "<script type=\"pyodide-check-" .. block.attr.exercise .. "-contents\">\n" ..
+        json_as_b64(block) .. "\n</script>"
+      )
+    else
+      return {}
+    end
+  end
+
+  if (block.attr.hint) then
+    assertBlockExercise("hint", "pyodide", block)
+    if learn_options["show-hints"] then
+      return pandoc.Div(
+        pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'})),
+        pandoc.Attr('',
+          { 'pyodide-ojs-exercise', 'exercise-hint', 'd-none' },
+          { exercise = block.attr.exercise }
+        )
+      )
+    end
+    return {}
+  end
+
   if (block.attr.solution) then
-    return pandoc.Div("")
+    assertBlockExercise("solution", "pyodide", block)
+    if learn_options["show-solutions"] then
+      local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
+      local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'python', 'cell-code'}))
+      return pandoc.Div(
+        {
+          InterpolatedBlock(plaincode, false, "pyodide"),
+          InterpolatedBlock(codeblock, true, "pyodide"),
+        },
+        pandoc.Attr('',
+          { 'pyodide-ojs-exercise', 'exercise-solution', 'd-none' },
+          { exercise = block.attr.exercise }
+        )
+      )
+    end
+    return {}
   end
 
   -- Prepare OJS attributes
@@ -196,12 +262,6 @@ function WebRCodeBlock(code)
     })
   end
 
-  function assertBlockExercise(type, block)
-    if (not block.attr.exercise) then
-      error("Can't create `webr` ".. type .." block, `exercise` not defined in cell options.")
-    end
-  end
-
   -- Parse codeblock contents for YAML header and R code body
   local block = ParseBlock(code, "webr")
 
@@ -214,7 +274,7 @@ function WebRCodeBlock(code)
 
   -- Supplementary execise blocks: setup, check, hint, solution
   if (block.attr.setup) then
-    assertBlockExercise("setup", block)
+    assertBlockExercise("setup", "webr", block)
     return pandoc.RawBlock(
         "html",
         "<script type=\"webr-setup-" .. block.attr.exercise .. "-contents\">\n" ..
@@ -223,7 +283,7 @@ function WebRCodeBlock(code)
   end
 
   if (block.attr.check) then
-    assertBlockExercise("check", block)
+    assertBlockExercise("check", "webr", block)
     if learn_options["grading"] then
       return pandoc.RawBlock(
         "html",
@@ -236,7 +296,7 @@ function WebRCodeBlock(code)
   end
 
   if (block.attr.hint) then
-    assertBlockExercise("hint", block)
+    assertBlockExercise("hint", "webr", block)
     if learn_options["show-hints"] then
       return pandoc.Div(
         pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'})),
@@ -250,14 +310,14 @@ function WebRCodeBlock(code)
   end
 
   if (block.attr.solution) then
-    assertBlockExercise("solution", block)
+    assertBlockExercise("solution", "webr", block)
     if learn_options["show-solutions"] then
       local plaincode = pandoc.Code(block.code, pandoc.Attr('', {'solution-code', 'd-none'}))
       local codeblock = pandoc.CodeBlock(block.code, pandoc.Attr('', {'r', 'cell-code'}))
       return pandoc.Div(
         {
-          InterpolatedRBlock(plaincode, false),
-          InterpolatedRBlock(codeblock, true),
+          InterpolatedBlock(plaincode, false, "webr"),
+          InterpolatedBlock(codeblock, true, "webr"),
         },
         pandoc.Attr('',
           { 'webr-ojs-exercise', 'exercise-solution', 'd-none' },
@@ -304,11 +364,11 @@ function WebRCodeBlock(code)
   })
 end
 
-function InterpolatedRBlock(block, highlight)
+function InterpolatedBlock(block, highlight, engine)
   block_id = block_id + 1
 
   -- Reactively render OJS variables in codeblocks
-  file = io.open(quarto.utils.resolve_path("templates/webr-interpolate.ojs"), "r")
+  file = io.open(quarto.utils.resolve_path("templates/" .. engine .. "-interpolate.ojs"), "r")
   assert(file)
   content = file:read("*a")
 
@@ -325,12 +385,12 @@ function InterpolatedRBlock(block, highlight)
   content = string.gsub(content, "{{highlight}}", tostring(highlight))
   table.insert(ojs_definitions.contents, {
     methodName = "interpretQuiet",
-    cellName = "webr-" .. block_id,
+    cellName = engine .. "-" .. block_id,
     inline = false,
     source = content,
   })
 
-  block.identifier = "webr-interpolate-" .. block_id
+  block.identifier = engine .. "-interpolate-" .. block_id
   return block
 end
 
@@ -358,7 +418,7 @@ function CodeBlock(code)
   if (code.classes:includes("r") and string.match(code.text, "${[a-zA-Z_$][%w_$]+}")) then
     -- Non-interactive code block containing OJS variables
     include_webr = true
-    return InterpolatedRBlock(code, true)
+    return InterpolatedBlock(code, true, "webr")
   end
 end
 

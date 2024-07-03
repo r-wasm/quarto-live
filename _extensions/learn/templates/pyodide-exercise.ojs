@@ -37,12 +37,14 @@ _pyodide_feedback_{{block_id}} = {
   // Build grading definition
   const check = !checkElement ? {} : JSON.parse(atob(checkElement.textContent));
   const grading = {
-    check: check.code || 'None',
+    check: check.code,
   };
   
   const grader = new PyodideGrader(
     _pyodide_value_{{block_id}}.evaluator,
     grading,
   );
-  return await grader.gradeExercise();
+  const grade = await grader.gradeExercise();
+  if (!grade) return emptyFeedback;
+  return grade;
 }

@@ -92,11 +92,6 @@ export class WebREvaluator implements ExerciseEvaluator {
     shelter.purge();
   }
 
-  async bind(key: string, value: any, envir: EnvLabel) {
-    const environment = await this.envManager.get(this.envLabels[envir]);
-    await environment.bind(key, value);
-  }
-
   // Setup environment, execute setup code, execute user code, define outputs
   async process(inputs: { [key: string]: any }) {
     // If we're not evaluating, just print the source directly

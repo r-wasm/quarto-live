@@ -23,6 +23,11 @@ export class WebREnvironmentManager {
     return await this.env[id];
   }
 
+  async bind(key: string, value: any, id: string = "global") {
+    const environment = await this.get(id);
+    await environment.bind(key, value);
+  }
+
   async create(target_id: string, parent_id: string) {
     if (target_id === parent_id || target_id === "global") {
       return this.get(target_id);
@@ -70,6 +75,14 @@ export class PyodideEnvironmentManager {
     return await this.env[id];
   }
 
+  async bind(key: string, value: PyProxy, id: string = "global") {
+    const environment = await this.get(id);
+    const pyodide = await this.pyodidePromise;
+    const locals = await pyodide.toPy({ environment, key, value });
+    await pyodide.runPythonAsync(`environment[key] = value`, { locals });
+    locals.destroy();
+  }
+
   async create(target_id: string, parent_id: string) {
     if (target_id === parent_id || target_id === "global") {
       return this.get(target_id);
@@ -81,8 +94,10 @@ export class PyodideEnvironmentManager {
 
     const pyodide = await this.pyodidePromise;
     const parent = await this.get(parent_id);
-    const parentCopy = Object.assign({}, parent.toJs({depth : 1}));
-    this.env[target_id] = pyodide.toPy(parentCopy);
+    const locals = await pyodide.toPy({ parent });
+    const parentCopy = await pyodide.runPythonAsync(`parent.copy()`, { locals });
+    locals.destroy();
+    this.env[target_id] = parentCopy;
     return await this.env[target_id];
   }
 

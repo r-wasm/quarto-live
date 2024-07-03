@@ -207,7 +207,8 @@ export class WebRGrader extends ExerciseGrader {
         args.solution = solution.result;
       }
 
-      await this.evaluator.bind(".checker_args", await new shelter.RList(args), "grading");
+      const argsObj = await new shelter.RList(args);
+      this.envManager.bind(".checker_args", argsObj, this.envLabels.grading);
       const result = await this.evaluator.evaluate(
         "do.call(getOption('webr.exercise.checker'), .checker_args)",
         "grading",
@@ -339,8 +340,13 @@ export class PyodideGrader extends ExerciseGrader {
       }
       const container = await this.evaluator.asHtml(evaluateResult, this.options);
       const grade = await container.value.result.value;
-      const message = await grade.get("message");
-      const correct = await grade.get("correct");
+
+      let message;
+      let correct;
+      if (await grade.type === "dict") {
+        message = await grade.get("message");
+        correct = await grade.get("correct");
+      }
 
       if (message && correct !== undefined) {
         return await this.feedbackAsHtmlAlert(grade);
@@ -445,12 +451,33 @@ export class PyodideGrader extends ExerciseGrader {
       args.solution = solution.result;
     }
 
-    await this.evaluator.bind(".checker_args", await this.pyodide.toPy(args), "grading");
+    const argsObj = await this.pyodide.toPy(args);
+    await this.envManager.bind("_checker_args", argsObj, this.envLabels.grading);
+    // const globals = await this.envManager.get(this.envLabels.grading);
+    // await this.pyodide.runPythonAsync(`print(foo)`, { globals });
+    argsObj.destroy();
     const result = await this.evaluator.evaluate(
-      "{ 'correct': True, 'message': 'Correct, well done!', 'type': 'success' }",
+      `
+        import pyodide
+        feedback = None
+        if (_checker_args["check_code"]):
+          try:
+            feedback = pyodide.code.eval_code(
+              _checker_args["check_code"],
+              locals = _checker_args["envir_result"]
+            )
+          except Exception as error:
+            feedback = {
+              'correct': False,
+              'message': 'Error while checking \`{}\`: "{}"'.format(_checker_args["label"], error),
+              'type': 'error'
+            }
+        feedback
+      `,
       "grading",
       this.options
     );
+    // console.log(result);
     return result;
   }
 

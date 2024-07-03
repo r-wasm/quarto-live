@@ -42,7 +42,6 @@ type EnvManager = WebREnvironmentManager | PyodideEnvironmentManager;
 export interface ExerciseEvaluator {
   evaluate(code: string, envir?: EnvLabel, options?: EvaluateOptions): Promise<any>;
   process(inputs: { [key: string]: any }): Promise<void>;
-  bind(key: string, value: any, envir: EnvLabel): Promise<void>;
   asOjs(value: any): Promise<any>;
   asHtml(value: any): Promise<OJSElement>;
   context: EvaluateContext;
