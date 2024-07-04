@@ -1,15 +1,15 @@
-import type { WebR, RFunction } from 'webr'
+import type { WebR, RFunction } from 'webr';
 import type { PyodideInterface } from 'pyodide';
-import type { OJSElement, EvaluateOptions } from './evaluate'
-import { Indicator } from './indicator'
-import { basicSetup } from 'codemirror'
+import type { OJSElement, EvaluateOptions } from './evaluate';
+import { Indicator } from './indicator';
+import { basicSetup } from 'codemirror';
 import { tagHighlighterTok } from './highlighter';
-import { EditorView, ViewUpdate, keymap } from '@codemirror/view'
-import { EditorState, Compartment, Prec } from '@codemirror/state'
-import { HighlightStyle, syntaxHighlighting } from "@codemirror/language"
+import { EditorView, ViewUpdate, keymap } from '@codemirror/view';
+import { EditorState, Compartment, Prec, Extension } from '@codemirror/state';
+import { syntaxHighlighting } from "@codemirror/language";
 import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
-import { tags } from "@lezer/highlight"
-import { r } from 'codemirror-lang-r'
+import { python } from "@codemirror/lang-python";
+import { r } from "codemirror-lang-r";
 
 type ExerciseOptions = EvaluateOptions & {
   autorun: boolean;
@@ -106,40 +106,9 @@ abstract class ExerciseEditor {
 
     this.storageKey = `editor-${window.location.href}#${this.options.id}`;
 
-    const language = new Compartment();
-    const tabSize = new Compartment();
     const extensions = [
       basicSetup,
-      syntaxHighlighting(tagHighlighterTok),
-      language.of(r()),
-      tabSize.of(EditorState.tabSize.of(2)),
-      Prec.high(
-        keymap.of([
-          {
-            key: 'Mod-Enter',
-            run: () => {
-              this.container.value.code = this.code;
-              this.container.dispatchEvent(new CustomEvent('input', {
-                detail: { manual: true }
-              }));
-              return true;
-            },
-          },
-          {
-            key: 'Mod-Shift-m',
-            run: () => {
-              this.view.dispatch({
-                changes: {
-                  from: 0,
-                  to: this.view.state.doc.length,
-                  insert: this.code.trimEnd() + " |> ",
-                }
-              });
-              return true;
-            },
-          },
-        ]
-        )),
+      this.extensions(),
       EditorView.updateListener.of((update) => this.onViewUpdate(update)),
     ];
 
@@ -199,6 +168,43 @@ abstract class ExerciseEditor {
     });
   }
 
+  extensions(): Extension[] {
+    const language = new Compartment();
+    const tabSize = new Compartment();
+    return [
+      syntaxHighlighting(tagHighlighterTok),
+      language.of(r()),
+      tabSize.of(EditorState.tabSize.of(2)),
+      Prec.high(
+        keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: () => {
+              this.container.value.code = this.code;
+              this.container.dispatchEvent(new CustomEvent('input', {
+                detail: { manual: true }
+              }));
+              return true;
+            },
+          },
+          {
+            key: 'Mod-Shift-m',
+            run: () => {
+              this.view.dispatch({
+                changes: {
+                  from: 0,
+                  to: this.view.state.doc.length,
+                  insert: this.code.trimEnd() + " |> ",
+                }
+              });
+              return true;
+            },
+          },
+        ]
+        )),
+    ];
+  }
+
   onInput(ev: CustomEvent) {
     // When using run button, prevent firing of reactive ojs updates until `manual: true`.
     if (this.options.runbutton && !ev.detail.manual) {
@@ -224,7 +230,7 @@ abstract class ExerciseEditor {
     );
   }
 
-  abstract setupCompletion() : Promise<any>;
+  abstract setupCompletion(): Promise<any>;
   abstract doCompletion(context: CompletionContext): Promise<any>;
 
   renderButton(spec: ExerciseButtonSpec) {
@@ -343,10 +349,10 @@ abstract class ExerciseEditor {
     );
 
     const inTabPane = Array.from(hints).some((hint) =>
-        hint.parentElement.id.includes('tabset-')
-      ) || Array.from(solutions).some((sol) => 
-        sol.parentElement.id.includes('tabset-')
-      );
+      hint.parentElement.id.includes('tabset-')
+    ) || Array.from(solutions).some((sol) =>
+      sol.parentElement.id.includes('tabset-')
+    );
 
     let elem = null;
     if (inTabPane) {
@@ -518,11 +524,37 @@ export class PyodideExerciseEditor extends ExerciseEditor {
     return super.render();
   }
 
+  extensions() {
+    const language = new Compartment();
+    const tabSize = new Compartment();
+    return [
+      syntaxHighlighting(tagHighlighterTok),
+      language.of(python()),
+      tabSize.of(EditorState.tabSize.of(2)),
+      Prec.high(
+        keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: () => {
+              this.container.value.code = this.code;
+              this.container.dispatchEvent(new CustomEvent('input', {
+                detail: { manual: true }
+              }));
+              return true;
+            },
+          },
+        ]
+      )),
+    ];
+  }
+
   async setupCompletion() {
+    // TODO: Configurable autocomplete for python
     const pyodide = await this.pyodidePromise;
   }
 
   async doCompletion(context: CompletionContext) {
     return null;
   }
+
 }
