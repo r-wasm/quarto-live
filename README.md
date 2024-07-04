@@ -67,4 +67,8 @@ These requirements are temporary and will no longer be required in a future rele
 
 ## Documentation
 
-With this pre-release version, documentation is currently incomplete. However, a Quarto website showing some examples of how to use `quarto-live` can be found in the `docs` directory. Documentation will be rewritten and expanded before public release.
+With this pre-release version, documentation is currently incomplete. However, a Quarto website showing some examples of how to use `quarto-live` can be found in the `docs` directory.
+
+The website output can be found here: https://quarto-live-dev.netlify.app, but the Quarto source code is likely to be more useful for the moment.
+
+Documentation will be rewritten and expanded before public release.
