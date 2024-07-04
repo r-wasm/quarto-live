@@ -124,15 +124,6 @@ export class PyodideEvaluator implements ExerciseEvaluator {
         })
       );
 
-      // Cleanup any leftover matplotlib plots
-      await this.pyodide.runPythonAsync(`
-        try:
-          import matplotlib.pyplot as plt
-          plt.close("all")
-        except ModuleNotFoundError:
-          pass
-      `)
-
       // Run setup code, copy prep environment for result, run user code
       const setup = this.getSetupCode();
       await this.evaluate(setup, "prep");
@@ -192,29 +183,9 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       environment: await this.envManager.get(this.envLabels[envLabel]),
     });
 
-    const resultObject = await this.pyodide.runPythonAsync(`
-      from IPython.utils import capture
-      from IPython.core.interactiveshell import InteractiveShell
-      InteractiveShell().instance()
-      import sys
-
-      import pyodide
-      with capture.capture_output() as output:
-        value = None
-        try:
-          value = pyodide.code.eval_code(code, globals = environment)
-        except Exception as err:
-          print(err, file=sys.stderr)
-        if (value is not None):
-          display(value)
-
-      {
-        "value": value,
-        "stdout": output.stdout,
-        "stderr": output.stderr,
-        "outputs": output.outputs,
-      }
-    `, { locals });
+    const resultObject = await this.pyodide.runPythonAsync(
+      atob(require('./scripts/Python/capture.py'))
+    , { locals });
     locals.destroy();
 
     const value = await resultObject.get("value");

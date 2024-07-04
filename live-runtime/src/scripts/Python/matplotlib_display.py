@@ -21,10 +21,10 @@ from matplotlib.transforms import Affine2D
 from IPython.display import display
 from js import ImageData, OffscreenCanvas # type: ignore[attr-defined]
 from pyodide.ffi import create_proxy # type: ignore[attr-defined]
+import logging
 
 _capstyle_d = {"projecting": "square", "butt": "butt", "round": "round"}
-_font_set = set()
-_base_fonts_url = "/fonts/"
+logging.getLogger('matplotlib.font_manager').disabled = True
 
 class RichImageBitmapOutput():
     def __init__(self, figure):
