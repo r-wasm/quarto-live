@@ -342,23 +342,30 @@ export class PyodideEvaluator implements ExerciseEvaluator {
 
     for(let i = 0; i < await result.outputs.length; i++) {
       const item = await result.outputs.get(i);
-      const data = await item.data.toJs({ depth: 1 });
-      if ("application/html-imagebitmap" in data) {
-        appendImageBitmap(data["application/html-imagebitmap"]);
-      } else if ("text/html" in data) {
-        appendHtml(data["text/html"]);
-      } else if ("application/vnd.jupyter.widget-view+json" in data) {
-        appendJupyterWidget(data["application/vnd.jupyter.widget-view+json"]);
-      } else if ("image/png" in data) {
-        appendDataUrlImage("image/png", data["image/png"]);
-      } else if ("image/jpeg" in data) {
-        appendDataUrlImage("image/jpeg", data["image/jpeg"]);
-      } else if ("image/gif" in data) {
-        appendDataUrlImage("image/gif", data["image/gif"]);
-      } else if ("image/svg+xml" in data) {
-        appendHtml(data["image/svg+xml"]);
-      } else if ("text/plain" in data) {
-        appendPlainText(data["text/plain"]);
+      const imagebitmap = await item._repr_mime_("application/html-imagebitmap");
+      const html = await item._repr_mime_("text/html");
+      const widget = await item._repr_mime_("application/vnd.jupyter.widget-view+json");
+      const plain = await item._repr_mime_("text/plain");
+      const png = await item._repr_mime_("image/png");
+      const jpeg = await item._repr_mime_("image/jpeg");
+      const gif = await item._repr_mime_("image/gif");
+      const svg = await item._repr_mime_("image/svg+xml");
+      if (imagebitmap) {
+        appendImageBitmap(imagebitmap);
+      } else if (html) {
+        appendHtml(html);
+      } else if (widget) {
+        appendJupyterWidget(widget);
+      } else if (png) {
+        appendDataUrlImage("image/png", png);
+      } else if (jpeg) {
+        appendDataUrlImage("image/jpeg", jpeg);
+      } else if (gif) {
+        appendDataUrlImage("image/gif", gif);
+      } else if (svg) {
+        appendHtml(svg);
+      } else if (plain) {
+        appendPlainText(plain);
       }
       // TODO: Support more types in the IPython.display module
       item.destroy();
