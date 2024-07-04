@@ -11,7 +11,6 @@ local live_options = {
   ["grading"] = true,
 }
 
-
 local ojs_definitions = {
   contents = {},
 }
@@ -498,6 +497,19 @@ function setupPyodide(doc)
     table.insert(pyodide_packages.pkgs, pandoc.utils.stringify(pkg))
   end
 
+  -- Initial Pyodide startup options
+  local pyodide_options = {
+    indexURL = "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/",
+  }
+  if (pyodide["base-url"]) then
+    pyodide_options["indexURL"] = pandoc.utils.stringify(pyodide["base-url"])
+  end
+
+  local data = {
+    packages = pyodide_packages,
+    options = pyodide_options,
+  }
+
   table.insert(ojs_definitions.contents, {
     methodName = "interpretQuiet",
     cellName = "pyodide-prelude",
@@ -505,10 +517,9 @@ function setupPyodide(doc)
     source = content,
   })
 
-  -- List of webR R packages and repositories to install
   doc.blocks:insert(pandoc.RawBlock(
     "html",
-    "<script type=\"pyodide-packages\">\n" .. json_as_b64(pyodide_packages) .. "\n</script>"
+    "<script type=\"pyodide-data\">\n" .. json_as_b64(data) .. "\n</script>"
   ))
 
   return pyodide
