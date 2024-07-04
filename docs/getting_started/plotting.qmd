@@ -4,13 +4,17 @@ format: live-html
 webr:
   packages:
     - ggplot2
+pyodide:
+  packages:
+    - matplotlib
+    - pandas
+    - nbformat
+    - mizani==0.9.2
+    - plotnine==0.10.1
+    - seaborn
 ---
 
-```{webr}
-#| edit: false
-#| output: false
-library(ggplot2)
-```
+## R
 
 ```{webr}
 plot(rnorm(1e5), t='l')
@@ -18,7 +22,48 @@ plot(rnorm(1e5), t='l')
 
 ```{webr}
 #| fig-width: 600
-#| fig-height: 100
+#| fig-height: 150
+library(ggplot2)
 ggplot(mpg, aes(displ, hwy, colour = class)) + 
   geom_point()
+```
+
+## Python
+
+```{pyodide}
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.random.normal(170, 10, 250)
+
+plt.hist(x)
+plt.show() 
+```
+
+```{pyodide}
+#| autorun: false
+import seaborn as sns
+sns.set_theme(style="ticks")
+
+df = sns.load_dataset("anscombe")
+sns.lmplot(
+    data=df, x="x", y="y", col="dataset", hue="dataset",
+    col_wrap=2, palette="muted", ci=None,
+    height=4, scatter_kws={"s": 50, "alpha": 1}
+)
+
+plt.show()
+```
+
+```{pyodide}
+#| autorun: false
+from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
+from plotnine.data import mtcars
+
+(
+    ggplot(mtcars, aes("wt", "mpg", color="factor(gear)"))
+    + geom_point()
+    + stat_smooth(method="lm")
+    + facet_wrap("gear")
+)
 ```

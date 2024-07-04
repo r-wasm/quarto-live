@@ -1,5 +1,5 @@
 ---
-title: Reactivity
+title: Reactivity in R
 format: live-html
 ---
 

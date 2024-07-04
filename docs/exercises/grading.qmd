@@ -1,15 +1,7 @@
 ---
-title: Grading Solutions
+title: Grading Submitted Solutions
 format: live-html
 ---
-
-## Fill in the blanks
-
-```{webr}
-#| caption: Sample Exercise 1
-#| exercise: example_1
-mtcars |> ______
-```
 
 ## Grading R code
 
@@ -17,14 +9,28 @@ Write a function to return the number 2.
 
 ```{webr}
 #| caption: Sample Exercise 2
-#| exercise: example_2
+#| exercise: example_1
 foo <- function () {
   return(4)
 }
 ```
 
+::: { .solution exercise="example_1" }
+
+**Fully worked solution:**
+
+```r
+foo <- function () {       #<1>
+  return(2)                #<2>
+}
+```
+1. Define the function `foo`, and then,
+2. Return the number 2.
+
+:::
+
 ```{webr}
-#| exercise: example_2
+#| exercise: example_1
 #| check: true
 if (!is.function(.result)) {
   list(correct = FALSE, message = "I can't see your function!")

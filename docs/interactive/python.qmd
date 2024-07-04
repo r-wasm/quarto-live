@@ -1,12 +1,10 @@
 ---
-title: Grading Solutions in Python
+title: Reactivity in Python
 format: live-html
 ---
 
-## Grading Python code
-
 ```{ojs}
-viewof n = Inputs.range([0,100], {step: 1})
+viewof n = Inputs.range([0,1000], {step: 1})
 ```
 
 Write a function to return the number ${goal}.
@@ -21,6 +19,5 @@ import numpy as np
 x = np.random.normal(170, 10, n)
 
 plt.hist(x)
-plt.show()
 plt.show()
 ```

@@ -25,7 +25,8 @@ rnorm(10)
 ::: {#lst-ref}
 
 ```{.webr}
-rnorm(20)
+mod <- glm(mpg ~ cyl, data = mtcars)
+summary(mod)
 ```
 
 :::

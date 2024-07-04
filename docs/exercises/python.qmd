@@ -1,19 +1,12 @@
 ---
-title: Grading Solutions in Python
+title: Grading Python Solutions
 format: live-html
 ---
-
-## Grading Python code
 
 ```{ojs}
 //| output: false
 goal = Math.floor(Math.random() * 100);
 ```
-
-```{ojs}
-goal2
-```
-
 
 Write a function to return the number ${goal}.
 
@@ -21,21 +14,23 @@ Write a function to return the number ${goal}.
 #| caption: Sample Exercise 1
 #| input:
 #|   - goal
-#| define:
-#|   - goal2
 #| exercise: example_1
-display(goal)
-goal2 = goal + 1
 def foo():
     return 2
 ```
 
-```{pyodide}
-#| exercise: example_1
-#| solution: true
-def foo():
-    return ${goal}
+::: { .solution exercise="example_1" }
+
+**Fully worked solution:**
+
+```python
+def foo():            #<1>
+    return ${goal}    #<2>
 ```
+1. Define the function `foo`, and then,
+2. Return the number ${goal}.
+
+:::
 
 ```{pyodide}
 #| exercise: example_1
@@ -49,4 +44,3 @@ else:
     feedback = { "correct": False, "message": "Incorrect, sorry!" }
 feedback
 ```
-

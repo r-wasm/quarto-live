@@ -9,12 +9,10 @@ website:
       - href: index.qmd
       - section: Getting Started
         contents:
-          - getting_started/setup.qmd
           - getting_started/editor.qmd
           - getting_started/packages.qmd
           - getting_started/plotting.qmd
           - getting_started/readonly.qmd
-          - getting_started/python.qmd
       - section: Exercises and Grading
         contents:
           - exercises/exercises.qmd
@@ -24,9 +22,11 @@ website:
           - exercises/localstorage.qmd
           - exercises/grading.qmd
           - exercises/gradethis.qmd
+          - exercises/python.qmd
       - section: Interactive Documents and Tutorials
         contents:
           - interactive/reactivity.qmd
+          - interactive/python.qmd
           - interactive/data.qmd
           - interactive/dynamic.qmd
           - interactive/define.qmd
@@ -35,6 +35,7 @@ website:
           - other/tables.qmd
           - other/resources.qmd
           - other/html.qmd
+          - other/python.qmd
           - other/slides.qmd
 
 theme:

@@ -5,6 +5,11 @@ resources:
   - "data"
 ---
 
+```{pyodide}
+from os import listdir
+listdir('data')
+```
+
 ```{webr}
 list.files("data")
 mt <- read.csv("data/mtcars.csv")

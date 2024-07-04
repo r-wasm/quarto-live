@@ -1,5 +1,5 @@
 ---
-title: HTML and Widgets
+title: R HTML Widgets
 format: live-html
 webr:
   packages:

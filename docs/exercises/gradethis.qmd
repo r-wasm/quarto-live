@@ -1,5 +1,5 @@
 ---
-title: Grading solutions using `gradethis`
+title: Grading R code using `gradethis`
 format: live-html
 webr:
   packages:
@@ -8,6 +8,14 @@ webr:
 
 {{< include ../_extensions/live/_knitr.qmd >}}
 {{< include ../_extensions/live/_gradethis.qmd >}}
+
+Be sure to include the following to enable grading with `gradethis` in the `knitr` engine.
+In a future release, this will no longer be required.
+
+```
+{{{< include [...]/_extensions/live/_knitr.qmd >}}}
+{{{< include [...]/_extensions/live/_gradethis.qmd >}}}
+```
 
 ```{webr}
 #| edit: false

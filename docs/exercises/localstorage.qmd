@@ -1,7 +1,9 @@
 ---
-title: Editor local storage
+title: Editor Local Storage
 format: live-html
 ---
+
+Make a change, run the code, then refresh the page. The latest code should be remembered.
 
 ```{webr}
 #| localstorage: true

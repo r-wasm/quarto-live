@@ -1,9 +1,20 @@
 ---
+title: Installation
 format: live-html
 ---
 
-## Installation
-
 ```bash
 quarto add r-wasm/quarto-live
+```
+
+```yaml
+---
+format: live-html
+---
+```
+
+Include the folloing line when using the `knitr` engine. This will no longer be required once [#10169](https://github.com/quarto-dev/quarto-cli/issues/10169) has been implemented in Quarto.
+
+```md
+{{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}}
 ```
