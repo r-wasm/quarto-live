@@ -76,6 +76,12 @@ export const comlinkTransfer: Comlink.TransferHandler<ContainsComlinkProxy, any>
 export const imageBitmapTransfer: Comlink.TransferHandler<ImageBitmap, any> = {
   canHandle: isImageBitmap,
   serialize(obj) {
+    // Empty plots can't be transferred! Make a 1x1 image, we'll ignore it later
+    if (obj.width == 0 && obj.height == 0) {
+      const offscreen = new OffscreenCanvas(1, 1);
+      offscreen.getContext("2d");
+      obj = offscreen.transferToImageBitmap();
+    }
     return [obj, [obj]];
   },
   deserialize(obj) {

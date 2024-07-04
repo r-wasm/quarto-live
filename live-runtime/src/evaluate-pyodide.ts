@@ -232,6 +232,10 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     }
 
     const appendImage = (image: ImageBitmap) => {
+      if (image.width <= 1 && image.height <= 1) {
+        // This is a blank or placeholder 1x1 pixel image, ignore it.
+        return;
+      }
       const canvas = document.createElement('canvas');
       canvas.width = image.width;
       canvas.height = image.height;
