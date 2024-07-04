@@ -1,10 +1,14 @@
 ---
 title: Quarto Live
 format: live-html
+engine: knitr
 webr:
   packages:
     - ggplot2
 ---
+
+
+{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
 
 ```{webr}
 library(ggplot2)
