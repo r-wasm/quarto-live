@@ -16,6 +16,12 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Netlify
+        run: npm install netlify-cli -g
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         env:
@@ -37,3 +43,9 @@ jobs:
       # - name: Deploy to GitHub Pages
       #   id: deployment
       #   uses: actions/deploy-pages@v4
+      - name: Deploy to Netlify
+        run: |
+          netlify deploy \
+            --dir docs/_site \
+            --site ${{ secrets.NETLIFY_SITE }} \
+            --auth ${{ secrets.NETLIFY_TOKEN }}
