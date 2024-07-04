@@ -1,0 +1,11 @@
+---
+title: Grading Solutions in Python
+format: live-html
+resources:
+  - "data"
+---
+
+```{pyodide}
+from os import listdir
+listdir('data')
+```

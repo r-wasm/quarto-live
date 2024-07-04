@@ -43,6 +43,30 @@ pyodideOjs = {
     }).reduce((cur, next) => cur.then(next), Promise.resolve());
     await micropip.destroy();
 
+    // Download and install resources
+    await files.map((file) => async () => {
+      statusText.textContent = `Downloading resource: ${file}`;
+      const response = await fetch(file);
+      if (!response.ok) {
+        throw new Error(`Can't download \`${file}\`. Error ${response.status}: "${response.statusText}".`);
+      }
+      const data = await response.arrayBuffer();
+
+      // Create directory tree, swallowing any `dir exists` errors
+      let path = file;
+      while (path = path.substr(0, path.lastIndexOf('/'))) {
+        try {
+          await pyodide.FS.mkdir(path);
+        } catch (e) {
+          if (!(e.name == "ErrnoError" && e.errno == 20)) {
+            throw e;
+          }
+        }
+      }
+
+      return await pyodide.FS.writeFile(file, new Uint8Array(data));
+    }).reduce((cur, next) => cur.then(next), Promise.resolve());
+
     statusText.textContent = `Pyodide environment setup`;
     await setupPython(pyodide);
 

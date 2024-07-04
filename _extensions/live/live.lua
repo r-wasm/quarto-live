@@ -627,6 +627,8 @@ function Pandoc(doc)
   local vfs_files = {}
   if (webr and webr.resources) then
     resource_list = webr.resources
+  elseif (pyodide and pyodide.resources) then
+    resource_list = pyodide.resources
   else
     resource_list = doc.meta.resources
   end

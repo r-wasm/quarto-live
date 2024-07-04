@@ -231,7 +231,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       return container;
     }
 
-    const appendImage = (image: ImageBitmap) => {
+    const appendImageBitmap = (image: ImageBitmap) => {
       if (image.width <= 1 && image.height <= 1) {
         // This is a blank or placeholder 1x1 pixel image, ignore it.
         return;
@@ -304,6 +304,17 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       }
     };
 
+    const appendDataUrlImage = async (mime: string, data: string) => {
+      if (options.output) {
+        const outputDiv = document.createElement("div");
+        const imageDiv = document.createElement("img");
+        outputDiv.className = "cell-output-display cell-output-pyodide";
+        imageDiv.src = `data:${mime};base64, ${data}`;
+        outputDiv.appendChild(imageDiv);
+        container.appendChild(outputDiv);
+      }
+    };
+
     if (options.echo) {
       const sourceDiv = document.createElement("div");
       const sourcePre = document.createElement("pre");
@@ -331,19 +342,25 @@ export class PyodideEvaluator implements ExerciseEvaluator {
 
     for(let i = 0; i < await result.outputs.length; i++) {
       const item = await result.outputs.get(i);
-      const imagebitmap = await item._repr_mime_("application/html-imagebitmap");
-      const html = await item._repr_mime_("text/html");
-      const widget = await item._repr_mime_("application/vnd.jupyter.widget-view+json");
-      const plain = await item._repr_mime_("text/plain");
-      if (imagebitmap) {
-        appendImage(imagebitmap);
-      } else if (html) {
-        appendHtml(html);
-      } else if (widget) {
-        appendJupyterWidget(widget);
-      } else if (plain) {
-        appendPlainText(plain);
+      const data = await item.data.toJs({ depth: 1 });
+      if ("application/html-imagebitmap" in data) {
+        appendImageBitmap(data["application/html-imagebitmap"]);
+      } else if ("text/html" in data) {
+        appendHtml(data["text/html"]);
+      } else if ("application/vnd.jupyter.widget-view+json" in data) {
+        appendJupyterWidget(data["application/vnd.jupyter.widget-view+json"]);
+      } else if ("image/png" in data) {
+        appendDataUrlImage("image/png", data["image/png"]);
+      } else if ("image/jpeg" in data) {
+        appendDataUrlImage("image/jpeg", data["image/jpeg"]);
+      } else if ("image/gif" in data) {
+        appendDataUrlImage("image/gif", data["image/gif"]);
+      } else if ("image/svg+xml" in data) {
+        appendHtml(data["image/svg+xml"]);
+      } else if ("text/plain" in data) {
+        appendPlainText(data["text/plain"]);
       }
+      // TODO: Support more types in the IPython.display module
       item.destroy();
     }
 
