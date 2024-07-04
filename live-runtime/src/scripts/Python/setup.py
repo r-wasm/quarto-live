@@ -1,11 +1,9 @@
-import pyodide_http # type: ignore[attr-defined]
+import sys
+import os
+import pyodide_http  # type: ignore[attr-defined]
 pyodide_http.patch_all()
-
-try:
-    import matplotlib
-    import sys
-    sys.path.insert(0, "/pyodide/")
-    matplotlib.use("module://matplotlib_display")
-except ModuleNotFoundError:
-    pass
-
+sys.path.insert(0, "/pyodide/")
+os.mkdir(os.path.expanduser("~/.matplotlib"))
+f = open(os.path.expanduser("~/.matplotlib/matplotlibrc"), "a")
+f.write("backend: module://matplotlib_display")
+f.close()
