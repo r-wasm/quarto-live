@@ -9,6 +9,19 @@ export function arrayBufferToBase64(buffer: ArrayBuffer) {
   return window.btoa(binary);
 }
 
+// From https://stackoverflow.com/a/30106551
+export function b64Encode(str) {
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_, p1) => {
+      return String.fromCharCode(parseInt(p1, 16))
+  }))
+}
+
+export function b64Decode(str) {
+  return decodeURIComponent(atob(str).split('').map((c) => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
+
 export function isImageBitmap(value: any): value is ImageBitmap {
   return (typeof ImageBitmap !== 'undefined' && value instanceof ImageBitmap);
 }

@@ -1,7 +1,7 @@
 viewof _webr_editor_{{block_id}} = {
-  const { WebRExerciseEditor } = window._exercise_ojs_runtime;
+  const { WebRExerciseEditor, b64Decode } = window._exercise_ojs_runtime;
   const scriptContent = document.querySelector(`script[type=\"webr-{{block_id}}-contents\"]`).textContent;
-  const block = JSON.parse(atob(scriptContent));
+  const block = JSON.parse(b64Decode(scriptContent));
 
   const options = Object.assign({ id: `webr-{{block_id}}-contents` }, block.attr);
   const editor = new WebRExerciseEditor(webROjs.webRPromise, block.code, options);

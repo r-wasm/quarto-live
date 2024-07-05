@@ -1,8 +1,8 @@
 _pyodide_value_{{block_id}} = {
-  const { highlightPython } = window._exercise_ojs_runtime;
+  const { highlightPython, b64Decode} = window._exercise_ojs_runtime;
 
   const scriptContent = document.querySelector(`script[type=\"pyodide-{{block_id}}-contents\"]`).textContent;
-  const block = JSON.parse(atob(scriptContent));
+  const block = JSON.parse(b64Decode(scriptContent));
 
   // Default evaluation configuration
   const options = Object.assign({

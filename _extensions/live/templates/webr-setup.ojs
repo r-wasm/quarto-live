@@ -1,6 +1,6 @@
 webROjs = {
   const { WebR } = window._exercise_ojs_runtime.WebR;
-  const { WebREvaluator, WebREnvironmentManager, setupR } = window._exercise_ojs_runtime;
+  const { WebREvaluator, WebREnvironmentManager, setupR, b64Decode } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-status");
   let statusText = document.createElement("div")
@@ -17,11 +17,11 @@ webROjs = {
 
   // webR supplemental data and options
   const dataContent = document.querySelector(`script[type=\"webr-data\"]`).textContent;
-  const data = JSON.parse(atob(dataContent));
+  const data = JSON.parse(b64Decode(dataContent));
 
   // Grab list of resources to be downloaded
   const filesContent = document.querySelector(`script[type=\"vfs-file\"]`).textContent;
-  const files = JSON.parse(atob(filesContent));
+  const files = JSON.parse(b64Decode(filesContent));
 
   // Initialise webR and setup for R code evaluation
   let webRPromise = (async (webR) => {

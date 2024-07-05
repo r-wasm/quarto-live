@@ -24,8 +24,11 @@ plot(rnorm(1e5), t='l')
 #| fig-width: 600
 #| fig-height: 150
 library(ggplot2)
-ggplot(mpg, aes(displ, hwy, colour = class)) + 
-  geom_point()
+ggplot(mtcars, aes(x = wt, y = mpg, group = am)) +
+  geom_point(aes(color = cyl, shape = cyl)) +
+  geom_smooth(method = lm, formula = y ~ x) +
+  ggtitle("Motor Trend Car Road Tests 🚀") +
+  scale_shape_binned()
 ```
 
 ## Python

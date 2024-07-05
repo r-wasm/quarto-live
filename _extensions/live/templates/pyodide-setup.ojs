@@ -4,6 +4,7 @@ pyodideOjs = {
     PyodideEnvironmentManager,
     setupPython,
     startPyodideWorker,
+    b64Decode,
   } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-status");
@@ -21,11 +22,11 @@ pyodideOjs = {
 
   // Pyodide supplemental data and options
   const dataContent = document.querySelector(`script[type=\"pyodide-data\"]`).textContent;
-  const data = JSON.parse(atob(dataContent));
+  const data = JSON.parse(b64Decode(dataContent));
 
   // Grab list of resources to be downloaded
   const filesContent = document.querySelector(`script[type=\"vfs-file\"]`).textContent;
-  const files = JSON.parse(atob(filesContent));
+  const files = JSON.parse(b64Decode(filesContent));
 
   let pyodidePromise = (async () => {
     statusText.textContent = `Downloading Pyodide`;
