@@ -15,6 +15,15 @@ The `quarto-live` extension focuses on providing:
 quarto add r-wasm/quarto-live
 ```
 
+### NOTE
+
+While this repo remains private, something like the following installation method should be used:
+
+```
+git clone https://github.com/r-wasm/quarto-live quarto-live
+quarto add quarto-live
+```
+
 ## Basic Setup
 
 Set the `live` custom format in your Quarto document's yaml header. For ReactJs slides, use `format: live-revealjs`.
@@ -47,13 +56,15 @@ plot(fit)
 
 The `quarto-live` extension works with both the `knitr` and `jupyter` engine. If Quarto fails to run, showing errors about a missing `jypyter` or `python` installation, explicitly select the `knitr` engine using `engine: knitr`.
 
-Additionally, when using `knitr`, either the following Quarto shortcode should be added to your document (after the yaml header):
+Additionally, when using `knitr`, the following Quarto shortcode should be added to your document (after the yaml header):
 
 ```
-{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
+{{< include ./_extensions/live/_knitr.qmd >}}
 ```
 
-or `quarto-live` code block types should be given with a leading `.` character:
+**TODO:** Once public, this will become `./_extensions/r-wasm/live/_knitr.qmd` instead.
+
+Or, alternatively, ensure `quarto-live` code block types are given with a leading `.` character:
 
 ````
 ```{.webr}
@@ -63,7 +74,7 @@ plot(fit)
 ```
 ````
 
-These requirements are temporary and will no longer be required in a future release of `quarto-live`.
+**NOTE:** This requirement is temporary and will no longer be required in a future release of `quarto-live`.
 
 ## Documentation
 
