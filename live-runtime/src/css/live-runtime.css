@@ -43,13 +43,13 @@
 }
 
 /* Editor header buttons */
-.card.exercise-editor-card .card-header a.btn {
+.card.exercise-editor .card-header a.btn {
   --bs-btn-padding-x: 0.5rem;
   --bs-btn-padding-y: 0.15rem;
   --bs-btn-font-size: 0.75rem;
 }
 
-.quarto-dark .card.exercise-editor-card .card-header .btn.btn-outline-dark {
+.quarto-dark .card.exercise-editor .card-header .btn.btn-outline-dark {
   --bs-btn-color: #f8f8f8;
   --bs-btn-border-color: #f8f8f8;
   --bs-btn-hover-color: #000;
@@ -68,40 +68,40 @@
 }
 
 /* Codemirror Editor */
-.card.exercise-editor-card .card-header {
+.card.exercise-editor .card-header {
   padding: 0.5rem 1rem;
   background-color: var(--exercise-cap-bg);
   border-bottom: 1px solid rgba(0, 0, 0, 0.175);
 }
 
-.card.exercise-editor-card .cm-editor {
+.card.exercise-editor .cm-editor {
   color: var(--exercise-main-color);
   background-color: var(--exercise-main-bg);
 }
 
-.card.exercise-editor-card .cm-content {
+.card.exercise-editor .cm-content {
   caret-color: var(--exercise-main-color);
 }
 
-.card.exercise-editor-card .cm-cursor,
-.card.exercise-editor-card .cm-dropCursor {
+.card.exercise-editor .cm-cursor,
+.card.exercise-editor .cm-dropCursor {
   border-left-color: var(--exercise-main-color);
 }
 
-.card.exercise-editor-card .cm-focused .cm-selectionBackgroundm .cm-selectionBackground,
-.card.exercise-editor-card .cm-content ::selection {
+.card.exercise-editor .cm-focused .cm-selectionBackgroundm .cm-selectionBackground,
+.card.exercise-editor .cm-content ::selection {
   background-color: rgba(var(--exercise-primary-rgb), 0.1);
 }
 
-.card.exercise-editor-card .cm-activeLine {
+.card.exercise-editor .cm-activeLine {
   background-color: var(--exercise-line-bg);
 }
 
-.card.exercise-editor-card .cm-activeLineGutter {
+.card.exercise-editor .cm-activeLineGutter {
   background-color: var(--exercise-line-gutter-bg);
 }
 
-.card.exercise-editor-card .cm-gutters {
+.card.exercise-editor .cm-gutters {
   background-color: var(--exercise-cap-bg);
   color: var(--exercise-main-color);
   border-right: 1px solid var(--exercise-default);
@@ -241,27 +241,27 @@ span.tok-function-attributeName {
   display: flex !important;
 }
 
-.reveal .card.exercise-editor-card .justify-content-between {
+.reveal .card.exercise-editor .justify-content-between {
   justify-content: space-between !important;
 }
 
-.reveal .card.exercise-editor-card .align-items-center {
+.reveal .card.exercise-editor .align-items-center {
   align-items: center !important;
 }
 
-.reveal .card.exercise-editor-card .gap-1 {
+.reveal .card.exercise-editor .gap-1 {
   gap: .25rem !important;
 }
 
-.reveal .card.exercise-editor-card .gap-2 {
+.reveal .card.exercise-editor .gap-2 {
   gap: .5rem !important;
 }
 
-.reveal .card.exercise-editor-card .gap-3 {
+.reveal .card.exercise-editor .gap-3 {
   gap: .75rem !important;
 }
 
-.reveal .card.exercise-editor-card {
+.reveal .card.exercise-editor {
   margin: 1rem 0;
   border: 1px solid rgba(0, 0, 0, 0.175);
   border-radius: 0.375rem;
@@ -269,10 +269,16 @@ span.tok-function-attributeName {
   overflow: hidden;
 }
 
-.reveal .card.exercise-editor-card .card-header {
+.reveal .card.exercise-editor .card-header {
   padding: 0.5rem 1rem;
   background-color: var(--exercise-cap-bg);
   border-bottom: 1px solid rgba(0, 0, 0, 0.175);
+}
+
+/* Output */
+.reveal .cell-output-webr.cell-output-display,
+.reveal .cell-output-pyodide.cell-output-display {
+  text-align: center;
 }
 
 /* Button styling */
@@ -312,33 +318,33 @@ span.tok-function-attributeName {
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #000000);
 }
 
-.reveal .card.exercise-editor-card .btn-group {
+.reveal .card.exercise-editor .btn-group {
   border-radius: .375rem;
   position: relative;
   display: inline-flex;
   vertical-align: middle;
 }
 
-.reveal .card.exercise-editor-card .btn-group>.btn {
+.reveal .card.exercise-editor .btn-group>.btn {
   position: relative;
   flex: 1 1 auto;
 }
 
-.reveal .card.exercise-editor-card .btn-group>:not(.btn-check:first-child)+.btn,
-.reveal .card.exercise-editor-card .btn-group>.btn-group:not(:first-child) {
+.reveal .card.exercise-editor .btn-group>:not(.btn-check:first-child)+.btn,
+.reveal .card.exercise-editor .btn-group>.btn-group:not(:first-child) {
   margin-left: calc(1px*-1)
 }
 
-.reveal .card.exercise-editor-card .btn-group>.btn:not(:last-child):not(.dropdown-toggle),
-.reveal .card.exercise-editor-card .btn-group>.btn.dropdown-toggle-split:first-child,
-.reveal .card.exercise-editor-card .btn-group>.btn-group:not(:last-child)>.btn {
+.reveal .card.exercise-editor .btn-group>.btn:not(:last-child):not(.dropdown-toggle),
+.reveal .card.exercise-editor .btn-group>.btn.dropdown-toggle-split:first-child,
+.reveal .card.exercise-editor .btn-group>.btn-group:not(:last-child)>.btn {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0
 }
 
-.reveal .card.exercise-editor-card .btn-group>.btn:nth-child(n+3),
-.reveal .card.exercise-editor-card .btn-group>:not(.btn-check)+.btn,
-.reveal .card.exercise-editor-card .btn-group>.btn-group:not(:first-child)>.btn {
+.reveal .card.exercise-editor .btn-group>.btn:nth-child(n+3),
+.reveal .card.exercise-editor .btn-group>:not(.btn-check)+.btn,
+.reveal .card.exercise-editor .btn-group>.btn-group:not(:first-child)>.btn {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0
 }
@@ -373,7 +379,7 @@ span.tok-function-attributeName {
 }
 
 /* Spinner */
-.reveal .card.exercise-editor-card .spinner-grow {
+.reveal .card.exercise-editor .spinner-grow {
   background-color: currentcolor;
   opacity: 0;
   display: inline-block;
