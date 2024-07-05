@@ -5,6 +5,16 @@ webr:
   render-df: gt-interactive
 ---
 
+The `render-df` option changes how `data.frame`s are rendered by default.
+It can be one of:
+
+* `default`
+* `paged-table`
+* `gt`
+* `gt-interactive`
+* `DT`
+* `reactable`
+
 ```{webr}
 mtcars
 ```
