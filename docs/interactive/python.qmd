@@ -7,8 +7,6 @@ format: live-html
 viewof n = Inputs.range([0,1000], {step: 1})
 ```
 
-Write a function to return the number ${goal}.
-
 ```{pyodide}
 #| caption: Sample Exercise 1
 #| input:
