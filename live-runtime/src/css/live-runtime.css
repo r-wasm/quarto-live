@@ -171,63 +171,67 @@
   --exercise-editor-hl-wa: var(--quarto-hl-wa-color, #dcc6e0);
 }
 
-span.tok-keyword {
+pre > code.sourceCode span.tok-keyword {
   color: var(--exercise-editor-hl-kw);
 }
 
-span.tok-operator {
+pre > code.sourceCode span.tok-operator {
   color: var(--exercise-editor-hl-op);
 }
 
-span.tok-definitionOperator {
+pre > code.sourceCode span.tok-definitionOperator {
   color: var(--exercise-editor-hl-ot);
 }
 
-span.tok-compareOperator {
+pre > code.sourceCode span.tok-compareOperator {
   color: var(--exercise-editor-hl-ot);
 }
 
-span.tok-attributeName {
+pre > code.sourceCode span.tok-attributeName {
   color: var(--exercise-editor-hl-at);
 }
 
-span.tok-controlKeyword {
+pre > code.sourceCode span.tok-controlKeyword {
   color: var(--exercise-editor-hl-cf);
 }
 
-span.tok-comment {
+pre > code.sourceCode span.tok-comment {
   color: var(--exercise-editor-hl-co);
 }
 
-span.tok-string {
+pre > code.sourceCode span.tok-string {
   color: var(--exercise-editor-hl-st);
 }
 
-span.tok-string2 {
+pre > code.sourceCode span.tok-string2 {
   color: var(--exercise-editor-hl-ss);
 }
 
-span.tok-variableName {
+pre > code.sourceCode span.tok-variableName {
   color: var(--exercise-editor-hl-va);
 }
 
-span.tok-bool, span.tok-literal, span.tok-separator {
+pre > code.sourceCode span.tok-bool,
+pre > code.sourceCode span.tok-literal,
+pre > code.sourceCode span.tok-separator {
   color: var(--exercise-editor-hl-cn);
 }
 
-span.tok-bool, span.tok-literal {
+pre > code.sourceCode span.tok-bool,
+pre > code.sourceCode span.tok-literal {
   color: var(--exercise-editor-hl-cn);
 }
 
-span.tok-number, span.tok-integer {
+pre > code.sourceCode span.tok-number,
+pre > code.sourceCode span.tok-integer {
   color: var(--exercise-editor-hl-dv);
 }
 
-span.tok-function-variableName {
+pre > code.sourceCode span.tok-function-variableName {
   color: var(--exercise-editor-hl-fu);
 }
 
-span.tok-function-attributeName {
+pre > code.sourceCode span.tok-function-attributeName {
   color: var(--exercise-editor-hl-at);
 }
 
