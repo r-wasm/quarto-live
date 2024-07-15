@@ -19,10 +19,11 @@ options(pager = function(files, ...) {
   writeLines(gsub(".[\b]", "", readLines(files)))
 })
 
-# Custom renderer for evaluate
+# Custom value handler and rendering for evaluate and knitr
 options("webr.evaluate.handler" = evaluate::new_output_handler(
   value = function(x, visible) {
-    render_df <- function (x) {
+    knit_options = list(screenshot.force = FALSE)
+    knit_print.df <- function (x) {
       method <- getOption("webr.render.df")
       if (method == "kable") {
         knitr::knit_print(knitr::kable(x))
@@ -33,17 +34,17 @@ options("webr.evaluate.handler" = evaluate::new_output_handler(
       } else if (method == "gt-interactive") {
         knitr::knit_print(x |> gt::gt() |> gt::opt_interactive())
       } else if (method == "reactable") {
-        knitr::knit_print(reactable::reactable(x), options = list(screenshot.force = FALSE))
+        knitr::knit_print(reactable::reactable(x), options = knit_options)
       } else {
-        knitr::knit_print(x, options = list(screenshot.force = FALSE))
+        knitr::knit_print(x, options = knit_options)
       }
     }
 
     res <- if (visible) {
       withVisible(if ("data.frame" %in% class(x)) {
-        render_df(x)
+        knit_print.df(x)
       } else {
-        knitr::knit_print(x, options = list(screenshot.force = FALSE))
+        knitr::knit_print(x, options = knit_options)
       })
     } else list(value = x, visible = FALSE)
     class(res) <- "result"
@@ -86,12 +87,12 @@ options(webr.exercise.checker = function(
 
     # Evaluate provided check code
     eval(parsed_check_code)
-  }, on_error = function(e) {
+  }, error = function(e) {
     list(
-      message = "Error while checking `", label, "`: ", e,
+      message = paste0("Error in checking code for `", label, "`: ", e$message),
       correct = FALSE,
       location = "append",
-      type = "error"
+      type = "warning"
     )
   })
 })

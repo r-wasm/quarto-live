@@ -63,6 +63,8 @@ export class WebRGrader extends ExerciseGrader {
         }
       }
 
+      // TODO: Detect a returned list of feedback, and return all in a container
+
       return container;
     } finally {
       ind.finished();
@@ -169,10 +171,12 @@ export class WebRGrader extends ExerciseGrader {
 
       const argsObj = await new shelter.RList(args);
       this.envManager.bind(".checker_args", argsObj, this.envLabels.grading);
+      const options = { ...this.options };
+      options.error = false;
       const result = await this.evaluator.evaluate(
         "do.call(getOption('webr.exercise.checker'), .checker_args)",
         "grading",
-        this.options
+        options
       );
       // debug exercise checker
       // this.evaluator.webR.evalR("print(result)", { env: { result }})

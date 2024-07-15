@@ -193,6 +193,10 @@ export class WebREvaluator implements ExerciseEvaluator {
     }
 
     const shelter = await this.shelter;
+    // TODO: Extract this into a formal R function
+    // TODO: There are a few of these now in src/scripts/R/setup.R,
+    // it should be an R package loaded into the VFS at runtime instead.
+    // TODO: collapse low-level plotting changes (e.g. abline(0, 1))
     const capture = await shelter.captureR(`
         setTimeLimit(elapsed = timelimit)
         on.exit(setTimeLimit(elapsed = Inf))
