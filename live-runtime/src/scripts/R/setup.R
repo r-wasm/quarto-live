@@ -23,29 +23,22 @@ options(pager = function(files, ...) {
 options("webr.evaluate.handler" = evaluate::new_output_handler(
   value = function(x, visible) {
     knit_options = list(screenshot.force = FALSE)
-    knit_print.df <- function (x) {
-      method <- getOption("webr.render.df")
-      if (method == "kable") {
-        knitr::knit_print(knitr::kable(x))
-      } else if (method == "paged-table") {
-        knitr::knit_print(rmarkdown::paged_table(x))
-      } else if (method == "gt") {
-        knitr::knit_print(gt::gt(x))
-      } else if (method == "gt-interactive") {
-        knitr::knit_print(x |> gt::gt() |> gt::opt_interactive())
-      } else if (method == "reactable") {
-        knitr::knit_print(reactable::reactable(x), options = knit_options)
-      } else {
-        knitr::knit_print(x, options = knit_options)
-      }
-    }
-
     res <- if (visible) {
-      withVisible(if ("data.frame" %in% class(x)) {
-        knit_print.df(x)
-      } else {
-        knitr::knit_print(x, options = knit_options)
-      })
+      withVisible(
+        knitr::knit_print(
+          if (inherits(x, "data.frame")) {
+            switch(
+              getOption("webr.render.df"),
+              "kable" = knitr::kable(x),
+              "paged-table" = markdown::paged_table(x),
+              "gt" = gt::gt(x),
+              "gt-interactive" = gt::opt_interactive(gt::gt(x)),
+              "reactable" = reactable::reactable(x),
+              x
+            )
+          } else x,
+        options = knit_options)
+      )
     } else list(value = x, visible = FALSE)
     class(res) <- "result"
     res

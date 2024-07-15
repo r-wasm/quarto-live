@@ -43,3 +43,47 @@ if (!is.function(.result)) {
 }
 ```
 
+## Find any result in learner output
+
+Write R code that returns 2468 somewhere, even invisibly:
+
+```{webr}
+#| caption: Sample Exercise 2
+#| exercise: example_2
+123
+invisible(2468)
+456
+```
+
+```{webr}
+#| exercise: example_2
+#| check: true
+results <- Filter(\(x) inherits(x, "result"), .evaluate_result)
+if(is.null(Find(\(x) x$value == 2468, results))) {
+  list(correct = FALSE, message = "Incorrect, sorry.")
+} else {
+  list(correct = TRUE, message = "Correct!")
+}
+```
+
+## Feedback for a specific learner error
+
+```{webr}
+#| caption: Sample Exercise 3
+#| exercise: example_3
+123 + "456"
+```
+
+```{webr}
+#| exercise: example_3
+#| check: true
+errors <- Filter(\(x) inherits(x, "error"), .evaluate_result)
+this_error <- Filter(\(x) x$message == "non-numeric argument to binary operator", errors)
+if (length(this_error) > 0) {
+  list(
+    correct = FALSE,
+    type = "info",
+    message = "Be careful! In R you cannot add a number and a character string!"
+  )
+}
+```
