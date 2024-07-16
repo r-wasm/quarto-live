@@ -31,7 +31,7 @@
   border-top-left-radius: 5px;
 }
 
-.exercise-loading-details + .exercise-loading-details::before {
+.exercise-loading-details+.exercise-loading-details::before {
   content: "/ ";
 }
 
@@ -171,67 +171,86 @@
   --exercise-editor-hl-wa: var(--quarto-hl-wa-color, #dcc6e0);
 }
 
-pre > code.sourceCode span.tok-keyword {
+pre>code.sourceCode span.tok-keyword,
+.exercise-editor-body>.cm-editor span.tok-keyword {
   color: var(--exercise-editor-hl-kw);
 }
 
-pre > code.sourceCode span.tok-operator {
+pre>code.sourceCode span.tok-operator,
+.exercise-editor-body>.cm-editor span.tok-operator {
   color: var(--exercise-editor-hl-op);
 }
 
-pre > code.sourceCode span.tok-definitionOperator {
+pre>code.sourceCode span.tok-definitionOperator,
+.exercise-editor-body>.cm-editor span.tok-definitionOperator {
   color: var(--exercise-editor-hl-ot);
 }
 
-pre > code.sourceCode span.tok-compareOperator {
+pre>code.sourceCode span.tok-compareOperator,
+.exercise-editor-body>.cm-editor span.tok-compareOperator {
   color: var(--exercise-editor-hl-ot);
 }
 
-pre > code.sourceCode span.tok-attributeName {
+pre>code.sourceCode span.tok-attributeName,
+.exercise-editor-body>.cm-editor span.tok-attributeName {
   color: var(--exercise-editor-hl-at);
 }
 
-pre > code.sourceCode span.tok-controlKeyword {
+pre>code.sourceCode span.tok-controlKeyword,
+.exercise-editor-body>.cm-editor span.tok-controlKeyword {
   color: var(--exercise-editor-hl-cf);
 }
 
-pre > code.sourceCode span.tok-comment {
+pre>code.sourceCode span.tok-comment,
+.exercise-editor-body>.cm-editor span.tok-comment {
   color: var(--exercise-editor-hl-co);
 }
 
-pre > code.sourceCode span.tok-string {
+pre>code.sourceCode span.tok-string,
+.exercise-editor-body>.cm-editor span.tok-string {
   color: var(--exercise-editor-hl-st);
 }
 
-pre > code.sourceCode span.tok-string2 {
+pre>code.sourceCode span.tok-string2,
+.exercise-editor-body>.cm-editor span.tok-string2 {
   color: var(--exercise-editor-hl-ss);
 }
 
-pre > code.sourceCode span.tok-variableName {
+pre>code.sourceCode span.tok-variableName,
+.exercise-editor-body>.cm-editor span.tok-variableName {
   color: var(--exercise-editor-hl-va);
 }
 
-pre > code.sourceCode span.tok-bool,
-pre > code.sourceCode span.tok-literal,
-pre > code.sourceCode span.tok-separator {
+pre>code.sourceCode span.tok-bool,
+pre>code.sourceCode span.tok-literal,
+pre>code.sourceCode span.tok-separator,
+.exercise-editor-body>.cm-editor span.tok-bool,
+.exercise-editor-body>.cm-editor span.tok-literal,
+.exercise-editor-body>.cm-editor span.tok-separator {
   color: var(--exercise-editor-hl-cn);
 }
 
-pre > code.sourceCode span.tok-bool,
-pre > code.sourceCode span.tok-literal {
+pre>code.sourceCode span.tok-bool,
+pre>code.sourceCode span.tok-literal,
+.exercise-editor-body>.cm-editor span.tok-bool,
+.exercise-editor-body>.cm-editor span.tok-literal {
   color: var(--exercise-editor-hl-cn);
 }
 
-pre > code.sourceCode span.tok-number,
-pre > code.sourceCode span.tok-integer {
+pre>code.sourceCode span.tok-number,
+pre>code.sourceCode span.tok-integer,
+.exercise-editor-body>.cm-editor span.tok-number,
+.exercise-editor-body>.cm-editor span.tok-integer {
   color: var(--exercise-editor-hl-dv);
 }
 
-pre > code.sourceCode span.tok-function-variableName {
+pre>code.sourceCode span.tok-function-variableName,
+.exercise-editor-body>.cm-editor span.tok-function-variableName {
   color: var(--exercise-editor-hl-fu);
 }
 
-pre > code.sourceCode span.tok-function-attributeName {
+pre>code.sourceCode span.tok-function-attributeName,
+.exercise-editor-body>.cm-editor span.tok-function-attributeName {
   color: var(--exercise-editor-hl-at);
 }
 
@@ -437,7 +456,7 @@ div.cell-output-pyodide th {
 }
 
 /* Hints and solutions */
-.tab-pane>.exercise-tab-pane-header + div.webr-ojs-exercise {
+.tab-pane>.exercise-tab-pane-header+div.webr-ojs-exercise {
   margin-top: 1em;
 }
 

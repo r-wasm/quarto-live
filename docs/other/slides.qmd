@@ -9,6 +9,16 @@ webr:
     fig-height: 432
 ---
 
+## Read Only
+
+```{webr}
+#| edit: false
+mod <- lm(mpg ~ cyl, data = mtcars)
+summary(mod)
+```
+
+---
+
 ```{webr}
 #| runbutton: false
 #| startover: false
