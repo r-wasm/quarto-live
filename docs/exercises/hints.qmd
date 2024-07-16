@@ -21,12 +21,16 @@ starwars |> ______
 ```
 
 
-::: { .hint exercise="example_2" }
+::: { .hint exercise="example_2"}
+::: { .callout-tip collapse="false"}
+## Hint 1
+
 Consider using the `filter()` function from `dplyr`.
 
 ```r
 starwars |> filter(______)
 ```
+:::
 :::
 
 

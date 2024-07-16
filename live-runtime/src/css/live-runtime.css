@@ -19,6 +19,26 @@
   --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.4);
 }
 
+/* Minimal styling for hints and solution blocks */
+.webr-ojs-exercise.exercise-solution,
+.webr-ojs-exercise.exercise-hint {
+  border: var(--exercise-default) 1px solid;
+  border-radius: 5px;
+  padding: 1rem;
+}
+
+.exercise-hint .exercise-hint,
+.exercise-solution .exercise-solution {
+  border: none;
+  padding: 0;
+}
+
+.webr-ojs-exercise.exercise-solution>.callout,
+.webr-ojs-exercise.exercise-hint>.callout {
+  margin: -1rem;
+  border: 0;
+}
+
 /* Client-side loading indicator */
 #exercise-loading-indicator {
   position: fixed;
@@ -453,6 +473,10 @@ div.cell-output-pyodide tr {
 
 div.cell-output-pyodide th {
   font-weight: bold;
+}
+
+div.cell-output-display canvas {
+  background-color: #FFF;
 }
 
 /* Hints and solutions */
