@@ -310,7 +310,7 @@ export class WebREvaluator implements ExerciseEvaluator {
           // This is likely a standard R condition
           const message = await cnd.get("message");
           const call = await cnd.get("call") as RCall;
-          callInfo = await call.type() === "null" ? ': ' : ` in \`${await call.deparse()}\``;
+          callInfo = await isRCall(call) ? ` in \`${await call.deparse()}\`` : ': ';
           body = `${heading}: ${await message.toString()}`;
         } else {
           // This is likely an rlang condition
