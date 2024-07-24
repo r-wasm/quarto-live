@@ -8,12 +8,15 @@ webr:
     - ggplot2
 ---
 
+{{< include _extensions/live/_knitr.qmd >}}
+
 ## Interactive code blocks
 
 ```{.webr}
 library(ggplot2)
-ggplot(mtcars, aes(hp, mpg, colour = class)) + 
-  geom_point()
+ggplot(mtcars, aes(hp, mpg)) +
+  geom_point() +
+  geom_smooth(formula = y ~ x, method = "loess")
 ```
 
 
