@@ -1,12 +1,12 @@
 /* highlighting-css from Quarto src/resources/formats/html/pandoc/html.styles */
 /* TODO: Enable highlighting-css switch for {webr} blocks, removing need for this. */ 
-pre > code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0 !important; }
-pre.sourceCode { margin: 0 !important; }
+.observablehq pre > code.sourceCode { white-space: pre; position: relative; }
+.observablehq div.sourceCode { margin: 1em 0 !important; }
+.observablehq pre.sourceCode { margin: 0 !important; }
 @media screen {
-  div.sourceCode { overflow: auto; }
+  .observablehq div.sourceCode { overflow: auto; }
 }
 @media print {
-  pre > code.sourceCode { white-space: pre-wrap; }
-  pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+  .observablehq pre > code.sourceCode { white-space: pre-wrap; }
+  .observablehq pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
