@@ -56,15 +56,7 @@ plot(fit)
 
 The `quarto-live` extension works with both the `knitr` and `jupyter` engine. If Quarto fails to run, showing errors about a missing `jypyter` or `python` installation, explicitly select the `knitr` engine using `engine: knitr`.
 
-Additionally, when using `knitr`, the following Quarto shortcode should be added to your document (after the yaml header):
-
-```
-{{< include ./_extensions/live/_knitr.qmd >}}
-```
-
-**TODO:** Once public, this will become `./_extensions/r-wasm/live/_knitr.qmd` instead.
-
-Or, alternatively, ensure `quarto-live` code block types are given with a leading `.` character:
+Additionally, when using the `knitr` engine, ensure `quarto-live` code block types are given with a leading `.` character:
 
 ````
 ```{.webr}

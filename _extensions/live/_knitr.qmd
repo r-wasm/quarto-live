@@ -1,12 +1,9 @@
 ```{r echo=FALSE}
-# Setup knitr for handling {webr} blocks
+# Setup knitr for handling {webr} and {pyodide} blocks
+# TODO: With quarto-dev/quarto-cli#10169, we can implement this in a filter
 knitr::knit_engines$set(webr = function(options) {
   knitr:::one_string(c(
-    paste0(
-      "```{.",
-      gsub(',(?=(?:[^\'"\n]*"[^\'"\n]*")*[^\'"\n]*$)', "", options$original.params.src, perl = TRUE),
-      "}"
-    ),
+    "```{webr}",
     options$yaml.code,
     options$code,
     "```"

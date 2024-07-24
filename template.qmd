@@ -1,17 +1,94 @@
 ---
-title: Quarto Live
+title: Quarto Live R Template
 format: live-html
 engine: knitr
 webr:
   packages:
+    - dplyr
     - ggplot2
 ---
 
+## Interactive code blocks
 
-{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}
-
-```{webr}
+```{.webr}
 library(ggplot2)
-ggplot(mpg, aes(displ, hwy, colour = class)) + 
+ggplot(mtcars, aes(hp, mpg, colour = class)) + 
   geom_point()
 ```
+
+
+## Interactive exercises
+
+Take the `starwars` dataset and filter so that only characters of species "Droid" are returned.
+
+```{.webr}
+#| caption: Sample Exercise
+#| exercise: ex_1
+starwars |> ______
+```
+
+```{.webr}
+#| setup: true
+#| exercise: ex_1
+library(dplyr)
+```
+
+::::: { .hint exercise="ex_1"}
+::: { .callout-tip collapse="false"}
+## Hint 1
+
+Consider using the `filter()` function from `dplyr`.
+
+```r
+starwars |> filter(______)
+```
+:::
+:::::
+
+::: { .solution exercise="ex_1" }
+
+**Fully worked solution:**
+
+Use the `filter()` function from `dplyr`:
+
+```r
+starwars |>                                 #<1>
+    filter(species == "Droid")              #<2>
+```
+1. Take the `starwars` dataset, and then,
+2. Filter for the "Droid" species.
+
+:::
+
+
+## Read-only and hidden code blocks
+
+```{.webr}
+#| edit: false
+mod <- lm(mpg ~ cyl, data = mtcars)
+summary(mod)
+```
+
+```{.webr}
+#| edit: false
+#| output: false
+foo <- c(1, 2, 3)
+bar <- c(4, 5, 6)
+```
+
+
+## Reactive code block inputs
+
+```{ojs}
+//| echo: false
+viewof n = Inputs.range([10, 300], { step: 1, label: 'n' })
+```
+
+```{.webr}
+#| startover: false
+#| runbutton: false
+#| input:
+#|   - n
+2 * n
+```
+
