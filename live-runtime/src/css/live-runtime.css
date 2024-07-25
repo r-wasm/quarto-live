@@ -3,7 +3,7 @@
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #212529));
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #ffffff));
   --exercise-primary-rgb: var(--bs-primary-rgb, 13, 110, 253);
-  --exercise-default: var(--bs-default, #dee2e6);
+  --exercise-gray: var(--bs-gray-300, #dee2e6);
   --exercise-cap-bg: var(--bs-light-bg-subtle, #f8f8f8);
   --exercise-line-bg: rgba(var(--exercise-primary-rgb), 0.05);
   --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.1);
@@ -13,7 +13,7 @@
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #ffffff));
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #222222));
   --exercise-primary-rgb: var(--bs-primary-rgb, 55, 90, 127);
-  --exercise-default: var(--bs-default, #434343);
+  --exercise-gray: var(--bs-gray-700, #434343);
   --exercise-cap-bg: var(--bs-card-cap-bg, #505050);
   --exercise-line-bg: rgba(var(--exercise-primary-rgb), 0.2);
   --exercise-line-gutter-bg: rgba(var(--exercise-primary-rgb), 0.4);
@@ -22,7 +22,7 @@
 /* Minimal styling for hints and solution blocks */
 .webr-ojs-exercise.exercise-solution,
 .webr-ojs-exercise.exercise-hint {
-  border: var(--exercise-default) 1px solid;
+  border: var(--exercise-gray) 1px solid;
   border-radius: 5px;
   padding: 1rem;
 }
@@ -46,7 +46,7 @@
   right: 0;
   font-size: 1.2rem;
   padding: 0.2rem 0.75rem;
-  border: 1px solid var(--exercise-default);
+  border: 1px solid var(--exercise-gray);
   background-color: var(--exercise-cap-bg);
   border-top-left-radius: 5px;
 }
@@ -124,7 +124,7 @@
 .card.exercise-editor .cm-gutters {
   background-color: var(--exercise-cap-bg);
   color: var(--exercise-main-color);
-  border-right: 1px solid var(--exercise-default);
+  border-right: 1px solid var(--exercise-gray);
 }
 
 /* Syntax Highlighting */
