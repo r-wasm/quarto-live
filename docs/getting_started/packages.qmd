@@ -1,18 +1,148 @@
 ---
-title: Packages
+title: Loading and Using Packages
+subtitle: Integrating R and Python packages into live Quarto HTML documents.
+format: live-html
+engine: knitr
+toc: true
+pyodide:
+  packages:
+   - https://cdn.jsdelivr.net/pyodide/v0.26.1/full/decorator-5.1.1-py3-none-any.whl
+---
+
+{{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
+
+Both webR and Pyodide supports downloading and using additional extension packages at runtime. However, by default, `quarto-live` avoids downloading additional packages automatically. There are two supported ways to download packages:
+
+ * Installing packages using interactive code blocks.
+ * Installing packages as the document loads.
+
+## Installing packages
+
+### Interactively
+
+:::: {.panel-tabset}
+
+## R
+
+Install R packages interactively using the standard `install.packages()` R function.
+
+WebR is configured to download R packages from the [webR public package repository](https://repo.r-wasm.org), and the repository website lists all R packages provided for WebAssembly.
+
+::: {.callout-note}
+
+By default, webR outputs information about each package installed in this way. These messages can be suppressed using the `quiet = TRUE` named argument.
+
+:::
+
+```{webr}
+install.packages("dplyr", quiet = TRUE)
+library(dplyr)
+
+starwars |>
+  filter(height < 100) |>
+  select(name, height, mass)
+```
+
+
+## Python
+
+Pyodide ships with the [micropip](https://micropip.pyodide.org/en/stable/project/usage.html) package, which can be used to install WebAssembly compatible Python packages provided by the Pyodide team using the [`micropip.install()`](https://micropip.pyodide.org/en/stable/project/api.html) function.
+
+If a package is not found in the Pyodide repository it will be loaded from PyPI. Note that `micropip` can only load pure Python wheels or `wasm32/emscripten` WebAssembly wheels.
+
+::: {.callout-note}
+
+The `micropip.install()` function is asynchronous. It must be awaited before the package can be loaded.
+
+:::
+
+```{pyodide}
+import micropip as mp
+await mp.install("pandas")
+
+import pandas as pd
+
+pd.DataFrame({
+  "foo": ["az", "by", "cx", "dw"],
+  "bar": [3, 14, 15, 92],
+  "baz": [True, False, True, None],
+})
+```
+
+::::
+
+### As the document loads
+
+To install packages as part of the document WebAssembly startup process, add a `packages` key to your document's YAML header, under the key corresponding to your chosen WebAssembly engine.
+
+:::: {.panel-tabset}
+
+## R
+
+```{.yaml filename="example-r.qmd"}
+---
 format: live-html
 webr:
   packages:
     - dplyr
+    - palmerpenguins
+    - ggplot2
 ---
-
-```{webr}
-#| edit: false
-#| output: false
-library(dplyr)
 ```
 
-```{webr}
-starwars |>
-  filter(species == "Droid")
+## Python
+
+```{.yaml filename="example-py.qmd"}
+---
+format: live-html
+pyodide:
+  packages:
+    - matplotlib
+    - numpy
+    - seaborn
+---
 ```
+
+::::
+
+## Custom repositories
+
+Many R and Python packages that are not available from the default webR and Pyodide repositories can still be used with `quarto-live`, with a little extra setup work.
+
+:::: {.panel-tabset}
+
+## R
+
+Custom R packages can be compiled for WebAssembly using the [{rwasm}](https://r-wasm.github.io/rwasm/) R package. Once an R package has been compiled for Wasm, it should be hosted in the form of a CRAN-like repository.
+
+The simplest way to do this to make use of the [R-universe](https://r-universe.dev) package repository service. R-universe will build WebAssembly versions of your R packages automatically for your own personal CRAN-like repository. This allows you to host custom R package binaries not just for webR, but also for the macOS, Linux, and Windows versions of R.
+
+Whichever method you choose, once you have a CRAN-like repository that contains WebAssembly binaries make a note of its URL. It should be included as part of a `repos` array, under the `webr` key, in your document's YAML header.
+
+```{.yaml filename="example-r.qmd"}
+---
+format: live-html
+webr:
+  packages:
+    - cli
+  repos:
+    - https://r-lib.r-universe.dev
+---
+```
+
+## Python
+
+If a package is not found in the Pyodide repository it will be loaded from PyPI. The `micropip` package can load PyPI packages for Pyodide if they are built as pure Python wheels. Python packages containing compiled code should be built as a `wasm32/emscripten` WebAssembly wheel, following [build instructions](https://pyodide.org/en/stable/development/new-packages.html) provided by the Pyodide team.
+
+If you don't want to host custom Python packages on PyPi, `micropip` can also install wheels directly from URL. Host your Python package wheel on a static web hosting service, such as GitHub Pages. Then, include the full URL to your package in the `packages` key in your document's YAML header.
+
+```{.yaml filename="example-py.qmd"}
+---
+format: live-html
+pyodide:
+  packages:
+   - https://username.github.io/mypackage/mypackage-0.0-1-py3-none-any.whl
+---
+```
+
+::::

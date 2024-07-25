@@ -2,6 +2,7 @@
 title: Interactive Code Blocks
 subtitle: Dynamic code evaluation in Quarto HTML documents, powered by WebAssembly.
 format: live-html
+engine: knitr
 toc: true
 ---
 
