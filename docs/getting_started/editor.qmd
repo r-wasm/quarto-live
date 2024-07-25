@@ -1,6 +1,6 @@
 ---
 title: Interactive Code Blocks
-subtitle: Dynamic code evaluation in Quarto HTML documents, powered by WebAssembly.
+subtitle: Dynamic evaluation of user provided code and data visualisation
 format: live-html
 engine: knitr
 toc: true
@@ -8,7 +8,7 @@ toc: true
 
 {{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
 
-The `quarto-live` extension provides WebAssembly powered cells that can be used in Quarto HTML documents to provide real-time evaluation of user provided code and data visualisation.
+The `quarto-live` extension provides WebAssembly powered cells that can be used in Quarto HTML documents to provide dynamic evaluation of user provided code and data visualisation.
 
 ## Interactive editor
 

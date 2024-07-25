@@ -1,6 +1,6 @@
 ---
 title: Loading and Using Packages
-subtitle: Integrating R and Python packages into live Quarto HTML documents.
+subtitle: Integrating R and Python packages into interactive Quarto documents
 format: live-html
 engine: knitr
 toc: true

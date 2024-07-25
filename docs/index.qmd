@@ -1,5 +1,6 @@
 ---
 title: Introduction
+subtitle: WebAssembly powered code blocks and exercises for Quarto HTML documents
 format: live-html
 engine: knitr
 toc: true
@@ -7,13 +8,11 @@ toc: true
 
 {{< include _extensions/r-wasm/live/_knitr.qmd >}}
 
+Embed WebAssembly powered code blocks and exercises for both the R and Python languages into [Quarto](https://quarto.org) documents with HTML-based output formats.
+
 ## Quarto Live
 
-Embed WebAssembly powered code blocks and exercises for both the R and Python languages into [Quarto](https://quarto.org) documents using HTML-based output formats.
-
-The [webR](https://docs.r-wasm.org/webr/latest/) and [Pyodide](https://pyodide.org/en/stable/) WebAssembly engines are used to dynamically execute code in the user's web browser, so only a static web service (such as [GitHub Pages](https://pages.github.com), [Quarto Pub](https://quartopub.com), or [Netlify](https://www.netlify.com)) is required.
-
-This extension provides:
+The `quarto-live` extension provides:
 
   * Interactive R and Python code blocks.
 
@@ -25,16 +24,19 @@ This extension provides:
 
   * Integration with OJS so that interactive code cells update reactively with `ojs` cells.
 
-## Demo
+The [webR](https://docs.r-wasm.org/webr/latest/) and [Pyodide](https://pyodide.org/en/stable/) WebAssembly engines are used to dynamically execute code in the user's web browser, so only a static web service (such as [GitHub Pages](https://pages.github.com), [Quarto Pub](https://quartopub.com), or [Netlify](https://www.netlify.com)) is required.
+
+### Demo
 
 ```{webr}
 #| autorun: false
+#| completion: true
 mod <- lm(waiting ~ eruptions, data = faithful)
 plot(faithful, main = "Old Faithful Geyser Data")
 summary(mod)
 ```
 
-## Installation
+### Installation
 
 To use this extension, run the following command in a terminal with a Quarto document as the working directory:
 
@@ -44,7 +46,7 @@ quarto add r-wasm/quarto-live
 
 Once installed, the extension can be used with Quarto documents within this project. 
 
-## Usage
+### Usage
 
 First set the format for your Quarto document as a `live` variant in the `yaml` header:
 
