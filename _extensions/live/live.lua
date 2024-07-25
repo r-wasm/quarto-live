@@ -1,8 +1,8 @@
 local tinyyaml = require "resources/tinyyaml"
 
 local cell_options = {
-  webr = { edit = true },
-  pyodide = { edit = true },
+  webr = { eval = true },
+  pyodide = { eval = true },
 }
 
 local live_options = {
@@ -220,6 +220,11 @@ function PyodideCodeBlock(code)
     block_input = input,
   }
 
+  -- If we're not executing anything, there's no point showing an editor
+  if (block.attr.edit == nil) then
+    block.attr.edit = block.attr.eval
+  end
+
   -- Render appropriate OJS for the type of client-side block we're working with
   local ojs_source = nil
   if (block.attr.exercise) then
@@ -339,6 +344,11 @@ function WebRCodeBlock(code)
     block_id = block_id,
     block_input = input,
   }
+
+  -- If we're not executing anything, there's no point showing an editor
+  if (block.attr.edit == nil) then
+    block.attr.edit = block.attr.eval
+  end
 
   -- Render appropriate OJS for the type of client-side block we're working with
   local ojs_source = nil
