@@ -17,7 +17,7 @@ InteractiveShell().instance()
 with capture.capture_output() as output:
   value = None
   try:
-    value = pyodide.code.eval_code(code, globals = environment) # type: ignore[attr-defined]
+    value = await pyodide.code.eval_code_async(code, globals = environment) # type: ignore[attr-defined]
   except Exception as err:
     print(err, file=sys.stderr)
   if (value is not None):
