@@ -2,7 +2,7 @@ import { WebREnvironmentManager } from './environment';
 import { Indicator } from './indicator';
 import { highlightR } from './highlighter';
 import { renderHtmlDependency } from './render';
-import { isRList, isRObject, isRFunction, isRCall, isRNull } from 'webr';
+import { isRList, isRObject, isRFunction, isRCall, isRNull, isRRaw } from 'webr';
 import type {
   RCall,
   RCharacter,
@@ -25,6 +25,7 @@ import {
   ExerciseEvaluator,
   OJSElement
 } from "./evaluate";
+import { arrayBufferToBase64 } from './utils';
 
 declare global {
   interface Window {
@@ -91,7 +92,7 @@ export class WebREvaluator implements ExerciseEvaluator {
     const shelter = await this.shelter;
     shelter.purge();
   }
-  
+
   getSetupCode(): string | undefined {
     const exId = this.options.exercise;
     const setup = document.querySelectorAll(
@@ -358,6 +359,17 @@ export class WebREvaluator implements ExerciseEvaluator {
       }
     };
 
+    const appendDataUrlImage = async (mime: string, data: string) => {
+      if (options.output) {
+        const outputDiv = document.createElement("div");
+        const imageDiv = document.createElement("img");
+        outputDiv.className = "cell-output-display cell-output-pyodide";
+        imageDiv.src = `data:${mime};base64, ${data}`;
+        outputDiv.appendChild(imageDiv);
+        container.appendChild(outputDiv);
+      }
+    };
+
     const shelter = await this.shelter;
     const result = await value.toArray() as RObject[];
     for (let i = 0; i < result.length; i++) {
@@ -405,11 +417,27 @@ export class WebREvaluator implements ExerciseEvaluator {
               height = Number(this.options["fig-height"]);
             }
 
-            const capturePlot = await shelter.captureR("replayPlot(plot)", {
-              captureGraphics: { width, height },
-              env: { plot: result[i] },
-            });
-            appendImage(capturePlot.images[0]);
+            if (typeof OffscreenCanvas !== "undefined") {
+              const capturePlot = await shelter.captureR("replayPlot(plot)", {
+                captureGraphics: { width, height },
+                env: { plot: result[i] },
+              });
+              appendImage(capturePlot.images[0]);
+            } else {
+              // Fallback to cairo graphics
+              const data = await shelter.evalR(`
+                tmp_dir <- tempdir()
+                on.exit(unlink(tmp_dir, recursive = TRUE))
+                filename <- paste0(tmp_dir, ".webr-plot.png")
+                png(file = filename, width = width, height = height)
+                replayPlot(plot)
+                dev.off()
+                filesize <- file.info(filename)[["size"]]
+                readBin(filename, "raw", n = filesize)
+              `, { env: { plot: result[i], width, height } }) as RRaw;
+              const bytes = await data.toTypedArray();
+              appendDataUrlImage("image/png", arrayBufferToBase64(bytes));
+            }
           }
           break;
         }
@@ -459,15 +487,53 @@ export class WebREvaluator implements ExerciseEvaluator {
         try {
           const width = await this.webR.evalRNumber('72 * getOption("webr.fig.width")');
           const height = await this.webR.evalRNumber('72 * getOption("webr.fig.height")');
+          let images: (ImageBitmap | HTMLImageElement)[] = [];
+
+          const hasOffscreenCanvas = typeof OffscreenCanvas !== "undefined";
+          if (!hasOffscreenCanvas) {
+            // Fallback to cairo graphics
+            this.webR.evalRVoid(`
+              while (dev.cur() > 1) dev.off()
+              options(device = function() {
+                png(file = "/tmp/.webr-plot.png", width = width, height = height)
+              })
+            `, {
+              env: { width, height },
+            });
+          }
+
           const capture = await robj.capture(
             {
               withAutoprint: true,
-              captureGraphics: { width, height },
+              captureGraphics: hasOffscreenCanvas ? { width, height } : false
             },
             ...args
           );
-          if (capture.images.length) {
-            const el = await this.asOjs(capture.images[capture.images.length - 1]);
+
+          if (hasOffscreenCanvas) {
+            images = capture.images;
+          } else {
+            // Fallback to canvas graphics
+            const data = await this.webR.evalR(`
+              while (dev.cur() > 1) dev.off()
+              options(device = getOption("webr.device"))
+              filename <- "/tmp/.webr-plot.png"
+              if (file.exists(filename)) {
+                filesize <- file.info(filename)[["size"]]
+                readBin(filename, "raw", n = filesize)
+              } else NULL
+            `) as RRaw | RNull;
+
+            if (isRRaw(data)) {
+              const bytes = await data.toTypedArray();
+              const imageDiv = document.createElement("img");
+              imageDiv.src = `data:image/png;base64, ${arrayBufferToBase64(bytes)}`;
+              images = [ imageDiv ];
+            }
+          }
+
+          if (images.length) {
+            const el = await this.asOjs(images[images.length - 1]);
             el.value = await this.asOjs(capture.result);
             return el;
           }
@@ -488,11 +554,11 @@ export class WebREvaluator implements ExerciseEvaluator {
         if (classes.includes('knit_asis')) {
           const html = await robj.toString();
           const meta = await (await robj.attrs()).get("knit_meta") as RList | RNull;
-  
+
           const outputDiv = document.createElement("div");
           outputDiv.className = "cell-output";
           outputDiv.innerHTML = html;
-  
+
           // Dynamically load any dependencies into page (await & maintain ordering)
           if (isRList(meta)) {
             const deps = await meta.toArray();

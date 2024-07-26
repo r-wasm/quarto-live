@@ -8,11 +8,12 @@ ojs_define <- function(...) {
 
 # webR graphics device settings
 options(webr.fig.width = 7, webr.fig.height = 5)
-options(device = function(...) {
+options(webr.device = function(...) {
   args <- list(bg = "white", ...)
   args <- args[!duplicated(names(args))]
   do.call(webr::canvas, args)
 })
+options(device = getOption("webr.device"))
 
 # Custom pager for displaying e.g. help pages
 options(pager = function(files, ...) {
