@@ -6,6 +6,8 @@ import sys
 try:
   import matplotlib.pyplot as plt
   plt.close("all")
+  plt.rcParams["figure.figsize"] = (width, height) # type: ignore[attr-defined]
+  plt.rcParams["figure.dpi"] = dpi # type: ignore[attr-defined]
 except ModuleNotFoundError:
   pass
 

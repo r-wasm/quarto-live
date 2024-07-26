@@ -178,8 +178,22 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     }
 
     await this.pyodide.loadPackagesFromImports(code);
+    let [width, height, dpi] = [7, 5, 100];
+    if ("fig-width" in this.options) {
+      width = Number(this.options["fig-width"]);
+    }
+    if ("fig-height" in this.options) {
+      height = Number(this.options["fig-height"]);
+    }
+    if ("fig-dpi" in this.options) {
+      dpi = Number(this.options["fig-dpi"]);
+    }
+
     const locals = await this.pyodide.toPy({
       code,
+      dpi,
+      width,
+      height,
       environment: await this.envManager.get(this.envLabels[envLabel]),
     });
 

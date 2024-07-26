@@ -410,11 +410,11 @@ export class WebREvaluator implements ExerciseEvaluator {
           if (classes.includes('recordedplot')) {
             let width = await this.webR.evalRNumber('72 * getOption("webr.fig.width")');
             if ("fig-width" in this.options) {
-              width = Number(this.options["fig-width"]);
+              width = 72 * Number(this.options["fig-width"]);
             }
             let height = await this.webR.evalRNumber('72 * getOption("webr.fig.height")');
             if ("fig-height" in this.options) {
-              height = Number(this.options["fig-height"]);
+              height = 72 * Number(this.options["fig-height"]);
             }
 
             if (typeof OffscreenCanvas !== "undefined") {
