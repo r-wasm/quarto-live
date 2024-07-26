@@ -265,23 +265,3 @@ An interactive R code block, with an example of fitting a linear model.
 :::
 
 See @lst-ref for details.
-
-## List of code cell options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `autorun` | `true` | Evaluate initial code block contents automatically? |
-| `completion` | `false` | Show code completion and suggestions in editor? |
-| `echo` | `false` | Show source code in output display? |
-| `edit` | `true` | Show the code editor? If `false`, a read-only code block is shown. |
-| `envir` | `"global"` | Label for execution environment. |
-| `error` | `true` | Continue execution after an error? |
-| `eval` | `true` | Evaluate code using WebAssembly engine? |
-| `include` | `true` | Include this code block in the document? |
-| `localstorage` | `false` | Persist changes in the editor to browser's local storage? |
-| `output` | `true` | Display execution output in the document? |
-| `runbutton` | `true` | Show the "Run Code" button? If `false`, code is immediately evaluated. |
-| `startover` | `true` | Show the "Start Over" button? |
-| `timelimit` | `30` | Execution time limit in seconds. |
-| `warning` | `true` | Show warning messages? |
-: {tbl-colwidths="[10,10,80]"}

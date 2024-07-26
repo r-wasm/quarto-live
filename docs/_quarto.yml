@@ -4,11 +4,15 @@ project:
 website:
   title: "Quarto Live Documentation"
   description: "Interactive code blocks and exercises, powered by WebAssembly."
+  repo-url: https://github.com/r-wasm/quarto-live
+  repo-actions: [edit, issue]
+  repo-subdir: "docs"
   sidebar:
     contents:
       - href: index.qmd
       - section: Getting Started
         contents:
+          - getting_started/installation.qmd
           - getting_started/editor.qmd
           - getting_started/packages.qmd
           - getting_started/plotting.qmd
@@ -36,6 +40,9 @@ website:
           - other/html.qmd
           - other/python.qmd
           - other/slides.qmd
+      - section: Reference
+        contents:
+          - reference/options.qmd
 
 theme:
   light: cosmo
