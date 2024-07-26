@@ -1,61 +1,135 @@
 ---
-title: Managing environments
+title: Managing Environments
 format: live-html
 ---
 
-```{webr}
-#| edit: false
-# Assignment in non-exercise blocks are put into the global environment
+## Environments in interactive code blocks
+
+For a standard (non-exercise) interactive code block, the default environment label is `"global"`, meaning "the global environment". That means that variables put into the environment in one executable code block can be accessed in by blocks that are subsequently evaluated.
+
+<details>
+<summary>Source</summary>
+````markdown
+```{{webr}}
+# Assignment in non-exercise blocks is in the global environment
 foo <- c(1, 3, 5, 7)
 ```
 
-----
-
-Exercises can see variables in both the global and exercise environment
+```{{webr}}
+# So, non-exercise blocks can share variables
+foo + 42
+```
+````
+</details>
 
 ```{webr}
-#| exercise: example_1
+# Assignment in non-exercise blocks is in the global environment
+foo <- c(1, 3, 5, 7)
+```
+
+```{webr}
+# So, non-exercise blocks can share variables
+foo + 42
+```
+
+## Exercise environments
+
+On the other hand, we often want to ensure that exercises do not interfere with one another. As such, each exercise is given a unique environment for evaluation. Exercises can access variables defined in the global environment, but not the other way around.
+
+<details>
+<summary>Source</summary>
+````markdown
+```{{webr}}
+#| exercise: ex_1
+#| setup: true
+# Assignment in setup blocks are put into the exercise environment
+bar <- c(2, 4, 6, 8)
+```
+
+```{{webr}}
+#| exercise: ex_1
+#| autorun: true
+# Exercises variables in both their own and the global environment
+foo
+bar
+```
+
+```{{webr}}
+# Evaluation in the global environment cannot see variables
+# defined in exercise environments
+bar
+```
+````
+</details>
+
+```{webr}
+#| exercise: ex_1
 #| setup: true
 # Assignment in setup blocks are put into the exercise environment
 bar <- c(2, 4, 6, 8)
 ```
 
 ```{webr}
-#| caption: Sample Exercise
-#| exercise: example_1
-# Exercise can see setup and global variables
+#| exercise: ex_1
+#| autorun: true
+# Exercises variables in both their own and the global environment
 foo
 bar
 ```
 
----
-
-Exercise environments don't leak into the global environment
-
 ```{webr}
-#| caption: Global
-# Only global environment
-foo
+# Evaluation in the global environment cannot see variables
+# defined in exercise environments
 bar
 ```
 
-----
+## Manually managing the environment
 
-Environments can be managed manually, if you wish:
+Environments can be managed manually, if you wish, by setting the `envir` cell option to a shared label. Exercises sharing the same environment label are all executed in the same environment. This can be used to create "follow-on" exercises.
+
+<details>
+<summary>Source</summary>
+````markdown
+```{{webr}}
+#| envir: myenv
+#| exercise: true
+#| autorun: true
+foo2 <- 7
+```
+
+```{{webr}}
+#| envir: myenv
+#| exercise: true
+#| autorun: true
+bar2 <- 5
+```
+
+```{{webr}}
+#| envir: myenv
+#| exercise: true
+#| autorun: true
+foo2 + bar2
+```
+````
+</details>
 
 ```{webr}
-#| edit: false
 #| envir: myenv
-foo <- 7
+#| exercise: true
+#| autorun: true
+foo2 <- 7
 ```
 
 ```{webr}
-#| edit: false
 #| envir: myenv
-bar <- 5
+#| exercise: true
+#| autorun: true
+bar2 <- 5
 ```
 
 ```{webr}
 #| envir: myenv
-foo + bar
+#| exercise: true
+#| autorun: true
+foo2 + bar2
 ```

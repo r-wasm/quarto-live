@@ -19,10 +19,7 @@ website:
       - section: Exercises and Grading
         contents:
           - exercises/exercises.qmd
-          - exercises/hints.qmd
           - exercises/environments.qmd
-          - exercises/autocomplete.qmd
-          - exercises/localstorage.qmd
           - exercises/grading.qmd
           - exercises/gradethis.qmd
           - exercises/python.qmd

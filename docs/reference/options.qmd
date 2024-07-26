@@ -4,15 +4,21 @@ title: Code cell options
 
 {{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
 
+## Interactive code blocks
+
 | Option | Default | Description |
 |--------|---------|-------------|
 | `autorun` | `true` | Evaluate initial code block contents automatically? |
+| `caption` | None | Heading text for code editor block. |
 | `completion` | `false` | Show code completion and suggestions in editor? |
 | `echo` | `false` | Show source code in output display? |
 | `edit` | `true` | Show the code editor? If `false`, a read-only code block is shown. |
 | `envir` | `"global"` | Label for execution environment. |
 | `error` | `true` | Continue execution after an error? |
 | `eval` | `true` | Evaluate code using WebAssembly engine? |
+| `fig-width` | '7' | Width of graphics output in "inches". |
+| `fig-height` | '5' | Height of graphics output in "inches". |
+| `fig-dpi` | '5' | DPI of graphics output (Pyodide only). |
 | `include` | `true` | Include this code block in the document? |
 | `localstorage` | `false` | Persist changes in the editor to browser's local storage? |
 | `output` | `true` | Display execution output in the document? |
@@ -20,6 +26,14 @@ title: Code cell options
 | `startover` | `true` | Show the "Start Over" button? |
 | `timelimit` | `30` | Execution time limit in seconds. |
 | `warning` | `true` | Show warning messages? |
-| `fig-width` | '7' | Width of graphics output in "inches". |
-| `fig-height` | '5' | Height of graphics output in "inches". |
 : {tbl-colwidths="[10,10,80]"}
+
+## Exercises
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `check` | None | Grading algorithm. |
+| `exercise` | None | Exercise label. |
+| `hint` | `false` | Create exercise hint block. |
+| `setup` | `false` | Create exercise setup block. |
+| `solution` | `false` | Create exercise solution block. |
