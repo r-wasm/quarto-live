@@ -516,7 +516,6 @@ export class WebREvaluator implements ExerciseEvaluator {
             // Fallback to canvas graphics
             const data = await this.webR.evalR(`
               while (dev.cur() > 1) dev.off()
-              options(device = getOption("webr.device"))
               filename <- "/tmp/.webr-plot.png"
               if (file.exists(filename)) {
                 filesize <- file.info(filename)[["size"]]
