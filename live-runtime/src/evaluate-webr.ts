@@ -116,6 +116,13 @@ export class WebREvaluator implements ExerciseEvaluator {
       return;
     }
 
+    // Don't evaluate code if this is an exercise and there's blanks, the grader
+    // will deal with feedback to the user asking them to fill the blanks.
+    if (this.options.exercise && this.context.code && this.context.code.match(/_{6}_*/g)) {
+      this.container.value.result = null;
+      return;
+    }
+
     // Indicate processing
     let ind = this.context.indicator;
     if (!this.context.indicator) {

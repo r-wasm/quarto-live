@@ -17,6 +17,11 @@ export class WebRGrader extends ExerciseGrader {
 
   async gradeExercise() {
     const user_code = this.context.code;
+
+    // If there's no code to be evaluated yet, return blank feedback
+    if (!user_code) {
+      return null;
+    }
   
     // Check for incomplete blanks in user code
     let checkResult = await this.blankCheck(user_code);

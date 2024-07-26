@@ -21,12 +21,10 @@ viewof _webr_editor_{{block_id}} = {
 viewof _webr_value_{{block_id}} = webROjs.process(_webr_editor_{{block_id}}, {{block_input}});
 _webr_feedback_{{block_id}} = {
   const { WebRGrader } = window._exercise_ojs_runtime;
-
-  // Return empty block if there's no code submitted yet
   const emptyFeedback = document.createElement('div');
-  const result = await _webr_value_{{block_id}}.result;
-  if (!result) return emptyFeedback;
 
   const grader = new WebRGrader(_webr_value_{{block_id}}.evaluator);
-  return await grader.gradeExercise();
+  const feedback = await grader.gradeExercise();
+  if (!feedback) return emptyFeedback;
+  return feedback;
 }
