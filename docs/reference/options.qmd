@@ -20,4 +20,6 @@ title: Code cell options
 | `startover` | `true` | Show the "Start Over" button? |
 | `timelimit` | `30` | Execution time limit in seconds. |
 | `warning` | `true` | Show warning messages? |
+| `fig-width` | '7' | Width of graphics output in "inches". |
+| `fig-height` | '5' | Height of graphics output in "inches". |
 : {tbl-colwidths="[10,10,80]"}

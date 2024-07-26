@@ -1,5 +1,6 @@
 ---
-title: Plotting and Graphics Output
+title: Plotting and Graphics
+subtitle: Dynamic data visualisation for interactive code blocks
 format: live-html
 webr:
   packages:
@@ -7,22 +8,15 @@ webr:
 pyodide:
   packages:
     - matplotlib
-    - pandas
-    - nbformat
-    - mizani==0.9.2
-    - plotnine==0.10.1
-    - seaborn
 ---
+
+The `quarto-live` extension prepares the R and Python environment with WebAssembly-compatible graphics devices, and so plotting should work out of the box.
+
+::: {.panel-tabset}
 
 ## R
 
 ```{webr}
-plot(rnorm(1e5), t='l')
-```
-
-```{webr}
-#| fig-width: 600
-#| fig-height: 150
 library(ggplot2)
 ggplot(mtcars, aes(x = wt, y = mpg, group = am)) +
   geom_point(aes(color = cyl, shape = cyl)) +
@@ -38,35 +32,91 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 x = np.random.normal(170, 10, 250)
-
 plt.hist(x)
-plt.show() 
-```
-
-```{pyodide}
-#| autorun: false
-import seaborn as sns
-sns.set_theme(style="ticks")
-
-df = sns.load_dataset("anscombe")
-sns.lmplot(
-    data=df, x="x", y="y", col="dataset", hue="dataset",
-    col_wrap=2, palette="muted", ci=None,
-    height=4, scatter_kws={"s": 50, "alpha": 1}
-)
-
 plt.show()
 ```
 
-```{pyodide}
-#| autorun: false
-from plotnine import ggplot, geom_point, aes, stat_smooth, facet_wrap
-from plotnine.data import mtcars
+:::
 
-(
-    ggplot(mtcars, aes("wt", "mpg", color="factor(gear)"))
-    + geom_point()
-    + stat_smooth(method="lm")
-    + facet_wrap("gear")
-)
+## Customising plot size
+
+Configure the plot size using the `fig-width` and `fig-height` cell options. Figure size is measured in "inches". Plots are rendered for a given dots-per-inch (DPI) with an internal 2x scaling.
+
+::: {.panel-tabset}
+
+## R
+
+When using webR, the DPI is fixed at a value of 72.
+
+### Source
+
+````markdown
+```{{webr}}
+#| fig-width: 8
+#| fig-height: 4
+plot(rnorm(10000), t = 'l')
 ```
+````
+
+### Output
+
+```{webr}
+#| fig-width: 8
+#| fig-height: 4
+plot(rnorm(10000), t = 'l')
+```
+
+## Python
+
+When using Pyodide, the default DPI value is 100, but can be configured using the `fig-dpi` cell option. 
+
+### Source
+
+````markdown
+```{{pyodide}}
+#| fig-width: 8
+#| fig-height: 4
+#| fig-dpi: 72
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.random.normal(1, 1, 10000)
+plt.plot(x, '-')
+plt.show() 
+```
+````
+
+### Output
+
+```{pyodide}
+#| fig-width: 8
+#| fig-height: 4
+#| fig-dpi: 72
+import matplotlib.pyplot as plt
+import numpy as np
+
+x = np.random.normal(1, 1, 10000)
+plt.plot(x, '-')
+plt.show() 
+```
+:::
+
+## Browser requirements
+
+For both R and Python, the default [`canvas`](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)-based graphics device requires a web browser that supports the [`OffscreenCanvas`](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas) API. Most modern and up-to-date web browsers will have this capability, but some older operating systems or mobile devices might not.
+
+### R
+
+For webR graphics, there is a fallback bitmap device based on a WebAssembly build the of [Cairo](https://www.cairographics.org/) graphics library. This works well, but will be slower and invoke an additional resource download as the page is loaded.
+
+### Python
+
+For Pyodide graphics, there is currently no bitmap fallback in place. Unsupported browsers will see the error message:
+
+```{.none style="color: var(--exercise-editor-hl-er, #AD0000);"}
+Cannot import 'OffscreenCanvas' from 'js'
+```
+
+::: {.callout-note}
+A similar bitmap graphics fallback for Python is planned for a future version of `quarto-live`.
+:::
