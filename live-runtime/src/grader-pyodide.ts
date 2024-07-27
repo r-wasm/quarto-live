@@ -136,9 +136,9 @@ export class PyodideGrader extends ExerciseGrader {
     const envir_result = await this.envManager.get(this.envLabels.result);
     const evaluate_result = this.evaluator.container.value.evaluate_result;
     const envir_prep = await this.envManager.get(this.envLabels.prep);
-    const last_value = this.evaluator.container.value.result;
+    const last_value = this.evaluator.container.value.result.value;
 
-    const args: {[key: string]: any} = {
+    const checkerEnv: {[key: string]: any} = {
       user_code: this.context.code,
       stage: "check",
       engine: "python",
@@ -148,6 +148,7 @@ export class PyodideGrader extends ExerciseGrader {
       evaluate_result,
       envir_prep,
       last_value,
+      result: last_value,
       solution_code: null,
       solution_code_all: null,
       envir_solution: null,
@@ -157,31 +158,31 @@ export class PyodideGrader extends ExerciseGrader {
     // Find the a solution for this exercise, if it exists
     const solution = await this.evaluateSolution();
     if (solution) {
-      args.solution_code = solution.code;
-      args.solution_code_all = [solution.code];
-      args.envir_solution = solution.envir;
-      args.solution = solution.result;
+      checkerEnv.solution_code = solution.code;
+      checkerEnv.solution_code_all = [solution.code];
+      checkerEnv.envir_solution = solution.envir;
+      checkerEnv.solution = solution.result;
     }
 
-    const argsObj = await this.pyodide.toPy(args);
-    await this.envManager.bind("_checker_args", argsObj, this.envLabels.grading);
+    const checkerEnvObj = await this.pyodide.toPy(checkerEnv);
+    await this.envManager.bind("_checker_env", checkerEnvObj, this.envLabels.grading);
     // const globals = await this.envManager.get(this.envLabels.grading);
     // await this.pyodide.runPythonAsync(`print(foo)`, { globals });
-    argsObj.destroy();
+    checkerEnvObj.destroy();
     const result = await this.evaluator.evaluate(
       `
         import pyodide
         feedback = None
-        if (_checker_args["check_code"]):
+        if (_checker_env["check_code"]):
           try:
             feedback = pyodide.code.eval_code(
-              _checker_args["check_code"],
-              locals = _checker_args["envir_result"]
+              _checker_env["check_code"],
+              locals = _checker_env,
             )
           except Exception as error:
             feedback = {
               'correct': False,
-              'message': 'Error while checking \`{}\`: "{}"'.format(_checker_args["label"], error),
+              'message': 'Error while checking \`{}\`: "{}"'.format(_checker_env["label"], error),
               'type': 'error'
             }
         feedback
