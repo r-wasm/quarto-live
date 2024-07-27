@@ -1,42 +1,97 @@
 ---
-title: Grading R code using `gradethis`
+title: Grading with `{gradethis}`
+subtitble: Grade solutions to R exercises using the existing `{gradethis}` R package
 format: live-html
 webr:
   packages:
     - dplyr
+  render-df: head
 ---
 
 {{< include ../_extensions/live/_knitr.qmd >}}
 {{< include ../_extensions/live/_gradethis.qmd >}}
 
-Be sure to include the following to enable grading with `gradethis` in the `knitr` engine.
-In a future release, this will no longer be required.
+## Setup
 
-```
-{{{< include [...]/_extensions/live/_knitr.qmd >}}}
-{{{< include [...]/_extensions/live/_gradethis.qmd >}}}
-```
+The `quarto-live` extension must be configured to use the `{gradethis}` R package in grading algorithms. Include the following lines after the document YAML header, but before your main content, in your Quarto document:
 
-```{webr}
-#| edit: false
-#| output: false
+````markdown
+{{{< include ./_extensions/live/_knitr.qmd >}}}
+{{{< include ./_extensions/live/_gradethis.qmd >}}}
+````
+
+::: {.callout-note}
+This configuration step is temporary. It is planned in a future version of `quarto-live` to be configurable by a key in the document YAML header instead.
+:::
+
+## Grading with a template solution
+
+First, create a `webr` exercise as normal,
+
+````{.markdown filename="gradethis.qmd"}
+```{{webr}}
+#| exercise: ex_1
+#| setup: true
 library(dplyr)
 ```
 
-## Grading R code with `gradethis`
+```{{webr}}
+#| caption: Sample Exercise
+#| exercise: ex_1
+starwars |> ______
+```
+````
+
+Next, create a solution block for your exercise. Ensure that some template solution code is given in the form of a `webr` code block, linked to your exercise and with the cell option `solution: true` set.
+
+````{.markdown filename="gradethis.qmd"}
+::: {.solution exercise="ex_1"}
+
+#### Solution
+
+Use the `distinct()` function from the `{dplyr}` package.
+
+```{{webr}}
+#| exercise: ex_1
+#| solution: true
+starwars |> distinct(hair_color)
+```
+
+:::
+````
+
+Finally, create grading algorithm using `{gradethis}` package by adding a `webr` code block with the cell option `check: true` set. The grading algorithm should call `gradethis::grade_this_code()`.
+
+The template code provided in your solution block will be compared to the user provided code to automatically generate relevant feedback.
+
+````{.markdown filename="gradethis.qmd"}
+```{{webr}}
+#| exercise: ex_1
+#| check: true
+gradethis::grade_this_code()
+```
+````
+
+#### Output
+
+```{webr}
+#| exercise: ex_1
+#| setup: true
+library(dplyr)
+```
 
 ```{webr}
 #| caption: Sample Exercise
-#| exercise: example_1
+#| exercise: ex_1
 starwars |> ______
 ```
 
-::: {.solution exercise="example_1"}
+::: {.solution exercise="ex_1"}
 
 **Solution:**
 
 ```{webr}
-#| exercise: example_1
+#| exercise: ex_1
 #| solution: true
 starwars |> distinct(hair_color)
 ```
@@ -44,10 +99,7 @@ starwars |> distinct(hair_color)
 :::
 
 ```{webr}
-#| exercise: example_1
+#| exercise: ex_1
 #| check: true
-gradethis::grade_this_code(
-#  correct = "Correct!",
-#  incorrect = "Incorrect.",
-)
+gradethis::grade_this_code()
 ```

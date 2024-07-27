@@ -22,7 +22,6 @@ website:
           - exercises/environments.qmd
           - exercises/grading.qmd
           - exercises/gradethis.qmd
-          - exercises/python.qmd
       - section: Interactive Documents and Tutorials
         contents:
           - interactive/reactivity.qmd
