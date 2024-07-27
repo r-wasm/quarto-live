@@ -1,79 +1,230 @@
 ---
-title: Reactivity in R
+title: Reactivity with OJS
+subtitle: Client-side interactive documents through integration with OJS
 format: live-html
+engine: knitr
+webr:
+  packages:
+    - palmerpenguins
+    - ggplot2
+toc: true
 ---
 
-## Define OJS variables
+{{< include ../_extensions/live/_knitr.qmd >}}
+
+```{webr}
+#| edit: false
+#| output: false
+library(dplyr)
+library(palmerpenguins)
+library(ggplot2)
+
+options(webr.fig.height = 4)
+ggplot2::theme_set(ggplot2::theme_minimal())
+```
+
+Since `quarto-live` interactive code blocks are powered by WebAssembly, rich serverless and interactive experiences can be provided to the reader.
+
+In particular, reactivity can easily be added to Quarto HTML documents through the use of [OJS blocks](https://quarto.org/docs/interactive/ojs/), and `quarto-live` code blocks can be integrated as a producer and consumer of reactive variables.
+
+## Using OJS variables in code cells
+
+Before we integrate OJS variables into a `quarto-live` code block, first let's create a reactive input using an `ojs` code block.
+
+There are many [standard inputs](https://github.com/observablehq/inputs) available through OJS, here we create a set of checkboxes for the variable `islands`.
+
+#### Source
+````{.markdown filename="reactivity.qmd"}
+```{{ojs}}
+//| echo: false
+viewof islands = Inputs.checkbox(
+  ["Torgersen", "Biscoe", "Dream"],
+  {
+    value: ["Torgersen", "Biscoe"],
+    label: "Islands:",
+  }
+)
+```
+````
+
+#### Output
+
+```{ojs}
+//| echo: false
+viewof islands = Inputs.checkbox(
+  ["Torgersen", "Biscoe", "Dream"],
+  {
+    value: ["Torgersen", "Biscoe"],
+    label: "Islands:",
+  }
+)
+```
+
+We can now use the variable `islands` in a `quarto-live` interactive code cell by setting the `input` code cell option. The option takes a list of OJS variables formatted as YAML.
+
+#### Source
+
+````{.markdown filename="reactivity.qmd"}
+```{{webr}}
+#| input:
+#|   - islands
+islands
+```
+````
+
+#### Output
+
+```{webr}
+#| input:
+#|   - islands
+islands
+```
+
+Try checking or unchecking boxes above. The code cell output will reactively update to the changes.
+
+### Example: Interactive histogram
+
+#### Source
+
+````{.markdown filename="histogram.qmd"}
+```{{webr}}
+#| input:
+#|   - n
+hist(rnorm(n))
+```
+
+```{{ojs}}
+//| echo: false
+viewof n = Inputs.range([0, 501], {step: 1, label: "n"})
+```
+````
+
+#### Output
+
+```{webr}
+#| input:
+#|   - n
+hist(rnorm(1000), breaks = n, col = "forestgreen")
+```
+
+```{ojs}
+//| echo: false
+viewof n = Inputs.range([1, 50], {step: 1, label: "breaks"})
+```
+
+
+## Defining OJS variables from a code block
+
+It's possible to do the same in reverse, defining an OJS variable from a `quarto-live` code block. Use the `define` cell option to give a list of variables to be exported for use in `ojs` blocks throughout the document.
+
+#### Source
+
+````{.markdown filename="reactivity.qmd"}
+```{{webr}}
+#| define:
+#|   - foo
+#|   - bar
+foo <- rnorm(5)
+bar <- rnorm(5)
+```
+
+```{{ojs}}
+foo + bar
+```
+````
+
+#### Output
 
 ```{webr}
 #| define:
 #|   - foo
 #|   - bar
-foo <- 123
-bar <- rnorm(1)
+foo <- rnorm(5)
+bar <- rnorm(5)
 ```
 
 ```{ojs}
-foo
-bar
+d3.sum(foo) + d3.max(bar)
 ```
 
-## Input OJS variables to code block
+Notice how re-evaluating the code block reactively updates the value calculated in the OJS block.
 
-```{ojs}
-baz = 123
+::: {.callout-warning}
+You might see an OJS error breifly appear as the page loads. This is normal, caused by the fact that the variables defined by the `quarto-live` cell do not exist until after the WebAssembly engine has loaded and executed the code block contents.
+:::
+
+## Interactive documents and dashboards
+
+The above described OJS integration can be used to implement complex computational and statistical methods using R or Python code, executed under WebAssembly, which can then be invoked reactively with OJS.
+
+This is a useful pattern for creating engaging documents and interactive dashboards using a serverless client-side rendering approach.
+
+::: {.callout-note}
+Invoking exported R and Python functions from OJS is generally more efficient than re-evaluating a `quarto-live` code block, since the code does not need to be re-parsed each time it needs to run.
+:::
+
+### Example: Penguins interactive plot
+First, define an OJS function using a `quarto-live` code block. You can hide the code cell from the rendered Quarto document output by setting the code cell options `edit: false` and `output: false`.
+
+Your function should take reactive inputs as arguments, and be exported to OJS by setting the `define` code cell option. Here our exported function is named `do_penguin_density()`.
+
+````{.markdown filename="dashboard.qmd"}
+```{{webr}}
+#| edit: false
+#| output: false
+#| define:
+#|   - do_penguins_density
+do_penguins_density <- function(measure, sp) {
+  filtered <- penguins |> filter(species == sp)
+  ggplot(data = filtered, aes(x = .data[[measure]])) +
+  geom_density(aes(fill = species), alpha = 0.8, position = "identity") +
+  labs(title = "Penguins 🐧")
+}
 ```
+````
 
-```{webr}
-#| input:
-#|   - baz
-baz
-```
+Next, create OJS reactive inputs and invoke your exported function, here named `do_penguin_density()`, using the reactive inputs as arguments.
 
-
-
-
-## Reactivity using OJS
-
-```{ojs}
+````{.markdown filename="dashboard.qmd"}
+```{{ojs}}
 //| echo: false
-viewof m = Inputs.range([10, 1000], {step: 1})
+viewof species = Inputs.checkbox(
+  [ "Adelie", "Chinstrap", "Gentoo" ],
+  { value: ["Adelie", "Chinstrap"], label: "Species" }
+);
+viewof measure = Inputs.select(
+  [ "flipper_length_mm", "bill_length_mm", "bill_depth_mm", "body_mass_g" ],
+  { label: "Measure" }
+);
+do_penguins_density(measure, species);
 ```
+````
 
-```{webr}
-#| input:
-#|   - m
-hist(rnorm(m))
-```
-
-
-
-
-
-
-
-
-
----
-
-Faster:
-
-```{ojs}
-//| echo: false
-viewof n = Inputs.range([10, 1000], {step: 1})
-do_hist(n)
-```
-
+#### Ouptut
 
 ```{webr}
 #| edit: false
-#| echo: false
+#| output: false
 #| define:
-#|   - do_hist
-do_hist <- function(n) {
-  hist(rnorm(n))
+#|   - do_penguins_density
+ggplot2::theme_set(ggplot2::theme_minimal())
+do_penguins_density <- function(measure, sp) {
+  filtered <- penguins |> filter(species == sp)
+  ggplot(data = filtered, aes(x = .data[[measure]])) +
+  geom_density(aes(fill = species), alpha = 0.8, position = "identity") +
+  labs(title = "Penguins 🐧")
 }
 ```
 
-
-
+```{ojs}
+//| echo: false
+viewof species = Inputs.checkbox(
+  [ "Adelie", "Chinstrap", "Gentoo" ],
+  { value: ["Adelie", "Chinstrap"], label: "Species" }
+);
+viewof measure = Inputs.select(
+  [ "flipper_length_mm", "bill_length_mm", "bill_depth_mm", "body_mass_g" ],
+  { label: "Measure" }
+);
+do_penguins_density(measure, species);
+```

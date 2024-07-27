@@ -25,7 +25,6 @@ website:
       - section: Interactive Documents and Tutorials
         contents:
           - interactive/reactivity.qmd
-          - interactive/python.qmd
           - interactive/data.qmd
           - interactive/dynamic.qmd
           - interactive/define.qmd
