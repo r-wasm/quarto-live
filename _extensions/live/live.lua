@@ -622,7 +622,7 @@ function Pandoc(doc)
       pandoc.Div({}, pandoc.Attr("", { "spinner-grow", "spinner-grow-sm" })),
     }, pandoc.Attr(
       "exercise-loading-indicator",
-      { "exercise-loading-indicator", "d-flex", "align-items-center", "gap-2" }
+      { "exercise-loading-indicator", "d-none", "d-flex", "align-items-center", "gap-2" }
     ))
   )
 

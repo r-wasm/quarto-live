@@ -3,6 +3,9 @@ webROjs = {
   const { WebREvaluator, WebREnvironmentManager, setupR, b64Decode } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-status");
+  const indicatorContainer = document.getElementById("exercise-loading-indicator");
+  indicatorContainer.classList.remove("d-none");
+
   let statusText = document.createElement("div")
   statusText.classList = "exercise-loading-details";
   statusText = statusContainer.appendChild(statusText);
