@@ -55,6 +55,22 @@
   content: "/ ";
 }
 
+@media only screen and (max-width: 576px) {
+  #exercise-loading-indicator {
+    font-size: 0.8rem;
+    padding: 0.1rem 0.5rem;
+  }
+
+  #exercise-loading-indicator .gap-2{
+    gap: 0.2rem !important;
+  }
+
+  #exercise-loading-indicator .spinner-grow {
+    --bs-spinner-width: 0.66rem;
+    --bs-spinner-height: 0.66rem;
+  }
+}
+
 /* Ease into disabled button opacity, avoids excessive flashing */
 .btn.btn-exercise-editor:disabled,
 .btn.btn-exercise-editor.disabled,
@@ -362,7 +378,7 @@ pre>code.sourceCode span.tok-function-attributeName,
 }
 
 /* Hide button label on small devices */
-@media (max-width: 576px) {
+@media only screen and (max-width: 576px) {
   :not(.reveal) .btn-exercise-editor .btn-label-exercise-editor {
     max-width: 0px;
     margin-left: -4px;
