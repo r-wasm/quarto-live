@@ -179,7 +179,9 @@ export class WebRGrader extends ExerciseGrader {
       const options = { ...this.options };
       options.error = false;
       const result = await this.evaluator.evaluate(
-        "do.call(getOption('webr.exercise.checker'), .checker_args)",
+        `.checker <- getOption('webr.exercise.checker')
+        environment(.checker) <- environment()
+        do.call(.checker, .checker_args)`,
         "grading",
         options
       );

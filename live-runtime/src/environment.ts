@@ -1,6 +1,7 @@
 import { PyodideInterface } from 'pyodide';
 import { PyProxy } from 'pyodide/ffi';
-import type { REnvironment, RObject, Shelter, WebR } from 'webr'
+import { isRObject } from 'webr';
+import type { REnvironment, RObject, Shelter, WebR } from 'webr';
 
 
 export class WebREnvironmentManager {
@@ -14,12 +15,18 @@ export class WebREnvironmentManager {
     this.env.global = webRPromise.then((webR) => webR.objs.globalEnv);
   }
 
-  async toR(value: any): Promise<[obj: RObject, destroyList: RObject[]]> {
+  /*
+    Convert JS object to R object for storing in evaluation environment
+    Pass through RObject unchanged. For data.frame shaped objects, try
+    data.frame conversion first, then fall back to creating an R list
+    object if conversion fails.
+  */
+  async toR(value: any): Promise<RObject> {
+    if (isRObject(value)) return value;
+
     const shelter = await this.shelter;
-    const destroyList = [];
     if (value && value.constructor === Object) {
       value = await new shelter.RList(value);
-      destroyList.push(value);
     } else if (value && value.constructor === Array) {
       try {
         value = await new shelter.RObject(value);
@@ -30,13 +37,12 @@ export class WebREnvironmentManager {
         }
         value = await Promise.all(value.map((v) => {
           return new shelter.RList(v).then((obj) => {
-            destroyList.push(obj);
             return obj;
           })
         }));
       }
     }
-    return [value, destroyList];
+    return value;
   }
 
   async get(id: string = "global") {
@@ -51,14 +57,8 @@ export class WebREnvironmentManager {
 
   async bind(key: string, value: any, id: string = "global") {
     const environment = await this.get(id);
-    const [obj, destroyList] = await this.toR(value);
-    try {
-      await environment.bind(key, obj);
-    } finally {
-      destroyList.forEach((v) => {
-        this.shelter.then((shelter) => shelter.destroy(v));
-      });
-    }
+    value = await this.toR(value);
+    await environment.bind(key, value);
   }
 
   async create(target_id: string, parent_id: string) {
