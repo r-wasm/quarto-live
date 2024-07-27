@@ -132,10 +132,9 @@ export class WebREvaluator implements ExerciseEvaluator {
 
     try {
       // Set OJS inputs in "prep" environment
-      const prep = await this.envManager.get(this.envLabels.prep);
       await Promise.all(
         Object.entries(inputs).map(async ([k, v]) => {
-          await prep.bind(k, v);
+          await this.envManager.bind(k, v, this.envLabels.prep);
         })
       );
 
