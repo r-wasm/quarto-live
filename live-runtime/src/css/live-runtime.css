@@ -361,6 +361,23 @@ pre>code.sourceCode span.tok-function-attributeName,
   --exercise-btn-hover-color: var(--bs-btn-hover-color, #000000);
 }
 
+/* Hide button label on small devices */
+@media (max-width: 576px) {
+  :not(.reveal) .btn-exercise-editor .btn-label-exercise-editor {
+    max-width: 0px;
+    margin-left: -4px;
+    overflow: hidden;
+    transition: max-width 0.2s ease-in, margin-left 0.05s ease-out 0.2s;
+  }
+  :not(.reveal) .btn-exercise-editor:hover .btn-label-exercise-editor {
+    position: inherit;
+    max-width: 80px;
+    margin-left: 0;
+    transition: max-width 0.2s ease-out 0.05s, margin-left 0.05s ease-in;
+  }
+}
+
+/* Buttons under revealjs */
 .reveal .card.exercise-editor .btn-group {
   border-radius: .375rem;
   position: relative;

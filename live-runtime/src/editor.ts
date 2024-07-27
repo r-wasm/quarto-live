@@ -239,6 +239,8 @@ abstract class ExerciseEditor {
     const label = document.createElement("span");
     dom.className = `d-flex align-items-center gap-1 btn btn-exercise-editor ${spec.className} text-nowrap`;
     dom.setAttribute("role", "button");
+    dom.setAttribute("aria-label", spec.text);
+    label.className = "btn-label-exercise-editor";
     label.innerText = spec.text;
     dom.innerHTML = icons[spec.icon];
     dom.appendChild(label);
