@@ -2,6 +2,7 @@
 title: Plotting and Graphics
 subtitle: Dynamic data visualisation for interactive code blocks
 format: live-html
+engine: knitr
 webr:
   packages:
     - ggplot2
@@ -9,6 +10,8 @@ pyodide:
   packages:
     - matplotlib
 ---
+
+{{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
 
 The `quarto-live` extension prepares the R and Python environment with WebAssembly-compatible graphics devices, and so plotting should work out of the box.
 

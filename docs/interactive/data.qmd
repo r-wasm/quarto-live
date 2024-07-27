@@ -1,11 +1,79 @@
 ---
-title: Data conversion
+title: Data Conversion
+subtitle: Automatic handling of data conversion to and from WebAssembly
 format: live-html
+engine: knitr
+toc: true
 ---
+
+{{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
+
+When OJS variables are used as input or exported variables in `quarto-live` interactive code blocks, automatic data conversion to or from JavaScript types occurs.
+
+## Converting data types from OJS
+
+Data conversion is handled by the WebAssembly engine transparently, and most data conversion should be reasonable[^1]. JavaScript objects are handled by recursively converting inner properties.
+
+[^1]: See Pyodide's [Type Conversions](https://pyodide.org/en/stable/usage/type-conversions.html) and webR's [Creating New R Objects](https://docs.r-wasm.org/webr/latest/convert-js-to-r.html) documentation for the low-level details about how this works.
+
+```{ojs}
+foo = [123, 456];
+bar = ({ x: [1, 2, 3], y: ["a", "b"], z: true });
+baz = [{ a: 1 }, { b: 2 }, { c: ["x", "y", "z"] }];
+```
+
+::: {.panel-tabset}
+
+## R
+
+```{webr}
+#| input:
+#|   - foo
+#|   - bar
+#|   - baz
+foo
+bar
+baz
+```
+## Python
+
+```{pyodide}
+#| input:
+#|   - foo
+#|   - bar
+#|   - baz
+print(foo)
+print(bar)
+print(baz)
+```
+
+:::
+
+
+## Data frame conversion
+
+When using webR powered R blocks, D3 style JavaScript objects are specially handled and converted into `data.frame`s. For example, OJS ships with a built in dataset `alphabet`:
 
 ```{ojs}
 alphabet
 ```
+
+Notice how expanding the `Array` output shows that this data is D3 formatted, in a row-based format.
+
+However, when used as an input variable for a `webr` interactive code block, the resulting object is of class `data.frame` and can be used as such in the R environment. It is column based, and can be used like any other data.frame.
+
+### Source
+
+````.markdown
+```{{webr}}
+#| input:
+#|   - alphabet
+class(alphabet)
+plot(alphabet)
+```
+````
+
+### Output
 
 ```{webr}
 #| input:
@@ -14,16 +82,23 @@ class(alphabet)
 summary(alphabet)
 ```
 
-----
+## Converting data types to OJS
+
+Similar data conversion occurs when exporting variables from the WebAssembly environment to OJS. This can be used to combine R and Python processing of data with OJS or D3 data visualisation methods.
 
 ```{webr}
-#| edit: false
 #| define:
+#|   - abc
+#|   - def
 #|   - mtcars
+abc = c(123, 456, 789)
+def = list(x = c(1, 2, 3), y = c("a", "b"), z = TRUE);
 data(mtcars)
 ```
 
 ```{ojs}
+abc
+def
 mtcars
 Plot.plot({
   x: {label: "Economy (mpg)"},
