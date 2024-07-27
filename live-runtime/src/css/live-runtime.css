@@ -522,6 +522,23 @@ div.cell-output-display canvas {
   margin-bottom: 0;
 }
 
+.alert.exercise-grade {
+  animation-duration:0.25s;
+  animation-name: exercise-grade-slidein;
+}
+
+@keyframes exercise-grade-slidein {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .reveal .alert.exercise-grade {
   font-size: .55em;
   position: relative;
