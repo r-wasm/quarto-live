@@ -1,7 +1,11 @@
 ---
 title: Managing Environments
 format: live-html
+engine: knitr
+toc: true
 ---
+
+{{< include ../_extensions/live/_knitr.qmd >}}
 
 ## Environments in interactive code blocks
 

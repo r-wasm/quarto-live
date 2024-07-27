@@ -1,11 +1,12 @@
 ---
 title: Grading with `{gradethis}`
-subtitble: Grade solutions to R exercises using the existing `{gradethis}` R package
+subtitle: Grade solutions to R exercises using the existing `{gradethis}` R package
 format: live-html
+engine: knitr
+toc: true
 webr:
   packages:
     - dplyr
-  render-df: head
 ---
 
 {{< include ../_extensions/live/_knitr.qmd >}}
