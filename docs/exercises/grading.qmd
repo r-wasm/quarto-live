@@ -17,22 +17,43 @@ Interactive exercises can be dynamically graded by defining a custom grading alg
 
 Suppose we have the following exercise, asking a learner to calculate the average of the first 10 integers.
 
+:::{.panel-tabset}
+
+## R
+
 ````markdown
 Calculate the average of all of the integers from 1 to 10.
 
 ```{{webr}}
-#| exercise: ex_1
+#| exercise: ex_1_r
 ______(1:10)
 ```
 ````
+
+## Python
+
+````markdown
+Calculate the average of all of the integers from 1 to 10.
+
+```{{pyodide}}
+#| exercise: ex_1_py
+n = range(1, 11)
+______
+```
+````
+:::
 
 We hope the learner will replace the `______` with the correct code to calculate the average. To grade an exercise, associate checking code with the exercise using a `webr` block with the `check: true` cell option set.
 
 A simple version of exercise grading might check that the student’s result is equal to `mean(1:10)`. If it is, the grading code returns a passing grade, otherwise a failing grade is returned.
 
+:::{.panel-tabset}
+
+## R
+
 ````markdown
 ```{{webr}}
-#| exercise: ex_1
+#| exercise: ex_1_r
 #| check: true
 if (identical(.result, mean(1:10))) {
   list(correct = TRUE, message = "Nice work!")
@@ -42,15 +63,40 @@ if (identical(.result, mean(1:10))) {
 ```
 ````
 
+## Python
+
+````markdown
+```{{pyodide}}
+#| exercise: ex_1_py
+#| check: true
+n = range(1, 11)
+mean = sum(n)/len(n)
+feedback = None
+if (result == mean):
+  feedback = { "correct": True, "message": "Nice work!" }
+else:
+  feedback = { "correct": False, "message": "That's incorrect, sorry." }
+feedback
+```
+````
+
+:::
+
 #### Output
 
+:::{.panel-tabset}
+
+## R
+
+Calculate the average of all of the integers from 1 to 10.
+
 ```{webr}
-#| exercise: ex_1
+#| exercise: ex_1_r
 ______(1:10)
 ```
 
 ```{webr}
-#| exercise: ex_1
+#| exercise: ex_1_r
 #| check: true
 if (identical(.result, mean(1:10))) {
   list(correct = TRUE, message = "Nice work!")
@@ -59,9 +105,32 @@ if (identical(.result, mean(1:10))) {
 }
 ```
 
-## Feedback
+## Python
 
-Feedback from grading algorithms should be returned in the form of a list with the following properties:
+```{pyodide}
+#| exercise: ex_1_py
+n = range(1, 11)
+______
+```
+
+```{pyodide}
+#| exercise: ex_1_py
+#| check: true
+n = range(1, 11)
+mean = sum(n)/len(n)
+feedback = None
+if (result == mean):
+  feedback = { "correct": True, "message": "Nice work!" }
+else:
+  feedback = { "correct": False, "message": "That's incorrect, sorry." }
+feedback
+```
+
+:::
+
+### Return feedback
+
+Feedback from grading algorithms should be returned in the form of an R list, or Python dictionary, with the following properties:
 
 | Property | Type | Description |
 |----------| ---- | -------------|
@@ -75,16 +144,20 @@ Feedback formatted in this way will be displayed as a styled HTML alert.
 Returning and displaying multiple feedback elements with "append", "prepend", or "replace" functionality is planned for a future release of `quarto-live`.
 :::
 
-## Grading environment
+### Checking environment
 
-A selection of variables are made available for use by grading algorithms in the checking environment.
+A selection of variables are made available for use by grading algorithms in the checking environment. These variable names have been chosen so as to match closely to the existing `{learnr}` and `{gradethis}` grading systems.
+
+::: {.callout-warning}
+Under Python, there is no leading `.` character in the variable names. For example, the result of evaluating the learner's code is given in the variable named `result`.
+:::
 
 | Variable | Description |
 |----------|-------------|
 | `.check_code` | Code provided for custom checking algorithm. |
-| `.engine` | The execution language, `"r"` or `"python"` |
-| `.envir_prep` | The R environment before the execution of learner code. |
-| `.envir_result` | The R environment after the execution of learner code. |
+| `.engine` | The execution language, `"r"` or `"python"`. |
+| `.envir_prep` | The environment before the execution of learner code. |
+| `.envir_result` | The environment after the execution of learner code. |
 | `.evaluate_result` | Full evaluation state of evaluating the learner code. |
 | `.label` | The exercise label. |
 | `.last_value` | The last value of the evaluated learner code. |
@@ -92,10 +165,12 @@ A selection of variables are made available for use by grading algorithms in the
 | `.solution_code` | Solution code, if provided by the author. |
 | `.solution` | Result of evaluating the solution code, if provided by the author. |
 | `.stage` | The current checking stage (currently only `check`). |
-| `.user_code` | R code submitted by the user. |
+| `.user_code` | Exercise code submitted by the user. |
 : {tbl-colwidths="[15,85]"}
 
-### Examples using the grading environment
+### More grading examples
+
+Further examples of using the full evaluation state provided by the checking environment with grading algorithms are shown below.
 
 #### Find any result in learner output
 
