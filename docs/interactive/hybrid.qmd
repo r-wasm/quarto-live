@@ -1,0 +1,54 @@
+---
+title: Hybrid Execution
+subtitle: Combine pre-rendered and client-side WebAssembly computation
+format: live-html
+engine: knitr
+---
+
+{{< include ../_extensions/live/_knitr.qmd >}}
+
+Defining variables through OJS variables allows for a communication channel between various execution engines.
+
+## Build-time code execution
+
+Data can be evaluated and exported to be made availabe to OJS blocks at runtime, using Quarto's usual build-time code cell execution.
+
+#### Source
+````{.markdown filename="hybrid.qmd"}
+```{{r}}
+library(ggplot2)
+glimpse(diamonds)
+ojs_define(diamonds)
+```
+````
+
+#### Output
+```{r}
+library(ggplot2)
+head(diamonds)
+ojs_define(diamonds)
+```
+
+## Runtime computation
+
+### OJS Cells
+
+```{ojs}
+diamonds
+```
+
+### WebAssembly `quarto-live` cells
+
+````{.markdown filename="hybrid.qmd"}
+```{{webr}}
+#| input:
+#|   - diamonds
+head(diamonds)
+```
+````
+
+```{webr}
+#| input:
+#|   - diamonds
+head(diamonds)
+```

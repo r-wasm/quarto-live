@@ -27,7 +27,7 @@ website:
           - interactive/reactivity.qmd
           - interactive/data.qmd
           - interactive/dynamic.qmd
-          - interactive/define.qmd
+          - interactive/hybrid.qmd
       - section: Other Features
         contents:
           - other/tables.qmd
