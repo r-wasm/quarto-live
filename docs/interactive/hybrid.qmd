@@ -9,11 +9,11 @@ webr:
 
 {{< include ../_extensions/live/_knitr.qmd >}}
 
-Defining variables through OJS variables allows for a communication channel between various execution engines.
+Transferring data through OJS variables allows for communication between the different execution contexts provided by the `quarto-live` extension.
 
-## Build-time code execution
+## Build-time OJS data source
 
-Data can be evaluated and exported to be made available to OJS blocks at runtime, using Quarto's usual build-time code cell execution.
+In standard Quarto code cell blocks data can be evaluated at build-time and exported as an [OJS data source](https://quarto.org/docs/interactive/ojs/data-sources.html). The data is then subsequently available to OJS blocks at runtime.
 
 #### Source
 ````{.markdown filename="hybrid.qmd"}
@@ -21,6 +21,10 @@ Data can be evaluated and exported to be made available to OJS blocks at runtime
 library(ggplot2)
 glimpse(diamonds)
 ojs_define(diamonds)
+```
+
+```{ojs}
+diamonds
 ```
 ````
 
@@ -30,12 +34,6 @@ library(ggplot2)
 head(diamonds)
 ojs_define(diamonds)
 ```
-
-## Runtime computation
-
-### OJS Cells
-
-Data exported with `ojs_define()` is available in OJS cells for runtime computation.
 
 ```{ojs}
 diamonds
