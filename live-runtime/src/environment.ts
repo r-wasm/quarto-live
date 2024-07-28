@@ -22,30 +22,38 @@ export class WebREnvironmentManager {
     object if conversion fails.
   */
   async toR(value: any): Promise<RObject> {
-    if (isRObject(value)) return value;
+    if (!value || isRObject(value)) return value;
 
     const shelter = await this.shelter;
-    if (value && value.constructor === Object) {
+    if (value.constructor === Object) {
       try {
-        value = await new shelter.RObject(value);
+        return await new shelter.RObject(value);
       } catch (_e) {
         const e = _e as Error;
         if (!e.message.includes("Can't construct `data.frame`")) {
           throw e;
         }
-        value = await new shelter.RList(value);
+        return await new shelter.RList(
+          Object.fromEntries(
+            await Promise.all(Object.entries(value).map(async ([k, v]) => {
+              return [k, await this.toR(v)];
+            }))
+          )
+        );
       }
-    } else if (value && value.constructor === Array) {
+    }
+    
+    if (value.constructor === Array) {
       try {
-        value = await new shelter.RObject(value);
+        return await new shelter.RObject(value);
       } catch (_e) {
         const e = _e as Error;
         if (!e.message.includes("Can't construct `data.frame`")) {
           throw e;
         }
-        value = await Promise.all(value.map((v) => {
-          return new shelter.RList(v);
-        }));
+        return await new shelter.RList(
+          await Promise.all(value.map((v) => this.toR(v)))
+        );
       }
     }
     return value;

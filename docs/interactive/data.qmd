@@ -19,7 +19,7 @@ Data conversion is handled by the WebAssembly engine transparently, and most dat
 ```{ojs}
 foo = [123, 456];
 bar = ({ x: [1, 2, 3], y: ["a", "b"], z: true });
-baz = [{ a: 1 }, { b: 2 }, { c: ["x", "y", "z"] }];
+baz = [{ a: 1 }, { b: ["x", "y", "z"], c: null }];
 ```
 
 ::: {.panel-tabset}
@@ -50,7 +50,7 @@ print(baz)
 :::
 
 
-## Data frame conversion
+## R `data.frame` conversion
 
 When using webR powered R blocks, D3 style JavaScript objects are specially handled and converted into `data.frame`s. For example, OJS ships with a built in dataset `alphabet`:
 
