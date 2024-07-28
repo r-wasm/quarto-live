@@ -26,7 +26,15 @@ export class WebREnvironmentManager {
 
     const shelter = await this.shelter;
     if (value && value.constructor === Object) {
-      value = await new shelter.RList(value);
+      try {
+        value = await new shelter.RObject(value);
+      } catch (_e) {
+        const e = _e as Error;
+        if (!e.message.includes("Can't construct `data.frame`")) {
+          throw e;
+        }
+        value = await new shelter.RList(value);
+      }
     } else if (value && value.constructor === Array) {
       try {
         value = await new shelter.RObject(value);
@@ -36,9 +44,7 @@ export class WebREnvironmentManager {
           throw e;
         }
         value = await Promise.all(value.map((v) => {
-          return new shelter.RList(v).then((obj) => {
-            return obj;
-          })
+          return new shelter.RList(v);
         }));
       }
     }
