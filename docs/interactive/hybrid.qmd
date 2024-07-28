@@ -3,6 +3,8 @@ title: Hybrid Execution
 subtitle: Combine pre-rendered and client-side WebAssembly computation
 format: live-html
 engine: knitr
+webr:
+  packages: dplyr
 ---
 
 {{< include ../_extensions/live/_knitr.qmd >}}
@@ -11,7 +13,7 @@ Defining variables through OJS variables allows for a communication channel betw
 
 ## Build-time code execution
 
-Data can be evaluated and exported to be made availabe to OJS blocks at runtime, using Quarto's usual build-time code cell execution.
+Data can be evaluated and exported to be made available to OJS blocks at runtime, using Quarto's usual build-time code cell execution.
 
 #### Source
 ````{.markdown filename="hybrid.qmd"}
@@ -33,22 +35,90 @@ ojs_define(diamonds)
 
 ### OJS Cells
 
+Data exported with `ojs_define()` is available in OJS cells for runtime computation.
+
 ```{ojs}
 diamonds
 ```
 
 ### WebAssembly `quarto-live` cells
 
+Since the build-time data export is available as an OJS variable, it can be imported back into an R or Python environment using the `input` code cell option.
+
+With this, you can do further processing of data, in a serverless fasion, using client-side WebAssembly engines.
+
 ````{.markdown filename="hybrid.qmd"}
 ```{{webr}}
 #| input:
 #|   - diamonds
-head(diamonds)
+si1 <- diamonds |> dplyr::filter(clarity == "SI1")
+plot(si1$depth, si1$price)
+head(si1)
 ```
 ````
 
 ```{webr}
 #| input:
 #|   - diamonds
-head(diamonds)
+si1 <- diamonds |> dplyr::filter(clarity == "SI1")
+plot(si1$depth, si1$price)
+head(si1)
+```
+
+### Passing data between engines
+
+The same mechanism can be used to pass data between WebAssembly engines
+
+#### Source
+
+````markdown
+```{{webr}}
+#| edit: false
+#| define:
+#|   - mpg
+# Process and export data from R
+mpg <- mtcars |>
+  dplyr::select(mpg, hp) |>
+  dplyr::filter(mpg < 25)
+```
+
+```{{pyodide}}
+#| edit: false
+#| input:
+#|   - mpg
+# Import and plot data in Python
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.DataFrame(mpg)
+plt.plot(df['mpg'], df['hp'])
+plt.show()
+```
+````
+
+#### Output
+
+```{webr}
+#| edit: false
+#| define:
+#|   - mpg
+# Process and export data from R
+mpg <- mtcars |>
+  dplyr::select(mpg, hp) |>
+  dplyr::filter(mpg < 25)
+```
+
+```{pyodide}
+#| edit: false
+#| input:
+#|   - mpg
+# Import and plot data in Python
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+df = pd.DataFrame(mpg)
+plt.plot(df['mpg'], df['hp'], 'o')
+plt.show()
 ```
