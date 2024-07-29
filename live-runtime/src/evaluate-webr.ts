@@ -22,8 +22,9 @@ import {
   EnvLabels,
   EvaluateContext,
   EvaluateOptions,
+  EvaluateValue,
   ExerciseEvaluator,
-  OJSElement
+  OJSEvaluateElement,
 } from "./evaluate";
 import { arrayBufferToBase64 } from './utils';
 
@@ -40,17 +41,19 @@ declare global {
 
 
 export class WebREvaluator implements ExerciseEvaluator {
-  container: OJSElement;
+  container: OJSEvaluateElement;
   shelter: Promise<Shelter>;
   context: EvaluateContext;
   options: EvaluateOptions;
   envLabels: EnvLabels;
   envManager: WebREnvironmentManager;
+  nullResult: EvaluateValue;
   webR: WebR;
 
   constructor(webR: WebR, environmentManager: WebREnvironmentManager, context: EvaluateContext) {
     this.container = document.createElement('div');
-    this.container.value = { result: null, evaluator: this };
+    this.nullResult = { result: null, evaluate_result: null, evaluator: this };
+    this.container.value = this.nullResult;
     this.webR = webR;
     this.context = context;
     this.shelter = new webR.Shelter();
@@ -112,7 +115,7 @@ export class WebREvaluator implements ExerciseEvaluator {
     // If we're not evaluating, just print the source directly
     if (!this.options.eval) {
       this.container = this.asSourceHTML(this.context.code);
-      this.container.value = { result: null, evaluator: this };
+      this.container.value = this.nullResult;
       return;
     }
 
@@ -145,7 +148,7 @@ export class WebREvaluator implements ExerciseEvaluator {
       const result = await this.evaluate(this.context.code, "result");
 
       // Once we have the evaluate result, render it's contents to HTML
-      if (isRNull(result) || !this.options.output) {
+      if (!result) {
         this.container.value.result = null;
       } else if (this.options.output === "asis") {
         const evaluateList = await result.toArray() as RObject[];
@@ -153,6 +156,12 @@ export class WebREvaluator implements ExerciseEvaluator {
         this.container.innerHTML = await lastValue.toString();
       } else {
         this.container = await this.asHtml(result);
+        if (!this.options.output) {
+          // Don't show any output in HTML, but return a value
+          const value = this.container.value;
+          this.container = document.createElement("div");
+          this.container.value = value;
+        }
       }
 
       // Grab objects from the webR OJS environment
@@ -196,7 +205,7 @@ export class WebREvaluator implements ExerciseEvaluator {
   async evaluate(code: string, envLabel: EnvLabel, options: EvaluateOptions = this.options) {
     // Early return if code is undefined, null, or if we're not evaluating
     if (code == null || !options.include) {
-      return this.webR.objs.null;
+      return null;
     }
 
     const shelter = await this.shelter;
@@ -243,8 +252,8 @@ export class WebREvaluator implements ExerciseEvaluator {
 
   async asHtml(value: RList, options: EvaluateOptions = this.options) {
     const sourceLines: string[] = [];
-    const container: OJSElement = document.createElement("div");
-    container.value = { result: null, evaluator: this };
+    const container: OJSEvaluateElement = document.createElement("div");
+    container.value = this.nullResult;
 
     const appendSource = () => {
       if (options.echo && sourceLines.length) {
@@ -460,7 +469,7 @@ export class WebREvaluator implements ExerciseEvaluator {
   }
 
   // Convert webR R object reference to OJS value
-  async asOjs(value: ImageBitmap): Promise<OJSElement>;
+  async asOjs(value: ImageBitmap): Promise<OJSEvaluateElement>;
   async asOjs(value: any): Promise<any>;
   async asOjs(value) {
     if (value instanceof ImageBitmap) {

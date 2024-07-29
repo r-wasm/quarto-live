@@ -1,6 +1,6 @@
 import type { WebR, RFunction } from 'webr';
 import type { PyodideInterface } from 'pyodide';
-import type { OJSElement, EvaluateOptions } from './evaluate';
+import type { EvaluateOptions } from './evaluate';
 import { Indicator } from './indicator';
 import { basicSetup } from 'codemirror';
 import { tagHighlighterTok } from './highlighter';
@@ -10,6 +10,13 @@ import { syntaxHighlighting } from "@codemirror/language";
 import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
 import { python } from "@codemirror/lang-python";
 import { r } from "codemirror-lang-r";
+
+export type EditorValue = {
+  code: string | null;
+  options: ExerciseOptions;
+  indicator?: Indicator;
+}
+export type OJSEditorElement = HTMLElement & { value?: EditorValue };
 
 type ExerciseOptions = EvaluateOptions & {
   autorun: boolean;
@@ -82,7 +89,7 @@ abstract class ExerciseEditor {
   initialCode: string;
   state: EditorState;
   view: EditorView;
-  container: OJSElement;
+  container: OJSEditorElement;
   options: ExerciseOptions;
   indicator: Indicator;
   completionMethods: Promise<ExerciseCompletionMethods>;

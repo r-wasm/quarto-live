@@ -178,6 +178,7 @@ export class WebRGrader extends ExerciseGrader {
       this.envManager.bind(".checker_args", argsObj, this.envLabels.grading);
       const options = { ...this.options };
       options.error = false;
+      options.output = true;
       const result = await this.evaluator.evaluate(
         `.checker <- getOption('webr.exercise.checker')
         environment(.checker) <- environment()

@@ -169,6 +169,10 @@ export class PyodideGrader extends ExerciseGrader {
     // const globals = await this.envManager.get(this.envLabels.grading);
     // await this.pyodide.runPythonAsync(`print(foo)`, { globals });
     checkerEnvObj.destroy();
+
+    const options = { ...this.options };
+    options.error = false;
+    options.output = true;
     const result = await this.evaluator.evaluate(
       `
         import pyodide
@@ -188,7 +192,7 @@ export class PyodideGrader extends ExerciseGrader {
         feedback
       `,
       "grading",
-      this.options
+      options
     );
     // console.log(result);
     return result;

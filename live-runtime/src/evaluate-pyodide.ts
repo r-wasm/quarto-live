@@ -8,7 +8,8 @@ import {
   EvaluateContext,
   EvaluateOptions,
   ExerciseEvaluator,
-  OJSElement
+  OJSEvaluateElement,
+  EvaluateValue,
 } from "./evaluate";
 import { PyodideInterfaceWorker } from './pyodide-worker';
 
@@ -35,20 +36,21 @@ const requireHtmlManager = {
 };
 
 export class PyodideEvaluator implements ExerciseEvaluator {
-  container: OJSElement;
+  container: OJSEvaluateElement;
   context: EvaluateContext;
   options: EvaluateOptions;
   envLabels: EnvLabels;
   envManager: PyodideEnvironmentManager;
   pyodide: PyodideInterfaceWorker;
-
+  nullResult: EvaluateValue;
   constructor(
     pyodide: PyodideInterfaceWorker,
     environmentManager: PyodideEnvironmentManager,
     context: EvaluateContext
   ) {
     this.container = document.createElement('div');
-    this.container.value = { result: null, evaluator: this };
+    this.nullResult = { result: null, evaluate_result: null, evaluator: this };
+    this.container.value = this.nullResult;
     this.pyodide = pyodide;
     this.context = context;
 
@@ -104,7 +106,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     // If we're not evaluating, just print the source directly
     if (!this.options.eval) {
       this.container = this.asSourceHTML(this.context.code);
-      this.container.value = { result: null, evaluator: this };
+      this.container.value = this.nullResult;
       return;
     }
 
@@ -137,12 +139,18 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       const result = await this.evaluate(this.context.code, "result");
 
       // Once we have the evaluate result, render it's contents to HTML
-      if (!this.options.output) {
+      if (!result) {
         this.container.value.result = null;
       } else if (this.options.output === "asis") {
         this.container.innerHTML = await result.stdout;
       } else {
         this.container = await this.asHtml(result);
+        if (!this.options.output) {
+          // Don't show any output in HTML, but return a value
+          const value = this.container.value;
+          this.container = document.createElement("div");
+          this.container.value = value;
+        }
       }
 
       // Grab defined objects from the result environment
@@ -244,8 +252,8 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     result: Awaited<ReturnType<PyodideEvaluator["evaluate"]>>,
     options: EvaluateOptions = this.options
   ) {
-    const container: OJSElement = document.createElement("div");
-    container.value = { result: null, evaluator: this };
+    const container: OJSEvaluateElement = document.createElement("div");
+    container.value = this.nullResult;
 
     if (!result) {
       return container;
