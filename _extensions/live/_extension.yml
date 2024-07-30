@@ -12,3 +12,4 @@ contributes:
         - live.lua
     html: default
     revealjs: default
+    dashboard: default
