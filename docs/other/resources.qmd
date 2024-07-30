@@ -1,19 +1,200 @@
 ---
 format: live-html
-title: "Loading Resources"
+title: Loading Resources
+subtitle: Local and external resources made available in interactive code blocks
+engine: knitr
+toc: true
 resources:
-  - "data"
+  - data
+webr:
+  resources:
+    - data
+    - https://raw.githubusercontent.com/mwaskom/seaborn-data/master/flights.csv
+pyodide:
+  packages:
+    - pandas
+    - seaborn
+  resources:
+    - data
+    - https://raw.githubusercontent.com/mwaskom/seaborn-data/master/flights.csv
 ---
 
-```{pyodide}
-from os import listdir
-listdir('data')
+{{< include ../_extensions/live/_knitr.qmd >}}
+
+Normally `webr` and `pyodide` code blocks are executed in the reader's web browser, and so resources local to your own machine are not available for use inside the WebAssembly environment. Instead, there is a Virtual Filesystem (VFS) made available that contains only the minimum required to run R or Python code.
+
+## Local resources
+
+To make a file or directory in your local system available under WebAssembly, add the path to the `resources` key in your document's YAML header. The `quarto-live` extension will automatically download named resources into the WebAssembly VFS as R or Python starts up. The resources will be made available in the current working directory (usually `/home/web_user`).
+
+::: {.panel-tabset}
+
+## R
+
+### Source
+
+````{.markdown filename="resources.qmd"}
+---
+format: live-html
+resources:
+  - data
+---
+
+```{{webr}}
+list.files("data")
+mt <- read.csv("data/mtcars.csv")
+mod <- glm(mpg ~ cyl, data = mt)
+summary(mod)
 ```
+````
+
+### Output
 
 ```{webr}
 list.files("data")
 mt <- read.csv("data/mtcars.csv")
 mod <- glm(mpg ~ cyl, data = mt)
 summary(mod)
-plot(mod)
 ```
+
+## Python
+
+### Source
+---
+format: live-html
+resources:
+  - data
+---
+
+````{.markdown filename="resources.qmd"}
+```{{pyodide}}
+from os import listdir
+import pandas as pd
+print(listdir("data"))
+pd.read_csv('data/mtcars.csv')
+```
+````
+
+### Output
+
+```{pyodide}
+from os import listdir
+import pandas as pd
+print(listdir("data"))
+pd.read_csv('data/mtcars.csv')
+```
+
+:::
+
+### Loading only a subset
+
+By default, any resource listed under `resources` will be added to the R and Python VFS. However, you might want to include many resources with your document, but only load a subset of them into the VFS. Use the `resources` key under `webr` and `pyodide` to indicate which resources will be loaded.
+
+::: {.panel-tabset}
+
+## R
+
+````{.markdown filename="resources.qmd"}
+---
+format: live-html
+resources:
+  - "data"
+webr:
+  resources:
+    - data/mtcars.csv
+---
+````
+
+## Python
+
+````{.markdown filename="resources.qmd"}
+---
+format: live-html
+resources:
+  - "data"
+pyodide:
+  resources:
+    - data/mtcars.csv
+---
+````
+:::
+
+## Remote resources
+
+Remote resource URLs can be included in the `resources` key, under `webr` and `pyodide`, in your document's YAML header. The listed resources will be downloaded as the page loads and made available in the R or Python VFS. 
+
+::: {.callout-note}
+Resources loaded by URL from a remote server must be served with [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) headers to allow access.
+:::
+
+::: {.panel-tabset}
+
+## R
+
+### Source
+
+````{.markdown filename="url.qmd"}
+---
+format: live-html
+webr:
+  resources:
+    - https://raw.githubusercontent.com/mwaskom/seaborn-data/master/flights.csv
+---
+
+```{{webr}}
+flights <- read.csv("flights.csv")
+with(flights, plot(year, passengers))
+```
+````
+
+### Output
+
+```{webr}
+flights <- read.csv("flights.csv")
+with(flights, plot(year, passengers))
+```
+
+## Python
+
+### Source
+
+````{.markdown filename="url.qmd"}
+---
+format: live-html
+pyodide:
+  resources:
+    - https://raw.githubusercontent.com/mwaskom/seaborn-data/master/flights.csv
+---
+
+```{{pyodide}}
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+flights = pd.read_csv('data/flights.csv')
+sns.relplot(
+  data = flights,
+  x = "year",
+  y = "passengers"
+)
+plt.show()
+```
+````
+
+### Output
+
+```{pyodide}
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+flights = pd.read_csv('flights.csv')
+sns.relplot(
+  data = flights,
+  x = "year",
+  y = "passengers"
+)
+plt.show()
+```
+:::
+
