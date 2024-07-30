@@ -46,12 +46,18 @@ pyodideOjs = {
 
     // Download and install resources
     await files.map((file) => async () => {
-      statusText.textContent = `Downloading resource: ${file}`;
+      const name = file.substring(file.lastIndexOf('/') + 1);
+      statusText.textContent = `Downloading resource: ${name}`;
       const response = await fetch(file);
       if (!response.ok) {
         throw new Error(`Can't download \`${file}\`. Error ${response.status}: "${response.statusText}".`);
       }
       const data = await response.arrayBuffer();
+
+      // Store URLs in the cwd without any subdirectory structure
+      if (file.includes("://")) {
+        file = name;
+      }
 
       // Create directory tree, swallowing any `dir exists` errors
       let path = file;
