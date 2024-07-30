@@ -1,12 +1,12 @@
 ---
 format:
   live-revealjs:
-    theme: dark
+    theme: default
 title: Example Slides
 webr:
   cell-options:
-    fig-width: 800
-    fig-height: 432
+    fig-width: 11
+    fig-height: 6
 ---
 
 ## Read Only
@@ -30,29 +30,31 @@ plot(rnorm(1000))
 ```{webr}
 #| exercise: ex1
 #| caption: Exercise 1
-1+2
+1 + 2 + 3 + ______
 ```
 
 ```{webr}
 #| exercise: ex1
 #| check: true
-if (.result == 3) {
+if (.result == 10) {
   list(message = "Great work!", correct = TRUE)
 } else {
-  list(message = "Oh no, that's incorrect!", correct = FALSE)
+  list(message = "That's incorrect.", correct = FALSE)
 }
 ```
 
 ::: { .hint exercise="ex1" }
 
-This is a **markdown** hint.
+You should make the expression sum to 10.
 
 :::
 
 ::: { .solution exercise="ex1" }
 
+**Solution:**
+
 ```r
-1 + 2
+1 + 2 + 3 + 4
 ```
 
 :::
