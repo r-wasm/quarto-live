@@ -32,7 +32,8 @@ options("webr.evaluate.handler" = evaluate::new_output_handler(
             switch(
               getOption("webr.render.df"),
               "kable" = knitr::kable(x),
-              "paged-table" = markdown::paged_table(x),
+              "dt" = DT::datatable(x),
+              "paged-table" = rmarkdown::paged_table(x),
               "gt" = gt::gt(x),
               "gt-interactive" = gt::opt_interactive(gt::gt(x)),
               "reactable" = reactable::reactable(x),

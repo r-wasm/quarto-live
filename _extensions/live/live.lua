@@ -564,7 +564,7 @@ function setupWebR(doc)
       ["paged-table"] = "rmarkdown",
       ["gt"] = "gt",
       ["gt-interactive"] = "gt",
-      ["DT"] = "DT",
+      ["dt"] = "DT",
       ["reactable"] = "reactable",
     }
     if (pkg[webr_render_df]) then
