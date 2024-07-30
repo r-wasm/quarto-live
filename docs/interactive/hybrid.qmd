@@ -63,9 +63,9 @@ plot(si1$depth, si1$price)
 head(si1)
 ```
 
-### Passing data between engines
+## Passing data between engines
 
-The same mechanism can be used to pass data between WebAssembly engines
+The mechanism described in the previous section can also be used to pass data between WebAssembly engines.
 
 #### Source
 

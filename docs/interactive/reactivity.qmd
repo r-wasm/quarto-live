@@ -200,7 +200,9 @@ do_penguins_density(measure, species);
 ```
 ````
 
-#### Ouptut
+#### Output
+
+## Overview
 
 ```{webr}
 #| edit: false

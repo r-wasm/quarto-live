@@ -1,19 +1,46 @@
 ---
 format: live-html
-title: "Tables"
+title: Displaying Tables
 webr:
   render-df: gt-interactive
+engine: knitr
+toc: true
 ---
 
-The `render-df` option changes how `data.frame`s are rendered by default.
-It can be one of:
+{{< include ../_extensions/live/_knitr.qmd >}}
 
-* `default`
-* `paged-table`
-* `gt`
-* `gt-interactive`
-* `DT`
-* `reactable`
+For `webr` interactive code cells the `render-df` document YAML option can be used to change how `data.frame` objects are rendered in the output.
+
+### Available Options
+
+| option | Description |
+|--------|-------------|
+| `default` | Default output, text as if output at an R console. |
+| `paged-table` | Render with [`rmarkdown::paged_table()`](https://pkgs.rstudio.com/rmarkdown/reference/paged_table.html). |
+| `kable` | Render with [`knitr::kable()`](https://bookdown.org/yihui/rmarkdown-cookbook/kable.html). |
+| `gt` | Render with [`gt::gt()`](https://gt.rstudio.com/reference/gt.html). |
+| `gt-interactive` | Render with `gt::gt()` as [an interactive table](https://gt.rstudio.com/reference/opt_interactive.html). |
+| `DT` | Render with [`DT::datatable()`](https://rstudio.github.io/DT/). |
+| `reactable` | Render with [`reactable::reactable()`](https://glin.github.io/reactable/reference/reactable.html). |
+
+### Example
+
+#### Source
+
+````{.markdown filename="table.qmd"}
+----
+format: live-html
+webr:
+  render-df: gt-interactive
+----
+
+```{{webr}}
+mtcars
+```
+
+````
+
+#### Output
 
 ```{webr}
 mtcars

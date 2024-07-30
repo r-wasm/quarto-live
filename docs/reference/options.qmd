@@ -37,3 +37,4 @@ title: Code cell options
 | `hint` | `false` | Create exercise hint block. |
 | `setup` | `false` | Create exercise setup block. |
 | `solution` | `false` | Create exercise solution block. |
+: {tbl-colwidths="[10,10,80]"}
