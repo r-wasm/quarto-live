@@ -1,0 +1,86 @@
+---
+title: HTML Widgets
+engine: knitr
+format: live-html
+toc: true
+webr:
+  packages:
+    - rgl
+    - gt
+    - leaflet
+---
+
+{{< include ../_extensions/live/_knitr.qmd >}}
+
+```{webr}
+#| edit: false
+#| output: false
+library(htmltools)
+library(rgl)
+library(gt)
+library(leaflet)
+```
+
+The `quarto-live` extension has support for displaying the output of R's popular [`htmltools`](https://rstudio.github.io/htmltools/) and [htmlWidgets](https://www.htmlwidgets.org/) packages, making rich HTML and JavaScript output possible with interactive code blocks.
+
+## Example: `htmltools`
+
+```{webr}
+tags$div(
+  tags$h3("Hello from", tags$code("htmltools"), "!"),
+  tags$p(
+    "This is some HTML output from",
+    tags$a(
+      "htmltools",
+      href = "https://rstudio.github.io/htmltools/"
+    ),
+    "."
+  ),
+  tags$p(
+    "Below is a checkbox, feel free to",
+    tags$em("check"),
+    "it out!"
+  ),
+  tags$input(type="checkbox")
+)
+```
+
+## Example: `htmlwidgets`
+
+### Leaflet
+
+```{webr}
+leaflet() |>
+  addTiles() |>
+  addMarkers(lng = 174.768, lat = -36.852, popup = "The birthplace of R")
+```
+
+### rgl
+
+```{webr}
+options(rgl.printRglwidget = TRUE)
+theta <- seq(0, 6 * pi, len = 100)
+xyz <- cbind(sin(theta), cos(theta), theta)
+lineid <- plot3d(xyz,
+  type = "l", alpha = 1:0, lwd = 5, col = "blue"
+)["data"]
+browsable(
+  tagList(
+    rglwidget(
+      elementId = "example", width = 800, height = 400,
+      controllers = "player"
+    ),
+    playwidget("example", ageControl(
+      births = theta, ages = c(0, 0, 1),
+      objids = lineid, alpha = c(0, 1, 0)
+    ),
+    start = 1, stop = 6 * pi, step = 0.1,
+    rate = 6, elementId = "player"
+    )
+  )
+)
+```
+
+::: {.callout-note}
+At the moment `htmltools` cannot be used as reactive inputs for `quarto-live`'s [OJS integration](../interactive/reactivity.qmd). This is planned to be added in a future release of `quarto-live`.
+:::

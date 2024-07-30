@@ -28,12 +28,13 @@ website:
           - interactive/data.qmd
           - interactive/dynamic.qmd
           - interactive/hybrid.qmd
+          - interactive/dashboards.qmd
       - section: Other Features
         contents:
           - other/tables.qmd
           - other/resources.qmd
-          - other/html.qmd
-          - other/python.qmd
+          - other/htmlwidgets.qmd
+          - other/jupyter.qmd
           - other/slides.qmd
       - section: Reference
         contents:

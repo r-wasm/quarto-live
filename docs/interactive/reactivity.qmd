@@ -153,11 +153,11 @@ Notice how re-evaluating the code block reactively updates the value calculated 
 You might see an OJS error breifly appear as the page loads. This is normal, caused by the fact that the variables defined by the `quarto-live` cell do not exist until after the WebAssembly engine has loaded and executed the code block contents.
 :::
 
-## Interactive documents and dashboards
+## Interactive documents
 
 The above described OJS integration can be used to implement complex computational and statistical methods using R or Python code, executed under WebAssembly, which can then be invoked reactively with OJS.
 
-This is a useful pattern for creating engaging documents and interactive dashboards using a serverless client-side rendering approach.
+This is a useful pattern for creating engaging documents with a client-side rendering approach. See also this [Quarto dashboard example](dashboards.qmd).
 
 ::: {.callout-note}
 Invoking exported R and Python functions from OJS is generally more efficient than re-evaluating a `quarto-live` code block, since the code does not need to be re-parsed each time it needs to run.

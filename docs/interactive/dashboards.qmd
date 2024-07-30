@@ -1,0 +1,110 @@
+---
+title: Dashboard Example
+subtitle: Interactive Quarto Dashboards with WebAssembly computation
+format: live-dashboard
+pyodide:
+  packages:
+    - numpy
+    - scipy
+    - matplotlib
+---
+
+## Row
+
+### {.sidebar}
+
+```{ojs}
+viewof aRange = Inputs.range([0, 180], {value: 0, step: 0.5, label: "angle"});
+viewof sRange = Inputs.range([0, 50], {value: 10, step: 0.5, label: "sigma"});
+viewof bRange = Inputs.range([0, 20], {value: 2.5, step: 0.2, label: "beta"});
+viewof rRange = Inputs.range([0, 50], {value: 28, step: 0.5, label: "rho"});
+viewof cmap = Inputs.select(
+  [
+    'viridis', 'plasma', 'inferno', 'magma', 'cividis',
+    'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+    'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+    'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn',
+    'binary', 'gist_yarg', 'gist_gray', 'gray', 'bone', 'pink',
+    'spring', 'summer', 'autumn', 'winter', 'cool', 'Wistia',
+    'hot', 'afmhot', 'gist_heat', 'copper'
+  ],
+  { value: 'viridis', label: "Color map" }
+);
+angle = debounce(viewof aRange);
+sigma = debounce(viewof sRange);
+beta = debounce(viewof bRange);
+rho = debounce(viewof rRange);
+
+// From @mbostock/debouncing-input
+function debounce(input, delay = 500) {
+  return Generators.observe(notify => {
+    let timer = null;
+    let value;
+    function inputted() {
+      if (timer !== null) return;
+      notify(value = input.value);
+      timer = setTimeout(delayed, delay);
+    }
+    function delayed() {
+      timer = null;
+      if (value === input.value) return;
+      notify(value = input.value);
+    }
+    input.addEventListener("input", inputted), inputted();
+    return () => input.removeEventListener("input", inputted);
+  });
+}
+```
+
+### Column
+
+::: {.card height="100%" title="The Lorenz System"}
+
+```{pyodide}
+#| edit: false
+#| echo: false
+#| fig-width: 8
+#| fig-height: 7
+#| input:
+#|   - sigma
+#|   - beta
+#|   - rho
+#|   - angle
+#|   - cmap
+# Based on ipywidgets/docs/source/examples/Lorenz Differential Equations.ipynb
+import numpy as np
+from scipy import integrate
+from matplotlib import pyplot as plt
+
+def solve_lorenz(N=10, angle=0.0, max_time=4.0, sigma=10.0, beta=8./3, rho=28.0, cmap = "viridis"):
+    fig = plt.figure()
+    ax = fig.add_axes([0, 0, 1, 1], projection='3d')
+    ax.axis('off')
+    ax.set_xlim((-25, 25))
+    ax.set_ylim((-35, 35))
+    ax.set_zlim((5, 55))
+    
+    def lorenz_deriv(x_y_z, t0, sigma=sigma, beta=beta, rho=rho):
+        x, y, z = x_y_z
+        return [sigma * (y - x), x * (rho - z) - y, x * y - beta * z]
+
+    np.random.seed(1)
+    x0 = -15 + 30 * np.random.random((N, 3))
+
+    t = np.linspace(0, max_time, int(250*max_time))
+    x_t = np.asarray([integrate.odeint(lorenz_deriv, x0i, t)
+                      for x0i in x0])
+
+    colors = plt.get_cmap(cmap)(np.linspace(0, 1, N))
+
+    for i in range(N):
+        x, y, z = x_t[i,:,:].T
+        lines = ax.plot(x, y, z, '-', c=colors[i])
+        plt.setp(lines, linewidth=1)
+
+    ax.view_init(30, angle)
+    plt.show()
+
+solve_lorenz(angle = angle, sigma = sigma, beta = beta, rho = rho, cmap = cmap)
+```
+:::

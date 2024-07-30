@@ -1,0 +1,68 @@
+---
+title: Jupyter Widgets
+format: live-html
+toc: true
+resources:
+  - "images"
+pyodide:
+  packages:
+    - matplotlib
+    - ipywidgets
+---
+
+The `quarto-live` extension has support for displaying several types of `ipython` [rich output](https://ipython.readthedocs.io/en/stable/interactive/plotting.html#rich-outputs) and [Jupyter Widgets](https://ipywidgets.readthedocs.io/en/latest/) with interactive code blocks.
+
+## Example: `ipython` rich output
+
+```{pyodide}
+from IPython.display import HTML
+from IPython.display import Image
+display(HTML("<h3>Hello from <code>ipython</code>!</h3>"))
+display(HTML("<p>This is HTML output, and below is an image.</p>"))
+Image(filename='images/python-logo.png') 
+```
+
+## Example: Jupyter Widgets
+
+```{pyodide}
+import ipywidgets as widgets
+
+out = widgets.Output(
+  layout={'border': '1px solid black', 'padding': '1em'}
+)
+out.append_display_data(
+  widgets.IntSlider(
+    value=7, min=0, max=10, step=1,
+    description='Slider:',
+    disabled=False,
+  )
+)
+out.append_display_data(
+  widgets.Text(
+      value="Hello",
+      description='Text:',
+      disabled=False
+  )
+)
+out.append_display_data(
+  widgets.Dropdown(
+    options=[('One', 1), ('Two', 2), ('Three', 3)],
+    value=2,
+    description='Number:',
+  )
+)
+out.append_display_data(
+  widgets.ColorPicker(
+      concise=False,
+      description='Color picker',
+      value='blue',
+      disabled=False
+  )
+)
+out
+```
+
+::: {.callout-note}
+At the moment Jupyter widgets cannot be used as reactive inputs for `quarto-live`'s [OJS integration](../interactive/reactivity.qmd). This is planned to be added in a future release of `quarto-live`.
+:::
+
