@@ -82,7 +82,12 @@ pyodideOjs = {
       statusContainer.parentNode.remove();
     }
     return pyodide;
-  })();
+  })().catch((err) => {
+    statusText.style.color = "var(--exercise-editor-hl-er, #AD0000)";
+    statusText.textContent = err.message;
+    //indicatorContainer.querySelector(".spinner-grow").classList.add("d-none");
+    throw err;
+  });
 
   // Storage for shared exercise environments
   const pyodideEnvironmentManager = new PyodideEnvironmentManager(pyodidePromise);
