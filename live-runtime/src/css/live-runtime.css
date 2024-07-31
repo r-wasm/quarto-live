@@ -108,6 +108,11 @@
 }
 
 /* Codemirror Editor */
+.card.exercise-editor {
+  --exercise-min-lines: 0;
+  --exercise-max-lines: infinity;
+}
+
 .card.exercise-editor .card-header {
   padding: 0.5rem 1rem;
   background-color: var(--exercise-cap-bg);
@@ -117,6 +122,8 @@
 .card.exercise-editor .cm-editor {
   color: var(--exercise-main-color);
   background-color: var(--exercise-main-bg);
+  /* n * line-height + padding */
+  max-height: calc(var(--exercise-max-lines) * 1.4 * var(--bs-body-font-size) + 8px);
 }
 
 .card.exercise-editor .cm-content {
@@ -145,6 +152,17 @@
   background-color: var(--exercise-cap-bg);
   color: var(--exercise-main-color);
   border-right: 1px solid var(--exercise-gray);
+}
+
+.card.exercise-editor .cm-content,
+.card.exercise-editor .cm-gutter {
+  /* n * line-height + padding */
+  min-height: calc(var(--exercise-min-lines) * 1.4 * var(--bs-body-font-size) + 8px);
+}
+
+.card.exercise-editor .cm-scroller {
+  line-height: 1.4;
+  overflow: auto;
 }
 
 /* Syntax Highlighting */

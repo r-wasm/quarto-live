@@ -229,6 +229,40 @@ while (TRUE) {
 }
 ```
 
+## Editor height
+
+The editor height can be controlled through the `min-lines` and `max-lines` code cell options. Internal empty lines included in the source cell contents are retained.
+
+The `min-lines` option sets the minimum height of the editor. When there are fewer lines of code, empty space is shown in the remaining space.
+
+The `max-lines` option sets the maximum height of the editor. When there are additional lines of code, the editor container can be scrolled vertically.
+
+#### Source
+
+````markdown
+```{{webr}}
+#| min-lines: 6
+#| max-lines: 10
+x <- 173
+
+y <- 205
+
+x + y
+```
+````
+
+#### Output
+
+```{webr}
+#| min-lines: 6
+#| max-lines: 10
+x <- 173
+
+y <- 205
+
+x + y
+```
+
 ## Cross References
 
 Cross-references to interactive code listings should be written using fenced div syntax. Create a fenced div with an `id` starting with `lst-`, then include the interactive code cell followed by the caption.

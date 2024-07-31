@@ -26,6 +26,8 @@ type ExerciseOptions = EvaluateOptions & {
   localstorage: boolean;
   runbutton: boolean;
   startover: boolean;
+  'min-lines': number | undefined;
+  'max-lines': number | undefined;
 }
 
 type ExerciseButtonSpec = {
@@ -143,6 +145,13 @@ abstract class ExerciseEditor {
     });
 
     const dom = this.render();
+
+    // Set editor height restrictions
+    const minLines = String(options['min-lines'] || 0);
+    const maxLines = String(options['max-lines']) || "infinity";
+    dom.style.setProperty('--exercise-min-lines', minLines);
+    dom.style.setProperty('--exercise-max-lines', maxLines);
+
     this.container.oninput = (ev: CustomEvent) => this.onInput(ev);
     this.container.appendChild(dom);
     this.container.value = {

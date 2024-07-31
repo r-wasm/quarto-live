@@ -29,6 +29,8 @@ The following code cell options can be used in `webr` or `pyodide` blocks, or se
 | `startover` | `true` | Show the "Start Over" button? |
 | `timelimit` | `30` | Execution time limit in seconds. |
 | `warning` | `true` | Show warning messages? |
+| `min-lines` | `0` | Minimum editor height in number of lines. |
+| `max-lines` | `Infinity` | Maximum editor height in number of lines. |
 : {tbl-colwidths="[10,10,80]"}
 
 ## Exercises
