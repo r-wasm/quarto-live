@@ -97,7 +97,7 @@ Initial code cell contents will be automatically executed[^ex] once the WebAssem
 123 + 456
 ```
 
-## Immediate Execution
+## Immediate execution
 
 Setting `runbutton: false` will remove the "Run Code" button from the editor UI. In this mode code is evaluated immediately as it is entered into the editor.
 
@@ -155,7 +155,7 @@ n_sd <- 5
 # Type "n_" to see context aware suggestions
 ```
 
-## Code persistence
+## Storing and recalling code
 
 Initial editor contents are stored and can be recalled at any time by clicking the "Start Over" button. If required, the "Start Over" button can be disabled by setting the `startover: false` cell option.
 
@@ -177,13 +177,13 @@ foo <- c(2, 4, 6, 8)
 foo + 1
 ```
 
-Code entered by users may be automatically persisted in web browser local storage by setting the `localstorage: true` option. When enabled, evaluated code is persisted and will be recalled into the editor when the HTML document is reloaded.
+Code entered by users can be automatically saved to web browser local storage by setting the `persist: true` option. When enabled, evaluated code is stored and will be recalled into the editor when the HTML document is reloaded.
 
 #### Source
 
 ````markdown
 ```{{webr}}
-#| localstorage: true
+#| persist: true
 foo <- c(1, 3, 5, 7)
 foo + 1
 ```
@@ -192,7 +192,7 @@ foo + 1
 #### Output
 
 ```{webr}
-#| localstorage: true
+#| persist: true
 foo <- c(1, 3, 5, 7)
 foo + 1
 ```
@@ -263,7 +263,7 @@ y <- 205
 x + y
 ```
 
-## Cross References
+## Cross references
 
 Cross-references to interactive code listings should be written using fenced div syntax. Create a fenced div with an `id` starting with `lst-`, then include the interactive code cell followed by the caption.
 

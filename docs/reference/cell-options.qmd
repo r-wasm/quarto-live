@@ -23,7 +23,7 @@ The following code cell options can be used in `webr` or `pyodide` blocks, or se
 | `fig-height` | `5` | Height of graphics output in "inches". |
 | `fig-dpi` | `5` | DPI of graphics output (Pyodide only). |
 | `include` | `true` | Include this code block in the document? |
-| `localstorage` | `false` | Persist changes in the editor to browser's local storage? |
+| `persist` | `false` | Persist changes in the editor to browser's local storage? |
 | `output` | `true` | Display execution output in the document? |
 | `runbutton` | `true` | Show the "Run Code" button? If `false`, code is immediately evaluated. |
 | `startover` | `true` | Show the "Start Over" button? |

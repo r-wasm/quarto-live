@@ -23,7 +23,7 @@ type ExerciseOptions = EvaluateOptions & {
   caption: string;
   completion: boolean;
   id: string,
-  localstorage: boolean;
+  persist: boolean;
   runbutton: boolean;
   startover: boolean;
   'min-lines': number | undefined;
@@ -110,7 +110,7 @@ abstract class ExerciseEditor {
       completion: true,
       runbutton: true,
       startover: true,
-      localstorage: false,
+      persist: false,
     }, options);
 
     this.storageKey = `editor-${window.location.href}#${this.options.id}`;
@@ -128,7 +128,7 @@ abstract class ExerciseEditor {
     }
 
     // Load previous edits to editor from browser storage
-    if (this.options.localstorage) {
+    if (this.options.persist) {
       const storedCode = window.localStorage.getItem(this.storageKey);
       if (storedCode) {
         code = storedCode;
@@ -234,7 +234,7 @@ abstract class ExerciseEditor {
     this.container.value.code = this.code;
 
     // Store latest updates to editor content to local browser storage
-    if (this.options.localstorage) {
+    if (this.options.persist) {
       window.localStorage.setItem(this.storageKey, this.code);
     }
   }
