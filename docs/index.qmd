@@ -33,6 +33,7 @@ The [webR](https://docs.r-wasm.org/webr/latest/) and [Pyodide](https://pyodide.o
 #| completion: true
 mod <- lm(waiting ~ eruptions, data = faithful)
 plot(faithful, main = "Old Faithful Geyser Data")
+abline(mod, col = 'blue')
 summary(mod)
 ```
 

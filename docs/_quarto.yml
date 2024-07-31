@@ -7,6 +7,7 @@ website:
   repo-url: https://github.com/r-wasm/quarto-live
   repo-actions: [edit, issue]
   repo-subdir: "docs"
+  page-navigation: true
   sidebar:
     contents:
       - href: index.qmd
@@ -36,6 +37,7 @@ website:
           - other/htmlwidgets.qmd
           - other/jupyter.qmd
           - other/slides.qmd
+      - text: "---"
       - section: Reference
         contents:
           - reference/document-yaml.qmd
