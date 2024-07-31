@@ -216,7 +216,7 @@ export class WebREvaluator implements ExerciseEvaluator {
     const capture = await shelter.captureR(`
         setTimeLimit(elapsed = timelimit)
         on.exit(setTimeLimit(elapsed = Inf))
-        evaluate::evaluate(
+        eval_result <- evaluate::evaluate(
           code,
           envir = envir,
           keep_message = warning,
@@ -225,6 +225,7 @@ export class WebREvaluator implements ExerciseEvaluator {
           filename = "User code",
           output_handler = getOption("webr.evaluate.handler")
         )
+        knitr:::merge_low_plot(eval_result)
       `,
       {
         env: {
