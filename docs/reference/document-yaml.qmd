@@ -1,0 +1,67 @@
+---
+title: Document YAML Options
+format: html
+---
+
+{{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
+
+The `quarto-live` extension can be configured using Quarto document YAML options. There are three top-level keys: `webr`, `pyodide` and `live`.
+
+## Options Reference
+
+### `webr`
+
+| YAML Key | Type |Description |
+|----------|------|-------------|
+| `cell-options` | Object | [Code cell options](cell-options.qmd) to be applied to all `webr` blocks in the document. |
+| `engine-url` | String | URL from which to load the webR WebAssembly engine, e.g. `https://repo.r-wasm.org/v0.4.0/`. |
+| `packages` | Array | List of R packages to [install automatically](../getting_started/packages.qmd). |
+| `render-df` | String | [Method used to render](../other/tables.qmd) `data.frame` objects.|
+| `repos` | Array | List of CRAN-like repos from which to install R packages. |
+| `resources` | Array | Resources to be [loaded into the webR VFS](../other/resources.qmd). Defaults to all resources. |
+: {tbl-colwidths="[20,5,75]"}
+
+### `pyodide`
+
+| YAML Key | Type |Description |
+|----------|------|-------------|
+| `cell-options` | Object | [Code cell options](cell-options.qmd) to be applied to all `pyodide` blocks in the document. |
+| `engine-url` | String | URL from which to load the Pyodide WebAssembly engine, e.g. `https://cdn.jsdelivr.net/pyodide/v0.26.1/full/`. |
+| `packages` | Array | List of Python packages to [install automatically](../getting_started/packages.qmd). |
+| `resources` | Array | Resources to be [loaded into the Pyodide VFS](../other/resources.qmd). Defaults to all resources. |
+: {tbl-colwidths="[20,5,75]"}
+
+### `live`
+
+| YAML Key | Type |Description |
+|----------|------|-------------|
+| `show-hints` | Boolean | Include exercise hints in document output. |
+| `show-solutions` | Boolean | Include exercise solutions in document output. |
+| `show-grading` | Boolean | Include exercise grading in document output. |
+: {tbl-colwidths="[25,5,70]"}
+
+## Example
+
+A fully-configured document might look something like this:
+
+```{.yaml filename="live-document.qmd"}
+---
+title: An Example
+format: live-html
+resources: datadir
+webr:
+  packages:
+    - ggplot2
+    - mypackage
+  repos:
+    - https://myrepo.example.com/
+pyodide:
+  cell-options:
+    edit: false
+  packages:
+    - matplotlib
+live:
+  show-solutions: false
+---
+```
+

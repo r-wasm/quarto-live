@@ -1,8 +1,11 @@
 ---
-title: Code cell options
+title: Code Cell Options
+format: html
 ---
 
 {{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
+
+The following code cell options can be used in `webr` or `pyodide` blocks, or set for an entire document using the `cell-options` key in the [document YAML options](document-yaml.qmd).
 
 ## Interactive code blocks
 

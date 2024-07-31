@@ -38,7 +38,8 @@ website:
           - other/slides.qmd
       - section: Reference
         contents:
-          - reference/options.qmd
+          - reference/document-yaml.qmd
+          - reference/cell-options.qmd
 
 theme:
   light: cosmo
