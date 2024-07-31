@@ -19,9 +19,9 @@ The following code cell options can be used in `webr` or `pyodide` blocks, or se
 | `envir` | `"global"` | Label for execution environment. |
 | `error` | `true` | Continue execution after an error? |
 | `eval` | `true` | Evaluate code using WebAssembly engine? |
-| `fig-width` | '7' | Width of graphics output in "inches". |
-| `fig-height` | '5' | Height of graphics output in "inches". |
-| `fig-dpi` | '5' | DPI of graphics output (Pyodide only). |
+| `fig-width` | `7` | Width of graphics output in "inches". |
+| `fig-height` | `5` | Height of graphics output in "inches". |
+| `fig-dpi` | `5` | DPI of graphics output (Pyodide only). |
 | `include` | `true` | Include this code block in the document? |
 | `localstorage` | `false` | Persist changes in the editor to browser's local storage? |
 | `output` | `true` | Display execution output in the document? |
@@ -35,7 +35,7 @@ The following code cell options can be used in `webr` or `pyodide` blocks, or se
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `check` | None | Grading algorithm. |
+| `check` | `false` | Create exercise grading algorithm. |
 | `exercise` | None | Exercise label. |
 | `hint` | `false` | Create exercise hint block. |
 | `setup` | `false` | Create exercise setup block. |
