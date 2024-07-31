@@ -220,6 +220,10 @@ abstract class ExerciseEditor {
       return;
     }
 
+    // Update reactive value for code contents
+    this.code = this.view.state.doc.toString();
+    this.container.value.code = this.code;
+
     // Store latest updates to editor content to local browser storage
     if (this.options.localstorage) {
       window.localStorage.setItem(this.storageKey, this.code);
@@ -228,10 +232,6 @@ abstract class ExerciseEditor {
 
   onViewUpdate(update: ViewUpdate) {
     if (!update.docChanged) return;
-
-    this.code = update.state.doc.toString();
-    this.container.value.code = this.code;
-
     this.container.dispatchEvent(
       new CustomEvent('input', { detail: { manual: false } })
     );
