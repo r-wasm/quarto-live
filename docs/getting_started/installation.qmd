@@ -15,7 +15,7 @@ Once installed, the extension can be used with Quarto documents within this proj
 
 ## Usage
 
-First set the format for your Quarto document as a `live` variant in the `yaml` header:
+First set the format for your Quarto document as a `live` variant in the YAML header:
 
 ````yaml
 ---
@@ -23,7 +23,7 @@ format: live-html
 ---
 ````
 
-Note that the default rendering engine used by Quarto is `jupyter`, requiring a Python installation. If you'd prefer to avoid Python you can also explicitly select the `knitr` engine in the document's `yaml` header:
+The default rendering engine used by Quarto is `jupyter`, requiring a Python installation. If you'd prefer to avoid Python you can also explicitly select the `knitr` engine in the document's YAML header:
 
 ```yaml
 ---
@@ -32,7 +32,7 @@ engine: knitr
 ---
 ```
 
-Next, after the `yaml` header but before your content, include setup code for the knitr engine using a relative path:
+Next, after the YAML header but before your content, include setup code for the knitr engine using a relative path:
 
 ```yaml
 ---
