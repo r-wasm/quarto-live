@@ -511,8 +511,8 @@ function setupPyodide(doc)
   local pyodide_options = {
     indexURL = "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/",
   }
-  if (pyodide["base-url"]) then
-    pyodide_options["indexURL"] = pandoc.utils.stringify(pyodide["base-url"])
+  if (pyodide["engine-url"]) then
+    pyodide_options["indexURL"] = pandoc.utils.stringify(pyodide["engine-url"])
   end
 
   local data = {
@@ -573,9 +573,11 @@ function setupWebR(doc)
   end
 
   -- Initial webR startup options
-  local webr_options = {}
-  if (webr["base-url"]) then
-    webr_options["baseUrl"] = pandoc.utils.stringify(webr["base-url"])
+  local webr_options = {
+    baseUrl = "https://webr.r-wasm.org/v0.4.0/"
+  }
+  if (webr["engine-url"]) then
+    webr_options["baseUrl"] = pandoc.utils.stringify(webr["engine-url"])
   end
 
   local data = {
