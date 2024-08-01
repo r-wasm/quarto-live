@@ -96,21 +96,21 @@ Environments can be managed manually, if you wish, by setting the `envir` cell o
 ````markdown
 ```{{webr}}
 #| envir: myenv
-#| exercise: true
+#| exercise: ex_shared_1
 #| autorun: true
 foo2 <- 7
 ```
 
 ```{{webr}}
 #| envir: myenv
-#| exercise: true
+#| exercise: ex_shared_2
 #| autorun: true
 bar2 <- 5
 ```
 
 ```{{webr}}
 #| envir: myenv
-#| exercise: true
+#| exercise: ex_shared_3
 #| autorun: true
 foo2 + bar2
 ```
@@ -119,21 +119,21 @@ foo2 + bar2
 
 ```{webr}
 #| envir: myenv
-#| exercise: true
+#| exercise: ex_shared_1
 #| autorun: true
 foo2 <- 7
 ```
 
 ```{webr}
 #| envir: myenv
-#| exercise: true
+#| exercise: ex_shared_2
 #| autorun: true
 bar2 <- 5
 ```
 
 ```{webr}
 #| envir: myenv
-#| exercise: true
+#| exercise: ex_shared_3
 #| autorun: true
 foo2 + bar2
 ```

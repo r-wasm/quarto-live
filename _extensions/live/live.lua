@@ -118,6 +118,15 @@ function ParseBlock(block, engine)
   }
 end
 
+local exercise_keys = {}
+function assertUniqueExercise(key)
+  if (exercise_keys[key]) then
+    error("Document contains multiple exercises with key `" .. tostring(key) ..
+      "`." .. "Exercise keys must be unique.")
+  end
+  exercise_keys[key] = true
+end
+
 function assertBlockExercise(type, engine, block)
   if (not block.attr.exercise) then
     error("Can't create `" .. engine .. "` " .. type ..
@@ -229,6 +238,7 @@ function PyodideCodeBlock(code)
   local ojs_source = nil
   if (block.attr.exercise) then
     -- Primary interactive exercise block
+    assertUniqueExercise(block.attr.exercise)
     ojs_source = "pyodide-exercise.ojs"
   elseif (block.attr.edit) then
     -- Editable non-exercise sandbox block
@@ -354,6 +364,7 @@ function WebRCodeBlock(code)
   local ojs_source = nil
   if (block.attr.exercise) then
     -- Primary interactive exercise block
+    assertUniqueExercise(block.attr.exercise)
     ojs_source = "webr-exercise.ojs"
   elseif (block.attr.edit) then
     -- Editable non-exercise sandbox block
