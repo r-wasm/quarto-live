@@ -65,6 +65,10 @@
     padding: 0.1rem 0.5rem;
   }
 
+  #exercise-loading-indicator>.spinner-grow {
+    min-width: 0.66rem;
+  }
+
   #exercise-loading-indicator .gap-2{
     gap: 0.2rem !important;
   }
