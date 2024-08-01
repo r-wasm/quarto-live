@@ -175,7 +175,7 @@ export class WebRGrader extends ExerciseGrader {
       }
 
       const argsObj = await new shelter.RList(args);
-      this.envManager.bind(".checker_args", argsObj, this.envLabels.grading);
+      await this.envManager.bind(".checker_args", argsObj, this.envLabels.grading);
       const options = { ...this.options };
       options.error = false;
       options.output = true;
