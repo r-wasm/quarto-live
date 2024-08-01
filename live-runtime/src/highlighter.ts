@@ -71,9 +71,10 @@ export function highlightPython(code: string) {
 export function interpolate(
   el: Element,
   search: string,
-  replace: string,
+  replace: string | number,
   language: "none" | "r" | "python",
 ) {
+  if (typeof replace === "number") replace = replace.toLocaleString();
   if (el.textContent.includes(search)) {
     let found = false;
     for (let child of el.children) {

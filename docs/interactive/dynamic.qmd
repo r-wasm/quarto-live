@@ -478,9 +478,6 @@ Recreate the plot above in base R graphics.
 
 ```{webr}
 #| exercise: tangle
-#| input:
-#|  - mean
-#|  - sd
 #| caption: Plot Normal Distribution
 x <- seq(-5, 5, length = 100)
 y <- ______
@@ -498,7 +495,7 @@ y <- dnorm(x, mean = ${mean}, sd = ${sd})                     # <2>
 plot(x, y, type = "l", lwd = 2, ylim = c(0,1))                # <3>
 ```
 1. Generate values for the x axis.
-2. Generate values for the y axis using the normal distribution density function `dnorm()`, with mean ${mean} and standard deviation ${sd}.
+2. Generate values for the y axis using the normal distribution density function `dnorm()`, with mean ${mean.toLocaleString()} and standard deviation ${sd.toLocaleString()}.
 3. Plot the values as a line (`type = "l"`) and with thicker width (`lwd = 2`).
 :::
 
