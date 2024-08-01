@@ -172,7 +172,17 @@ export class WebREnvironment {
     }
     const shelter = await this.shelter;
     const env = await this.env[id];
-    await shelter.destroy(env);
+    try {
+      await shelter.destroy(env);
+    } catch (_err) {
+      const err = _err as Error;
+      // Muffle error if environment has already been destroyed.
+      // TODO: The user is probably invoking OJS events very quickly, we should
+      // be debouncing input.
+      if (!err.message.includes("Can't find object in shelter.")) {
+        throw err;
+      }
+    }
     delete this.env[id];
   }
 }
