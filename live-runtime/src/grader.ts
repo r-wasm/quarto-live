@@ -1,19 +1,17 @@
-import { EvaluateOptions, EnvLabels, EvaluateContext } from "./evaluate";
+import { EvaluateOptions, EvaluateContext } from "./evaluate";
 import { WebREvaluator } from "./evaluate-webr";
 import { PyodideEvaluator } from "./evaluate-pyodide";
-import { PyodideEnvironmentManager, WebREnvironmentManager } from './environment';
+import { EngineEnvironment, EnvironmentManager } from "./environment";
 
 export class ExerciseGrader {
   evaluator: WebREvaluator | PyodideEvaluator;
-  envManager: WebREnvironmentManager | PyodideEnvironmentManager;
+  envManager: EnvironmentManager<EngineEnvironment>;
   context: EvaluateContext;
   options: EvaluateOptions;
-  envLabels: EnvLabels;
   
   constructor(evaluator: WebREvaluator | PyodideEvaluator) {
     this.evaluator = evaluator;
     this.envManager = this.evaluator.envManager;
-    this.envLabels = this.evaluator.envLabels;
     this.context = this.evaluator.context;
 
     // Fixed grading options

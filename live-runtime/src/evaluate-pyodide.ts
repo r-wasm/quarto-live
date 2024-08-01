@@ -1,10 +1,8 @@
-import { PyodideEnvironmentManager } from './environment';
+import { EnvironmentManager, EnvLabel, PyodideEnvironment } from './environment';
 import { Indicator } from './indicator';
 import { highlightPython } from './highlighter';
 import type { PyProxy } from 'pyodide/ffi';
 import {
-  EnvLabel,
-  EnvLabels,
   EvaluateContext,
   EvaluateOptions,
   ExerciseEvaluator,
@@ -12,7 +10,6 @@ import {
   EvaluateValue,
 } from "./evaluate";
 import { PyodideInterfaceWorker } from './pyodide-worker';
-
 
 declare global {
   interface Window {
@@ -39,20 +36,16 @@ export class PyodideEvaluator implements ExerciseEvaluator {
   container: OJSEvaluateElement;
   context: EvaluateContext;
   options: EvaluateOptions;
-  envLabels: EnvLabels;
-  envManager: PyodideEnvironmentManager;
+  envManager: EnvironmentManager<PyodideEnvironment>;
   pyodide: PyodideInterfaceWorker;
   nullResult: EvaluateValue;
-  constructor(
-    pyodide: PyodideInterfaceWorker,
-    environmentManager: PyodideEnvironmentManager,
-    context: EvaluateContext
-  ) {
+  constructor(pyodide: PyodideInterfaceWorker, context: EvaluateContext) {
     this.container = document.createElement('div');
     this.nullResult = { result: null, evaluate_result: null, evaluator: this };
     this.container.value = this.nullResult;
     this.pyodide = pyodide;
     this.context = context;
+    this.envManager = new EnvironmentManager(PyodideEnvironment.instance(pyodide), context);
 
     // Default evaluation options
     this.options = Object.assign(
@@ -68,23 +61,6 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       },
       context.options
     );
-
-    if (!this.options.exercise || this.options.envir === "global") {
-      this.envLabels = {
-        prep: this.options.envir,
-        result: this.options.envir,
-        grading: this.options.envir,
-        solution: this.options.envir,
-      }
-    } else {
-      this.envLabels = {
-        prep: `${this.options.envir}-prep`,
-        result: `${this.options.envir}-result`,
-        grading: `${this.options.envir}-grading`,
-        solution: `${this.options.envir}-solution`,
-      }
-    }
-    this.envManager = environmentManager;
   }
 
   getSetupCode(): string | undefined {
@@ -128,14 +104,14 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       // Set OJS inputs in "prep" environment
       await Promise.all(
         Object.entries(inputs).map(async ([k, v]) => {
-          await this.envManager.bind(k, v, this.envLabels.prep);
+          await this.envManager.bind(k, v, "prep");
         })
       );
 
       // Run setup code, copy prep environment for result, run user code
       const setup = this.getSetupCode();
       await this.evaluate(setup, "prep");
-      await this.envManager.create(this.envLabels.result, this.envLabels.prep);
+      await this.envManager.create("result", "prep");
       const result = await this.evaluate(this.context.code, "result");
 
       // Once we have the evaluate result, render it's contents to HTML
@@ -154,7 +130,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       }
 
       // Grab defined objects from the result environment
-      const envir = await this.envManager.get(this.envLabels.result);
+      const envir = await this.envManager.get("result");
       const objs: { [key: string]: PyProxy } = {};
       if (typeof this.options.define === 'string') {
         objs[this.options.define] = await envir.get(this.options.define)
@@ -208,7 +184,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       dpi,
       width,
       height,
-      environment: await this.envManager.get(this.envLabels[envLabel]),
+      environment: await this.envManager.get(envLabel),
     });
 
     const resultObject = await this.pyodide.runPythonAsync(

@@ -88,15 +88,12 @@ webROjs = {
     return webR;
   })(new WebR(data.options));
 
-  // Storage for shared exercise environments
-  const webREnvironmentManager = new WebREnvironmentManager(webRPromise);
-
   // Keep track of initial OJS block render
   const renderedOjs = {};
 
   const process = async (context, inputs) => {
     const webR = await webRPromise;
-    const evaluator = new WebREvaluator(webR, webREnvironmentManager, context)
+    const evaluator = new WebREvaluator(webR, context)
     await evaluator.process(inputs);
     return evaluator.container;
   }

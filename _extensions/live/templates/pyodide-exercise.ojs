@@ -8,7 +8,7 @@ viewof _pyodide_editor_{{block_id}} = {
   const options = Object.assign(
     {
       id: "pyodide-{{block_id}}-contents",
-      envir: block.attr.exercise,
+      envir: `exercise-env-${block.attr.exercise}`,
       error: false,
       autorun: false,
       caption: 'Exercise',

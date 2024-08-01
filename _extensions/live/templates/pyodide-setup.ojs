@@ -89,15 +89,12 @@ pyodideOjs = {
     throw err;
   });
 
-  // Storage for shared exercise environments
-  const pyodideEnvironmentManager = new PyodideEnvironmentManager(pyodidePromise);
-
   // Keep track of initial OJS block render
   const renderedOjs = {};
 
   const process = async (context, inputs) => {
     const pyodide = await pyodidePromise;
-    const evaluator = new PyodideEvaluator(pyodide, pyodideEnvironmentManager, context);
+    const evaluator = new PyodideEvaluator(pyodide, context);
     await evaluator.process(inputs);
     return evaluator.container;
   }

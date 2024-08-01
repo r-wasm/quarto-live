@@ -1,5 +1,5 @@
 import { PyodideEvaluator } from './evaluate-pyodide';
-import { PyodideEnvironmentManager } from './environment';
+import { EnvironmentManager, PyodideEnvironment } from './environment';
 import { Indicator } from './indicator';
 import { PyodideInterface } from 'pyodide';
 import { PyProxy } from 'pyodide/ffi';
@@ -7,7 +7,7 @@ import { ExerciseGrader } from './grader';
 
 export class PyodideGrader extends ExerciseGrader {
   evaluator: PyodideEvaluator;
-  envManager: PyodideEnvironmentManager;
+  envManager: EnvironmentManager<PyodideEnvironment>;
   pyodide: PyodideInterface;
 
   constructor(evaluator: PyodideEvaluator) {
@@ -120,9 +120,8 @@ export class PyodideGrader extends ExerciseGrader {
       if (solutions.length > 1) {
         console.warn(`Multiple solutions found for exercise "${exId}", using first solution.`);
       }
-      await this.envManager.create(this.envLabels.solution, this.envLabels.prep);
-      
-      const envir = await this.envManager.get(this.envLabels.solution);
+      await this.envManager.create("solution", "prep");
+      const envir = await this.envManager.get("solution");
       const code = solutions[0].textContent;
 
       const result = await this.pyodide.runPythonAsync(code, { globals: envir });
@@ -132,10 +131,10 @@ export class PyodideGrader extends ExerciseGrader {
   }
 
   async evaluateExercise() {
-    await this.envManager.create(this.envLabels.grading, this.envLabels.result);
-    const envir_result = await this.envManager.get(this.envLabels.result);
+    await this.envManager.create("grading", "result");
+    const envir_result = await this.envManager.get("result");
     const evaluate_result = this.evaluator.container.value.evaluate_result;
-    const envir_prep = await this.envManager.get(this.envLabels.prep);
+    const envir_prep = await this.envManager.get("prep");
     const last_value = this.evaluator.container.value.result.value;
 
     const checkerEnv: {[key: string]: any} = {
@@ -165,9 +164,7 @@ export class PyodideGrader extends ExerciseGrader {
     }
 
     const checkerEnvObj = await this.pyodide.toPy(checkerEnv);
-    await this.envManager.bind("_checker_env", checkerEnvObj, this.envLabels.grading);
-    // const globals = await this.envManager.get(this.envLabels.grading);
-    // await this.pyodide.runPythonAsync(`print(foo)`, { globals });
+    await this.envManager.bind("_checker_env", checkerEnvObj, "grading");
     checkerEnvObj.destroy();
 
     const options = { ...this.options };

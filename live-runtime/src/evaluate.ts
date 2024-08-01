@@ -1,5 +1,5 @@
+import { EngineEnvironment, EnvironmentManager, EnvLabel } from './environment';
 import { Indicator } from './indicator'
-import { PyodideEnvironmentManager, WebREnvironmentManager } from './environment'
 
 export type EvaluateValue = {
   evaluator: ExerciseEvaluator;
@@ -31,18 +31,6 @@ export interface EvaluateContext {
   indicator?: Indicator,
 };
 
-// prep - Environment after setup
-// result - Environment after execution
-// grading - Environment for grading function
-export type EnvLabels = {
-  prep: string;
-  result: string;
-  grading: string;
-  solution: string;
-}
-export type EnvLabel = keyof EnvLabels;
-type EnvManager = WebREnvironmentManager | PyodideEnvironmentManager;
-
 // Build interleaved source code and HTML output
 export interface ExerciseEvaluator {
   evaluate(code: string, envir?: EnvLabel, options?: EvaluateOptions): Promise<any>;
@@ -51,7 +39,6 @@ export interface ExerciseEvaluator {
   asHtml(value: any): Promise<OJSEvaluateElement>;
   context: EvaluateContext;
   options: EvaluateOptions;
-  envLabels: EnvLabels;
-  envManager: EnvManager;
+  envManager : EnvironmentManager<EngineEnvironment>;
   container: OJSEvaluateElement;
 }

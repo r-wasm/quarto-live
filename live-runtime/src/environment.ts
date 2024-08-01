@@ -2,17 +2,86 @@ import { PyodideInterface } from 'pyodide';
 import { PyProxy } from 'pyodide/ffi';
 import { isRObject } from 'webr';
 import type { REnvironment, RObject, Shelter, WebR } from 'webr';
+import { EvaluateContext } from './evaluate';
 
+export type EngineEnvironment = WebREnvironment | PyodideEnvironment;
+type EnvironmentItem<T> = T extends WebREnvironment ? Promise<REnvironment> : Promise<PyProxy>;
 
-export class WebREnvironmentManager {
-  webRPromise: Promise<WebR>;
+export type EnvLabels = {
+  prep: string;
+  result: string;
+  grading: string;
+  solution: string;
+  global: "global";
+}
+export type EnvLabel = keyof EnvLabels;
+
+export class EnvironmentManager<T extends EngineEnvironment> {
+  manager: T;
+  labels: EnvLabels;
+  discard: boolean;
+
+  constructor(engineEnvironment: T, context: EvaluateContext) {
+    this.manager = engineEnvironment;
+    const options = context.options;
+    if (!options.exercise || options.envir === "global") {
+      this.labels = {
+        prep: options.envir,
+        result: options.envir,
+        grading: options.envir,
+        solution: options.envir,
+        global: "global",
+      }
+      this.discard = false;
+    } else {
+      this.labels = {
+        prep: `${options.envir}-prep`,
+        result: `${options.envir}-result`,
+        grading: `${options.envir}-grading`,
+        solution: `${options.envir}-solution`,
+        global: "global",
+      }
+      this.discard = options.envir === `exercise-env-${options.exercise}`;
+    }
+  }
+
+  get(label: EnvLabel = "global") {
+    return this.manager.get(this.labels[label]) as EnvironmentItem<T>;
+  }
+
+  bind(key: string, value: any, label: EnvLabel = "global"){
+    return this.manager.bind(key, value, this.labels[label]);
+  }
+
+  create(target: EnvLabel, parent: EnvLabel) {
+    return this.manager.create(
+      this.labels[target],
+      this.labels[parent],
+      this.discard,
+    ) as EnvironmentItem<T>;;
+  }
+
+  destroy(label: EnvLabel) {
+    return this.manager.destroy(this.labels[label]);
+  }
+}
+
+export class WebREnvironment {
+  static #instance: WebREnvironment;
+  webR: WebR;
   shelter: Promise<Shelter>;
   env: { [key: string]: Promise<REnvironment>} = {};
 
-  constructor(webRPromise: Promise<WebR>) {
-    this.webRPromise = webRPromise;
-    this.shelter = webRPromise.then((webR) => new webR.Shelter());
-    this.env.global = webRPromise.then((webR) => webR.objs.globalEnv);
+  private constructor(webR: WebR) {
+    this.shelter = new webR.Shelter();
+    this.env.global = Promise.resolve().then(() => webR.objs.globalEnv);
+  }
+
+  static instance(webR: WebR): WebREnvironment {
+    if (!WebREnvironment.#instance) {
+      WebREnvironment.#instance = new WebREnvironment(webR);
+    }
+    return WebREnvironment.#instance;
   }
 
   /*
@@ -75,12 +144,15 @@ export class WebREnvironmentManager {
     await environment.bind(key, value);
   }
 
-  async create(target_id: string, parent_id: string) {
+  async create(target_id: string, parent_id: string, discard: boolean = true) {
     if (target_id === parent_id || target_id === "global") {
       return this.get(target_id);
     }
 
     if (target_id in this.env) {
+      if (!discard) {
+        return this.get(target_id);
+      }
       await this.destroy(target_id);
     }
 
@@ -105,44 +177,52 @@ export class WebREnvironmentManager {
   }
 }
 
-export class PyodideEnvironmentManager {
-  pyodidePromise: Promise<PyodideInterface>;
+export class PyodideEnvironment {
+  static #instance: PyodideEnvironment;
+  pyodide: PyodideInterface;
   env: { [key: string]: Promise<PyProxy>} = {};
 
-  constructor(pyodidePromise: Promise<PyodideInterface>) {
-    this.pyodidePromise = pyodidePromise;
-    this.env.global = pyodidePromise.then((pyodide) => pyodide.toPy({}));
+  private constructor(pyodide: PyodideInterface) {
+    this.pyodide = pyodide;
+    this.env.global = Promise.resolve().then(() => pyodide.toPy({}));
+  }
+
+  static instance(pyodide: PyodideInterface): PyodideEnvironment {
+    if (!PyodideEnvironment.#instance) {
+      PyodideEnvironment.#instance = new PyodideEnvironment(pyodide);
+    }
+    return PyodideEnvironment.#instance;
   }
 
   async get(id: string = "global") {
-    const pyodide = await this.pyodidePromise;
     if (!(id in this.env)) {
-      this.env[id] = pyodide.toPy({});
+      this.env[id] = this.pyodide.toPy({});
     }
     return await this.env[id];
   }
 
   async bind(key: string, value: PyProxy, id: string = "global") {
     const environment = await this.get(id);
-    const pyodide = await this.pyodidePromise;
-    const locals = await pyodide.toPy({ environment, key, value });
-    await pyodide.runPythonAsync(`environment[key] = value`, { locals });
+    const locals = await this.pyodide.toPy({ environment, key, value });
+    await this.pyodide.runPythonAsync(`environment[key] = value`, { locals });
     locals.destroy();
   }
 
-  async create(target_id: string, parent_id: string) {
+  async create(target_id: string, parent_id: string, discard: boolean = true) {
     if (target_id === parent_id || target_id === "global") {
       return this.get(target_id);
     }
 
     if (target_id in this.env) {
+      if (!discard) {
+        return this.get(target_id);
+      }
       await this.destroy(target_id);
     }
 
-    const pyodide = await this.pyodidePromise;
     const parent = await this.get(parent_id);
-    const locals = await pyodide.toPy({ parent });
-    const parentCopy = await pyodide.runPythonAsync(`parent.copy()`, { locals });
+    const locals = await this.pyodide.toPy({ parent });
+    const parentCopy = await this.pyodide.runPythonAsync(`parent.copy()`, { locals });
     locals.destroy();
     this.env[target_id] = parentCopy;
     return await this.env[target_id];

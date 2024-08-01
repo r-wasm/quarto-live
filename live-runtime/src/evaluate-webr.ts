@@ -1,8 +1,8 @@
-import { WebREnvironmentManager } from './environment';
 import { Indicator } from './indicator';
 import { highlightR } from './highlighter';
 import { renderHtmlDependency } from './render';
 import { isRList, isRObject, isRFunction, isRCall, isRNull, isRRaw } from 'webr';
+import { EnvironmentManager, EnvLabel, WebREnvironment } from './environment';
 import type {
   RCall,
   RCharacter,
@@ -18,8 +18,6 @@ import type {
   WebR,
 } from 'webr';
 import {
-  EnvLabel,
-  EnvLabels,
   EvaluateContext,
   EvaluateOptions,
   EvaluateValue,
@@ -39,24 +37,23 @@ declare global {
   }
 }
 
-
 export class WebREvaluator implements ExerciseEvaluator {
   container: OJSEvaluateElement;
   shelter: Promise<Shelter>;
   context: EvaluateContext;
   options: EvaluateOptions;
-  envLabels: EnvLabels;
-  envManager: WebREnvironmentManager;
+  envManager: EnvironmentManager<WebREnvironment>;
   nullResult: EvaluateValue;
   webR: WebR;
 
-  constructor(webR: WebR, environmentManager: WebREnvironmentManager, context: EvaluateContext) {
+  constructor(webR: WebR, context: EvaluateContext) {
     this.container = document.createElement('div');
     this.nullResult = { result: null, evaluate_result: null, evaluator: this };
     this.container.value = this.nullResult;
     this.webR = webR;
     this.context = context;
     this.shelter = new webR.Shelter();
+    this.envManager = new EnvironmentManager(WebREnvironment.instance(webR), context);
 
     // Default evaluation options
     this.options = Object.assign(
@@ -72,23 +69,6 @@ export class WebREvaluator implements ExerciseEvaluator {
       },
       context.options
     );
-
-    if (!this.options.exercise || this.options.envir === "global") {
-      this.envLabels = {
-        prep: this.options.envir,
-        result: this.options.envir,
-        grading: this.options.envir,
-        solution: this.options.envir,
-      }
-    } else {
-      this.envLabels = {
-        prep: `${this.options.envir}-prep`,
-        result: `${this.options.envir}-result`,
-        grading: `${this.options.envir}-grading`,
-        solution: `${this.options.envir}-solution`,
-      }
-    }
-    this.envManager = environmentManager;
   }
 
   async purge() {
@@ -137,14 +117,14 @@ export class WebREvaluator implements ExerciseEvaluator {
       // Set OJS inputs in "prep" environment
       await Promise.all(
         Object.entries(inputs).map(async ([k, v]) => {
-          await this.envManager.bind(k, v, this.envLabels.prep);
+          await this.envManager.bind(k, v, "prep");
         })
       );
 
       // Run setup code, copy prep environment for result, run user code
       const setup = this.getSetupCode();
       await this.evaluate(setup, "prep");
-      await this.envManager.create(this.envLabels.result, this.envLabels.prep);
+      await this.envManager.create("result", "prep");
       const result = await this.evaluate(this.context.code, "result");
 
       // Once we have the evaluate result, render it's contents to HTML
@@ -165,7 +145,7 @@ export class WebREvaluator implements ExerciseEvaluator {
       }
 
       // Grab objects from the webR OJS environment
-      const envir = await this.envManager.get(this.envLabels.result);
+      const envir = await this.envManager.get("result");
       const ojs_envir = await this.webR.objs.globalEnv.get('.webr_ojs') as REnvironment;
       const objs = await ojs_envir.toObject({ depth: -1 });
 
@@ -231,7 +211,7 @@ export class WebREvaluator implements ExerciseEvaluator {
         env: {
           code,
           timelimit: Number(options.timelimit),
-          envir: await this.envManager.get(this.envLabels[envLabel]),
+          envir: await this.envManager.get(envLabel),
           warning: options.warning,
           error: options.error ? 0 : 1,
         }
@@ -543,7 +523,7 @@ export class WebREvaluator implements ExerciseEvaluator {
               const bytes = await data.toTypedArray();
               const imageDiv = document.createElement("img");
               imageDiv.src = `data:image/png;base64, ${arrayBufferToBase64(bytes)}`;
-              images = [ imageDiv ];
+              images = [imageDiv];
             }
           }
 

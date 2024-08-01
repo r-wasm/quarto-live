@@ -1,13 +1,13 @@
 import { WebR, RObject, RLogical, isRNull, isRList } from 'webr';
 import { RList, RNull } from 'webr';
 import { WebREvaluator } from "./evaluate-webr";
-import { WebREnvironmentManager } from './environment';
+import { EnvironmentManager, WebREnvironment } from './environment';
 import { Indicator } from './indicator';
 import { ExerciseGrader } from './grader';
 
 export class WebRGrader extends ExerciseGrader {
   evaluator: WebREvaluator;
-  envManager: WebREnvironmentManager;
+  envManager: EnvironmentManager<WebREnvironment>;
   webR: WebR;
 
   constructor(evaluator: WebREvaluator) {
@@ -129,9 +129,9 @@ export class WebRGrader extends ExerciseGrader {
         console.warn(`Multiple solutions found for exercise "${exId}", using first solution.`);
       }
       const shelter = await this.evaluator.shelter;
-      await this.envManager.create(this.envLabels.solution, this.envLabels.prep);
+      await this.envManager.create("solution", "prep");
       
-      const envir = await this.envManager.get(this.envLabels.solution);
+      const envir = await this.envManager.get("solution");
       const code = solutions[0].textContent;
 
       const result = await shelter.evalR(code, { env: envir });
@@ -141,12 +141,12 @@ export class WebRGrader extends ExerciseGrader {
   }
 
   async evaluateExercise() {
-    await this.envManager.create(this.envLabels.grading, this.envLabels.result);
+    await this.envManager.create("grading", "result");
     const shelter = await this.evaluator.shelter;
     try {
-      const envir_result = await this.envManager.get(this.envLabels.result);
+      const envir_result = await this.envManager.get("result");
       const evaluate_result = this.evaluator.container.value.evaluate_result;
-      const envir_prep = await this.envManager.get(this.envLabels.prep);
+      const envir_prep = await this.envManager.get("prep");
       const last_value = this.evaluator.container.value.result;
 
       const args: {[key: string]: any} = {
@@ -175,7 +175,7 @@ export class WebRGrader extends ExerciseGrader {
       }
 
       const argsObj = await new shelter.RList(args);
-      await this.envManager.bind(".checker_args", argsObj, this.envLabels.grading);
+      await this.envManager.bind(".checker_args", argsObj, "grading");
       const options = { ...this.options };
       options.error = false;
       options.output = true;

@@ -5,7 +5,7 @@ import { WebRExerciseEditor, PyodideExerciseEditor } from './editor';
 import { highlightR, highlightPython, interpolate } from './highlighter';
 import { WebREvaluator } from './evaluate-webr';
 import { PyodideEvaluator } from './evaluate-pyodide';
-import { WebREnvironmentManager, PyodideEnvironmentManager } from './environment';
+import { WebREnvironment, PyodideEnvironment } from './environment';
 import { WebRGrader } from './grader-webr';
 import { PyodideGrader } from './grader-pyodide';
 import { comlinkTransfer, imageBitmapTransfer, mapTransfer, proxyTransfer } from './pyodide-proxy';
@@ -53,13 +53,13 @@ declare global {
     _exercise_ojs_runtime?: {
       PyodideExerciseEditor: typeof PyodideExerciseEditor;
       PyodideEvaluator: typeof PyodideEvaluator;
-      PyodideEnvironmentManager: typeof PyodideEnvironmentManager;
+      PyodideEnvironment: typeof PyodideEnvironment;
       PyodideGrader: typeof PyodideGrader;
       WebR: typeof WebR;
       WebRExerciseEditor: typeof WebRExerciseEditor;
       WebREvaluator: typeof WebREvaluator;
       WebRGrader: typeof WebRGrader;
-      WebREnvironmentManager: typeof WebREnvironmentManager;
+      WebREnvironment: typeof WebREnvironment;
       highlightR: typeof highlightR;
       highlightPython: typeof highlightPython;
       interpolate: typeof interpolate;
@@ -75,13 +75,13 @@ declare global {
 window._exercise_ojs_runtime = {
   PyodideExerciseEditor,
   PyodideEvaluator,
-  PyodideEnvironmentManager,
+  PyodideEnvironment,
   PyodideGrader,
   WebR,
   WebRExerciseEditor,
   WebREvaluator,
   WebRGrader,
-  WebREnvironmentManager,
+  WebREnvironment,
   highlightR,
   highlightPython,
   interpolate,
@@ -95,13 +95,13 @@ window._exercise_ojs_runtime = {
 export {
   PyodideExerciseEditor,
   PyodideEvaluator,
-  PyodideEnvironmentManager,
+  PyodideEnvironment,
   PyodideGrader,
   WebR,
   WebRExerciseEditor,
   WebREvaluator,
   WebRGrader,
-  WebREnvironmentManager,
+  WebREnvironment,
   highlightR,
   highlightPython,
   interpolate,
