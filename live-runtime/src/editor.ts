@@ -87,7 +87,6 @@ function hideEmptyPanels() {
 abstract class ExerciseEditor {
   abstract defaultCaption: string;
   storageKey: string;
-  code: string;
   initialCode: string;
   state: EditorState;
   view: EditorView;
@@ -102,7 +101,7 @@ abstract class ExerciseEditor {
     }
 
     this.container = document.createElement("div");
-    this.code = this.initialCode = code;
+    this.initialCode = code;
 
     // Default editor options
     this.options = Object.assign({
@@ -196,9 +195,8 @@ abstract class ExerciseEditor {
           {
             key: 'Mod-Enter',
             run: () => {
-              this.container.value.code = this.code;
               this.container.dispatchEvent(new CustomEvent('input', {
-                detail: { manual: true }
+                detail: { commit: true }
               }));
               return true;
             },
@@ -210,7 +208,7 @@ abstract class ExerciseEditor {
                 changes: {
                   from: 0,
                   to: this.view.state.doc.length,
-                  insert: this.code.trimEnd() + " |> ",
+                  insert: this.view.state.doc.toString().trimEnd() + " |> ",
                 }
               });
               return true;
@@ -223,26 +221,28 @@ abstract class ExerciseEditor {
 
   onInput(ev: CustomEvent) {
     // When using run button, prevent firing of reactive ojs updates until `manual: true`.
-    if (this.options.runbutton && !ev.detail.manual) {
+    if (this.options.runbutton && !ev.detail.commit) {
       ev.preventDefault();
       ev.stopImmediatePropagation();
       return;
     }
 
     // Update reactive value for code contents
-    this.code = this.view.state.doc.toString();
-    this.container.value.code = this.code;
+    this.container.value.code = this.view.state.doc.toString();
+    if ('code' in ev.detail) {
+      this.container.value.code = ev.detail.code;
+    }
 
     // Store latest updates to editor content to local browser storage
     if (this.options.persist) {
-      window.localStorage.setItem(this.storageKey, this.code);
+      window.localStorage.setItem(this.storageKey, this.container.value.code);
     }
   }
 
   onViewUpdate(update: ViewUpdate) {
     if (!update.docChanged) return;
     this.container.dispatchEvent(
-      new CustomEvent('input', { detail: { manual: false } })
+      new CustomEvent('input', { detail: { commit: false } })
     );
   }
 
@@ -424,12 +424,9 @@ abstract class ExerciseEditor {
 
           // Reset output if code is run manually
           if (this.options.runbutton) {
-            this.container.value.code = null;
-            if (this.options.autorun) {
-              this.container.value.code = this.initialCode;
-            }
+            const code = this.options.autorun ? this.initialCode : null;
             this.container.dispatchEvent(new CustomEvent('input', {
-              detail: { manual: true }
+              detail: { code, commit: true }
             }));
           }
         }
@@ -454,9 +451,8 @@ abstract class ExerciseEditor {
         icon: "play",
         className: "btn-primary disabled exercise-editor-btn-run-code",
         onclick: () => {
-          this.container.value.code = this.code;
           this.container.dispatchEvent(new CustomEvent('input', {
-            detail: { manual: true }
+            detail: { commit: true }
           }));
         }
       }));
@@ -554,9 +550,8 @@ export class PyodideExerciseEditor extends ExerciseEditor {
           {
             key: 'Mod-Enter',
             run: () => {
-              this.container.value.code = this.code;
               this.container.dispatchEvent(new CustomEvent('input', {
-                detail: { manual: true }
+                detail: { commit: true }
               }));
               return true;
             },
