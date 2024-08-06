@@ -3,6 +3,7 @@ title: Hybrid Execution
 subtitle: Combine pre-rendered and client-side WebAssembly computation
 format: live-html
 engine: knitr
+toc: true
 webr:
   packages: dplyr
 ---
