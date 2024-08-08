@@ -75,4 +75,4 @@ plot(fit)
 ## Documentation
 Further documentation of how to use `quarto-live` in your documents to create rich interactive content can be found at:
 
-https://quarto-live-dev.netlify.app
+https://r-wasm.github.io/quarto-live/
