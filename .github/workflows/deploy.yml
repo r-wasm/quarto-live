@@ -5,14 +5,8 @@ on:
 
 name: Render and Publish
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
-    # environment:
-    #   name: github-pages
-    #   url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -40,13 +34,20 @@ jobs:
         uses: quarto-dev/quarto-actions/render@v2
         with:
           path: docs
-      # - name: Deploy to GitHub Pages
-      #   id: deployment
-      #   uses: actions/deploy-pages@v4
-      - name: Deploy to Netlify
-        run: |
-          netlify deploy \
-            --prod \
-            --dir docs/_site \
-            --site ${{ secrets.NETLIFY_SITE }} \
-            --auth ${{ secrets.NETLIFY_TOKEN }}
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_site
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+       name: github-pages
+       url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
