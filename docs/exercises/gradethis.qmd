@@ -17,8 +17,8 @@ webr:
 The `quarto-live` extension must be configured to use the `{gradethis}` R package in grading algorithms. Include the following lines after the document YAML header, but before your main content, in your Quarto document:
 
 ````markdown
-{{{< include ./_extensions/live/_knitr.qmd >}}}
-{{{< include ./_extensions/live/_gradethis.qmd >}}}
+{{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}}
+{{{< include ./_extensions/r-wasm/live/_gradethis.qmd >}}}
 ````
 
 ::: {.callout-note}
