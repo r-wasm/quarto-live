@@ -396,7 +396,7 @@ export class WebREvaluator implements ExerciseEvaluator {
           if (classes.includes('result')) {
             const visible = await (await result[i].get("visible") as RLogical).toBoolean();
             const value = await result[i].get("value");
-            const classes = await (await value.class()).toArray();
+            const classes = await(await result[i].get("class") as RCharacter).toArray();
             if (visible && classes.includes("knit_asis")) {
               await appendHtml(value);
             }

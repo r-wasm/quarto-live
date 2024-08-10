@@ -30,7 +30,7 @@ options("webr.evaluate.handler" = evaluate::new_output_handler(
         knitr::knit_print(
           if (inherits(x, "data.frame")) {
             switch(
-              getOption("webr.render.df"),
+              getOption("webr.render.df", "default"),
               "kable" = knitr::kable(x),
               "dt" = DT::datatable(x),
               "paged-table" = rmarkdown::paged_table(x),
@@ -43,6 +43,7 @@ options("webr.evaluate.handler" = evaluate::new_output_handler(
         options = knit_options)
       )
     } else list(value = x, visible = FALSE)
+    res$class <- class(res$value)
     class(res) <- "result"
     res
   }
