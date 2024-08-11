@@ -49,7 +49,7 @@ Including `_knitr.qmd` is not strictly required if you are using the `jupyter` r
 
 Finally, place R code within a `webr` code blocks and python code within `pyodide` code blocks:
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
 
 ## R
 

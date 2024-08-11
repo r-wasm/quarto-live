@@ -15,7 +15,7 @@ pyodide:
 
 The `quarto-live` extension prepares the R and Python environment with WebAssembly-compatible graphics devices, and so plotting should work out of the box.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
 
 ## R
 
@@ -45,7 +45,7 @@ plt.show()
 
 Configure the plot size using the `fig-width` and `fig-height` cell options. Figure size is measured in "inches". Plots are rendered for a given dots-per-inch (DPI) with an internal 2x scaling.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
 
 ## R
 
