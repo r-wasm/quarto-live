@@ -17,6 +17,7 @@ Transferring data through OJS variables allows for communication between the dif
 In standard Quarto code cell blocks data can be evaluated at build-time and exported as an [OJS data source](https://quarto.org/docs/interactive/ojs/data-sources.html). The data is then subsequently available to OJS blocks at runtime.
 
 #### Source
+
 ````{.markdown filename="hybrid.qmd"}
 ```{{r}}
 library(ggplot2)
@@ -30,6 +31,7 @@ diamonds
 ````
 
 #### Output
+
 ```{r}
 library(ggplot2)
 head(diamonds)

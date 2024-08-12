@@ -27,7 +27,7 @@ Normally `webr` and `pyodide` code blocks are executed in the reader's web brows
 
 To make a file or directory in your local system available under WebAssembly, add the path to the `resources` key in your document's YAML header. The `quarto-live` extension will automatically download named resources into the WebAssembly VFS as R or Python starts up. The resources will be made available in the current working directory (usually `/home/web_user`).
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
 
 ## R
 
@@ -90,7 +90,7 @@ pd.read_csv('data/mtcars.csv')
 
 By default, any resource listed under `resources` will be added to the R and Python VFS. However, you might want to include many resources with your document, but only load a subset of them into the VFS. Use the `resources` key under `webr` and `pyodide` to indicate which resources will be loaded.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
 
 ## R
 
@@ -127,7 +127,7 @@ Remote resource URLs can be included in the `resources` key, under `webr` and `p
 Resources loaded by URL from a remote server must be served with [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) headers to allow access.
 :::
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
 
 ## R
 

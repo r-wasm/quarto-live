@@ -22,7 +22,7 @@ Both webR and Pyodide supports downloading and using additional extension packag
 
 To install packages as part of the document WebAssembly startup process, add a `packages` key to your document's YAML header, under the key corresponding to your chosen WebAssembly engine.
 
-:::: {.panel-tabset}
+:::: {.panel-tabset group="language"}
 
 ## R
 
@@ -56,7 +56,7 @@ pyodide:
 
 Many R and Python packages that are not available from the default webR and Pyodide repositories can still be used with `quarto-live`, with a little extra setup work.
 
-:::: {.panel-tabset}
+:::: {.panel-tabset group="language"}
 
 ## R
 
@@ -96,7 +96,7 @@ pyodide:
 
 ### Interactively
 
-:::: {.panel-tabset}
+:::: {.panel-tabset group="language"}
 
 ## R
 
