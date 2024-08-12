@@ -1,11 +1,12 @@
 ---
 title: Document YAML Options
+toc: true
 format: html
 ---
 
-{{< include ../_extensions/r-wasm/live/_knitr.qmd >}}
+The `quarto-live` extension can be configured using YAML options. There are three main option keys of interest: `webr`, `pyodide` and `live`.
 
-The `quarto-live` extension can be configured using Quarto document YAML options. There are three top-level keys: `webr`, `pyodide` and `live`.
+For a single document, the config options can be set at the top level in your document's YAML front matter. For Quarto projects, the options should be set under the `live-` format key to ensure that Quarto's project-level metadata merging is successful.
 
 ## Options Reference
 
@@ -47,21 +48,21 @@ A fully-configured document might look something like this:
 ```{.yaml filename="live-document.qmd"}
 ---
 title: An Example
-format: live-html
+format:
+  live-html:
+    webr:
+      packages:
+        - ggplot2
+        - mypackage
+      repos:
+        - https://myrepo.example.com/
+    pyodide:
+      cell-options:
+        edit: false
+      packages:
+        - matplotlib
+    live:
+      show-solutions: false
 resources: datadir
-webr:
-  packages:
-    - ggplot2
-    - mypackage
-  repos:
-    - https://myrepo.example.com/
-pyodide:
-  cell-options:
-    edit: false
-  packages:
-    - matplotlib
-live:
-  show-solutions: false
 ---
 ```
-
