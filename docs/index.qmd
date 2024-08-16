@@ -39,4 +39,4 @@ summary(mod)
 
 ## Next steps
 
-Work through the [Getting Started](getting_started/installation.qmd) sections to learn how to install `quarto-learn` and use interactive code blocks in your documents.
+Work through the [Getting Started](getting_started/installation.qmd) sections to learn how to install `quarto-live` and use interactive code blocks in your documents.
