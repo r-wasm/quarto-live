@@ -130,7 +130,7 @@ bar <- rnorm(5)
 ```
 
 ```{{ojs}}
-foo + bar
+d3.sum(foo) + d3.max(bar)
 ```
 ````
 
