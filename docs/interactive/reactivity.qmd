@@ -130,7 +130,7 @@ bar <- rnorm(5)
 ```
 
 ```{{ojs}}
-foo + bar
+d3.sum(foo) + d3.max(bar)
 ```
 ````
 
@@ -145,7 +145,7 @@ bar <- rnorm(5)
 ```
 
 ```{ojs}
-foo + bar
+d3.sum(foo) + d3.max(bar)
 ```
 
 Notice how re-evaluating the code block reactively updates the value calculated in the OJS block.
