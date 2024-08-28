@@ -35,7 +35,7 @@ website:
           - other/tables.qmd
           - other/resources.qmd
           - other/htmlwidgets.qmd
-          - other/jupyter.qmd
+          - other/py_output.qmd
           - other/slides.qmd
       - text: "---"
       - section: Reference

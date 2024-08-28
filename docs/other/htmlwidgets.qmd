@@ -21,7 +21,7 @@ library(gt)
 library(leaflet)
 ```
 
-The `quarto-live` extension has support for displaying the output of R's popular [`htmltools`](https://rstudio.github.io/htmltools/) and [htmlWidgets](https://www.htmlwidgets.org/) packages, making rich HTML and JavaScript output possible with interactive code blocks.
+The `quarto-live` extension has support for displaying the output of R's popular [`htmltools`](https://rstudio.github.io/htmltools/) and [htmlwidgets](https://www.htmlwidgets.org/) packages, making rich HTML and JavaScript output possible with interactive code blocks.
 
 ## Example: `htmltools`
 
