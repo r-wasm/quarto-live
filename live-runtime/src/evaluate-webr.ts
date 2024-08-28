@@ -24,7 +24,7 @@ import {
   ExerciseEvaluator,
   OJSEvaluateElement,
 } from "./evaluate";
-import { arrayBufferToBase64 } from './utils';
+import { arrayBufferToBase64, replaceScriptChildren } from './utils';
 
 declare global {
   interface Window {
@@ -340,6 +340,7 @@ export class WebREvaluator implements ExerciseEvaluator {
         const outputDiv = document.createElement("div");
         outputDiv.className = "cell-output cell-output-webr";
         outputDiv.innerHTML = html;
+        replaceScriptChildren(outputDiv);
 
         // Add HTML output to the DOM
         appendSource();

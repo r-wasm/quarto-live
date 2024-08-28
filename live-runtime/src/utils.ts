@@ -56,3 +56,19 @@ export function replaceInObject<T>(
   }
   return obj;
 }
+
+export function replaceScriptChildren(container: HTMLElement) {
+  for (let script of container.getElementsByTagName('script')) {
+    if (!script.type || script.type == "text/javascript" || script.type == "module") {
+      const newScript = document.createElement('script');
+      if (script.async) newScript.async = script.async;
+      if (script.crossOrigin) newScript.crossOrigin = script.crossOrigin;
+      if (script.defer) newScript.defer = script.async;
+      if (script.integrity) newScript.integrity = script.integrity;
+      if (script.src) newScript.src = script.src;
+      if (script.text) newScript.text = script.text;
+      if (script.type) newScript.type = script.type;
+      script.parentNode.replaceChild(newScript, script);
+    }
+  }
+}

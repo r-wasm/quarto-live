@@ -10,6 +10,7 @@ import {
   EvaluateValue,
 } from "./evaluate";
 import { PyodideInterfaceWorker } from './pyodide-worker';
+import { replaceScriptChildren } from './utils';
 
 declare global {
   interface Window {
@@ -304,6 +305,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
         const outputDiv = document.createElement("div");
         outputDiv.className = "cell-output cell-output-pyodide";
         outputDiv.innerHTML = html;
+        replaceScriptChildren(outputDiv);
         container.appendChild(outputDiv);
       }
     };
