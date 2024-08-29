@@ -27,9 +27,11 @@ jobs:
       - name: Install R packages
         run: Rscript -e 'install.packages(c("rmarkdown", "knitr", "ggplot2"))'
       - name: Render Quarto Project
-        uses: quarto-dev/quarto-actions/render@v2
-        with:
-          path: docs
+        env:
+          QUARTO_PRINT_STACK: true
+        run: |
+          quarto render docs
+          echo "QUARTO_OUTPUT=_site" >> $GITHUB_ENV
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
