@@ -10,15 +10,10 @@ import {
   EvaluateValue,
 } from "./evaluate";
 import { PyodideInterfaceWorker } from './pyodide-worker';
-import { replaceScriptChildren } from './utils';
+import { loadScriptAsync, replaceScriptChildren } from './utils';
 
 declare global {
   interface Window {
-    require: (
-      (modules: string[], callback?: (...modules: any[]) => any) => any
-    ) & {
-      config: (options: { paths: { [key: string]: string } }) => void;
-    };
     _ojs: {
       ojsConnector: any;
     }
@@ -26,12 +21,6 @@ declare global {
 }
 
 let stateElement: HTMLScriptElement | undefined;
-const requireHtmlManager = {
-  paths: {
-    "@jupyter-widgets/html-manager/dist/libembed-amd":
-      "https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@1.0.11/dist/libembed-amd"
-  },
-};
 
 export class PyodideEvaluator implements ExerciseEvaluator {
   container: OJSEvaluateElement;
@@ -280,7 +269,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
         stateElement = document.createElement('script');
         stateElement.type = "application/vnd.jupyter.widget-state+json";
         stateElement = document.body.appendChild(stateElement);
-        window.require.config(requireHtmlManager);
+        await loadScriptAsync("https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@1.0.11/dist/embed.js");
       }
       stateElement.innerHTML = state;
 
@@ -295,9 +284,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       widgetElement.innerHTML = widgetJson;
       container.appendChild(widgetElement);
 
-      window.require(['@jupyter-widgets/html-manager/dist/libembed-amd'], function (m) {
-        m.renderWidgets();
-      });
+      dispatchEvent(new Event('load'));
     }
 
     const appendHtml = async (html: string) => {

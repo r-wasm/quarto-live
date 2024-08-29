@@ -72,3 +72,14 @@ export function replaceScriptChildren(container: HTMLElement) {
     }
   }
 }
+
+export function loadScriptAsync(url: string): Promise<any> {
+  return new Promise(function(resolve, reject) {
+    var script = document.createElement('script');
+    script.onload = () => resolve(url);
+    script.onerror = () => reject(`Can't load script: "${url}".`);
+    script.async = true;
+    script.src = url;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  });
+}

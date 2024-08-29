@@ -649,14 +649,6 @@ function Pandoc(doc)
     stylesheets = { "resources/live-runtime.css" },
   })
 
-  if (pyodide) then
-    -- Additional runtime dependencies for Pyodide
-    quarto.doc.add_html_dependency({
-      name = 'require-js',
-      scripts = { "resources/require.min.js" },
-    })
-  end
-
   -- Copy resources for upload to VFS at runtime
   local vfs_files = {}
   if (webr and webr.resources) then
