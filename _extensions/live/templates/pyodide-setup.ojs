@@ -60,21 +60,34 @@ pyodideOjs = {
         file = name;
       }
 
-      // Create directory tree, collapsing higher directory structure
-      let path = file = collapsePath(file);
-      try {
-        while (path = path.substr(0, path.lastIndexOf('/'))) {
+      // Collapse higher directory structure
+      file = collapsePath(file);
+
+      // Create directory tree, ignoring "directory exists" VFS errors
+      const parts = file.split('/').slice(0, -1);
+      let path = '';
+      while (parts.length > 0) {
+        path += parts.shift() + '/';
+        try {
           await pyodide.FS.mkdir(path);
+        } catch (e) {
+          if (e.name !== "ErrnoError") throw e;
+          if (e.errno !== 20) {
+            const errorTextPtr = await pyodide._module._strerror(e.errno);
+            const errorText = await pyodide._module.UTF8ToString(errorTextPtr);
+            throw new Error(`Filesystem Error ${e.errno} "${errorText}".`);
+          }
         }
+      }
+
+      // Write this file to the VFS
+      try {
         return await pyodide.FS.writeFile(file, new Uint8Array(data));
       } catch (e) {
         if (e.name !== "ErrnoError") throw e;
-        // Ignore "dir exists" filesystem error
-        if (e.errno !== 20) {
-          const errorTextPtr = await pyodide._module._strerror(e.errno);
-          const errorText = await pyodide._module.UTF8ToString(errorTextPtr);
-          throw new Error(`Filesystem Error ${e.errno} "${errorText}".`);
-        }
+        const errorTextPtr = await pyodide._module._strerror(e.errno);
+        const errorText = await pyodide._module.UTF8ToString(errorTextPtr);
+        throw new Error(`Filesystem Error ${e.errno} "${errorText}".`);
       }
     }).reduce((cur, next) => cur.then(next), Promise.resolve());
 
