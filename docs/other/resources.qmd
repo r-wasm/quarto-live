@@ -60,13 +60,14 @@ summary(mod)
 ## Python
 
 ### Source
+
+````{.markdown filename="resources.qmd"}
 ---
 format: live-html
 resources:
   - data
 ---
 
-````{.markdown filename="resources.qmd"}
 ```{{pyodide}}
 from os import listdir
 import pandas as pd

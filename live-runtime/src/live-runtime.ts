@@ -9,7 +9,7 @@ import { WebREnvironment, PyodideEnvironment } from './environment';
 import { WebRGrader } from './grader-webr';
 import { PyodideGrader } from './grader-pyodide';
 import { comlinkTransfer, imageBitmapTransfer, mapTransfer, proxyTransfer } from './pyodide-proxy';
-import { b64Encode, b64Decode } from './utils';
+import { b64Encode, b64Decode, collapsePath } from './utils';
 import './css/live-runtime.css';
 import './css/highlighting.css';
 
@@ -68,6 +68,7 @@ declare global {
       startPyodideWorker: typeof startPyodideWorker;
       b64Decode: typeof b64Decode;
       b64Encode: typeof b64Encode;
+      collapsePath: typeof collapsePath;
     };
   }
 }
@@ -90,6 +91,7 @@ window._exercise_ojs_runtime = {
   startPyodideWorker,
   b64Encode,
   b64Decode,
+  collapsePath,
 };
 
 export {
@@ -110,4 +112,5 @@ export {
   startPyodideWorker,
   b64Encode,
   b64Decode,
+  collapsePath,
 }

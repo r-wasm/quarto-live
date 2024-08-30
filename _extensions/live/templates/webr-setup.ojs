@@ -1,6 +1,12 @@
 webROjs = {
   const { WebR } = window._exercise_ojs_runtime.WebR;
-  const { WebREvaluator, WebREnvironmentManager, setupR, b64Decode } = window._exercise_ojs_runtime;
+  const {
+    WebREvaluator,
+    WebREnvironmentManager,
+    setupR,
+    b64Decode,
+    collapsePath
+  } = window._exercise_ojs_runtime;
 
   const statusContainer = document.getElementById("exercise-loading-status");
   const indicatorContainer = document.getElementById("exercise-loading-indicator");
@@ -60,12 +66,13 @@ webROjs = {
         file = name;
       }
 
-      // Create directory tree, swallowing any `dir exists` errors
-      let path = file;
+      // Create directory tree, collapsing higher directory structure
+      let path = file = collapsePath(file);
       while (path = path.substr(0, path.lastIndexOf('/'))) {
         try {
           await webR.FS.mkdir(path);
         } catch (e) {
+          // Ignore "dir exists" filesystem error
           if (!e.message.includes("FS error")) {
             throw e;
           }
