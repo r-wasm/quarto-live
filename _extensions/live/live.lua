@@ -134,6 +134,23 @@ function assertBlockExercise(type, engine, block)
   end
 end
 
+function ExerciseDataBlocks(btype, block)
+  local ex = block.attr.exercise
+  if (type(ex) ~= "table") then
+    ex = { ex }
+  end
+
+  local blocks = {}
+  for idx, ex_id in pairs(ex) do
+    blocks[idx] = pandoc.RawBlock(
+      "html",
+      "<script type=\"exercise-" .. btype .. "-" .. ex_id .. "-contents\">\n" ..
+      json_as_b64(block) .. "\n</script>"
+    )
+  end
+  return blocks
+end
+
 function PyodideCodeBlock(code)
   block_id = block_id + 1
 
@@ -166,21 +183,13 @@ function PyodideCodeBlock(code)
   -- Supplementary execise blocks: setup, check, hint, solution
   if (block.attr.setup) then
     assertBlockExercise("setup", "pyodide", block)
-    return pandoc.RawBlock(
-      "html",
-      "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
-      json_as_b64(block) .. "\n</script>"
-    )
+    return ExerciseDataBlocks("setup", block)
   end
 
   if (block.attr.check) then
     assertBlockExercise("check", "pyodide", block)
     if live_options["grading"] then
-      return pandoc.RawBlock(
-        "html",
-        "<script type=\"exercise-check-" .. block.attr.exercise .. "-contents\">\n" ..
-        json_as_b64(block) .. "\n</script>"
-      )
+      return ExerciseDataBlocks("check", block)
     else
       return {}
     end
@@ -292,21 +301,13 @@ function WebRCodeBlock(code)
   -- Supplementary execise blocks: setup, check, hint, solution
   if (block.attr.setup) then
     assertBlockExercise("setup", "webr", block)
-    return pandoc.RawBlock(
-      "html",
-      "<script type=\"exercise-setup-" .. block.attr.exercise .. "-contents\">\n" ..
-      json_as_b64(block) .. "\n</script>"
-    )
+    return ExerciseDataBlocks("setup", block)
   end
 
   if (block.attr.check) then
     assertBlockExercise("check", "webr", block)
     if live_options["grading"] then
-      return pandoc.RawBlock(
-        "html",
-        "<script type=\"exercise-check-" .. block.attr.exercise .. "-contents\">\n" ..
-        json_as_b64(block) .. "\n</script>"
-      )
+      return ExerciseDataBlocks("check", block)
     else
       return {}
     end

@@ -85,6 +85,52 @@ baz <- 3
 foo + bar + baz + ______
 ```
 
+### Shared setup
+
+A setup block may be attached to multiple exercises by providing a list of exercises for the `exercise` cell option. The code in the setup cell will be executed before every evaluation of any of the listed exercises.
+
+#### Source
+
+````{.markdown filename="exercise.qmd"}
+```{{webr}}
+#| setup: true
+#| exercise:
+#|   - ex_a1
+#|   - ex_a2
+var_xyz <- c(1, 3, 7, 9, 13, 15)
+```
+
+```{{webr}}
+#| exercise: ex_a1
+var_xyz * 2
+```
+
+```{{webr}}
+#| exercise: ex_a2
+var_xyz ** 2
+```
+````
+
+#### Output
+
+```{webr}
+#| setup: true
+#| exercise:
+#|   - ex_a1
+#|   - ex_a2
+var_xyz <- c(1, 3, 7, 9, 13, 15)
+```
+
+```{webr}
+#| exercise: ex_a1
+var_xyz * 2
+```
+
+```{webr}
+#| exercise: ex_a2
+var_xyz ** 2
+```
+
 ## Adding hints and solutions
 
 Add hints and solutions to your exercise in the form of fenced blocks. The blocks should set the `.hint` or `.solution` class. Then, link the blocks to your exercise by setting the `exercise` attribute.
