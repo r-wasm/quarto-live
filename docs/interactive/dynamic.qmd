@@ -15,15 +15,15 @@ webr:
 
 {{< include ../_extensions/live/_knitr.qmd >}}
 
-The `quarto-live` extension's OJS integration allows an instructor to write dynamic exercises with parameterised questions and solution code. Such questions would provide a different experience for each learner, or the same learner over time, creating long-term value.
+The `quarto-live` extension's OJS integration allows an instructor to write dynamic exercises with parametrised questions and solution code. Such questions would provide a different experience for each learner, or the same learner over time, creating long-term value.
 
-## Parameterised Exercises
+## Parametrised Exercises
 
-To create a parameterised exercise, first define some input variables in OJS for each parameter you wish to create. Then, use those parameters throughout your exercise.
+To create a parametrised exercise, first define some input variables in OJS for each parameter you wish to create. Then, use those parameters throughout your exercise.
 
 #### Example: Write an R function
 
-First, create a "hidden" randomised varaible using an `ojs` cell with the cell option `echo: false`.
+First, create a "hidden" randomised variable using an `ojs` cell with the cell option `echo: false`.
 
 ````{.markdown filename="param_ex.qmd"}
 ```{{ojs}}
@@ -39,7 +39,7 @@ rand_int = Math.floor(Math.random() * 10000);
 
 Next, write your [exercise](../exercises/exercises.qmd) using the randomised parameter as an input variable.
 
-You can use the value of OJS variables in your question text and tempalte solution using string interpolation. For example, in this question the string `${rand_int}` becomes ${rand_int}.
+You can use the value of OJS variables in your question text and template solution using string interpolation. For example, in this question the string `${rand_int}` becomes ${rand_int}.
 
 #### Source
 
