@@ -1,5 +1,9 @@
 # Quarto Live (development version)
 
+## New features
+
+* Setup blocks may now be attached to multiple exercises by providing a list for the `exercise` cell option.
+
 ## Bug fixes
 
 * Ensure that JavaScript scripts that have been dynamically added via HTML output are executed.
