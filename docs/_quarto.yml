@@ -20,9 +20,9 @@ website:
       - section: Exercises and Grading
         contents:
           - exercises/exercises.qmd
-          - exercises/environments.qmd
           - exercises/grading.qmd
           - exercises/gradethis.qmd
+          - exercises/environments.qmd
       - section: Interactive Documents and Tutorials
         contents:
           - interactive/reactivity.qmd

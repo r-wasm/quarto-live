@@ -178,7 +178,8 @@ export class PyodideGrader extends ExerciseGrader {
           try:
             feedback = pyodide.code.eval_code(
               _checker_env["check_code"],
-              locals = _checker_env,
+              globals = globals(),
+              locals = _checker_env
             )
           except Exception as error:
             feedback = {

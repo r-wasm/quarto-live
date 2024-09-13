@@ -98,21 +98,21 @@ Environments can be managed manually, if you wish, by setting the `envir` cell o
 #| envir: myenv
 #| exercise: ex_shared_1
 #| autorun: true
-foo2 <- 7
+abc <- 7
 ```
 
 ```{{webr}}
 #| envir: myenv
 #| exercise: ex_shared_2
 #| autorun: true
-bar2 <- 5
+xyz <- 5
 ```
 
 ```{{webr}}
 #| envir: myenv
 #| exercise: ex_shared_3
 #| autorun: true
-foo2 + bar2
+abc + xyz
 ```
 ````
 </details>
@@ -121,19 +121,130 @@ foo2 + bar2
 #| envir: myenv
 #| exercise: ex_shared_1
 #| autorun: true
-foo2 <- 7
+abc <- 7
 ```
 
 ```{webr}
 #| envir: myenv
 #| exercise: ex_shared_2
 #| autorun: true
-bar2 <- 5
+xyz <- 5
 ```
 
 ```{webr}
 #| envir: myenv
 #| exercise: ex_shared_3
 #| autorun: true
-foo2 + bar2
+abc + xyz
+```
+
+### Example: Shared environments with grading
+
+<details>
+<summary>Source</summary>
+````markdown
+```{{webr}}
+#| setup: true
+#| exercise: ex_shared_1a
+dataset <- data.frame(foo = c(1,2,3), bar = c(10,100,1000))
+my_mean <- NULL
+```
+
+#### Exercise 1a
+
+The `dataset` variable has been created in a `setup: true` block.
+
+Calculate the mean of the `foo` column in `dataset`. Save the result as `my_mean`.
+
+```{{webr}}
+#| envir: myenv
+#| exercise: ex_shared_1a
+my_mean <- ______(dataset$foo)
+```
+
+```{{webr}}
+#| check: true
+#| exercise: ex_shared_1a
+if (identical(my_mean, mean(dataset$foo))) {
+  list(correct = TRUE, message = "Nice work!")
+} else {
+  list(correct = FALSE, message = "That's incorrect, sorry.")
+}
+```
+
+#### Exercise 1b
+
+The `dataset` variable is also accessible from this exercise, because both exercises have the `envir: myenv` option set.
+
+Calculate the standard deviation of the `bar` column in `dataset`.
+
+```{{webr}}
+#| exercise: ex_shared_1b
+#| envir: myenv
+sd(______)
+```
+
+```{{webr}}
+#| check: true
+#| exercise: ex_shared_1b
+if (identical(.result, sd(dataset$bar))) {
+  list(correct = TRUE, message = "Nice work!")
+} else {
+  list(correct = FALSE, message = "That's incorrect, sorry.")
+}
+```
+
+````
+</details>
+
+
+```{webr}
+#| setup: true
+#| exercise: ex_shared_1a
+dataset <- data.frame(foo = c(1,2,3), bar = c(10,100,1000))
+my_mean <- NULL
+```
+
+#### Exercise 1a
+
+The `dataset` variable has been created in a `setup: true` block.
+
+Calculate the mean of the `foo` column in `dataset`. Save the result as `my_mean`.
+
+```{webr}
+#| envir: myenv
+#| exercise: ex_shared_1a
+my_mean <- ______(dataset$foo)
+```
+
+```{webr}
+#| check: true
+#| exercise: ex_shared_1a
+if (identical(my_mean, mean(dataset$foo))) {
+  list(correct = TRUE, message = "Nice work!")
+} else {
+  list(correct = FALSE, message = "That's incorrect, sorry.")
+}
+```
+
+#### Exercise 1b
+
+The `dataset` variable is also accessible from this exercise, because both exercises have the `envir: myenv` option set.
+
+Calculate the standard deviation of the `bar` column in `dataset`.
+
+```{webr}
+#| exercise: ex_shared_1b
+#| envir: myenv
+sd(______)
+```
+
+```{webr}
+#| check: true
+#| exercise: ex_shared_1b
+if (identical(.result, sd(dataset$bar))) {
+  list(correct = TRUE, message = "Nice work!")
+} else {
+  list(correct = FALSE, message = "That's incorrect, sorry.")
+}
 ```

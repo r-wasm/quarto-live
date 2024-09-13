@@ -223,18 +223,15 @@ export class PyodideEnvironment {
       return this.get(target_id);
     }
 
-    if (target_id in this.env) {
-      if (!discard) {
-        return this.get(target_id);
-      }
+    if (discard && target_id in this.env) {
       await this.destroy(target_id);
     }
 
+    const target = await this.get(target_id);
     const parent = await this.get(parent_id);
-    const locals = await this.pyodide.toPy({ parent });
-    const parentCopy = await this.pyodide.runPythonAsync(`parent.copy()`, { locals });
+    const locals = await this.pyodide.toPy({ target, parent });
+    await this.pyodide.runPythonAsync(`target.update(parent)`, { locals });
     locals.destroy();
-    this.env[target_id] = parentCopy;
     return await this.env[target_id];
   }
 
