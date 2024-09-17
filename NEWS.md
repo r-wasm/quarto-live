@@ -14,6 +14,8 @@
 
 * Ensure variables defined at the top level of the the grading environment are available as globals when executing grading algorithms with Pyodide (#63).
 
+* Better handle `echo: false` and `include: false` cell options (#62).
+
 # Quarto Live 0.1.1
 
 Initial release.

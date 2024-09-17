@@ -152,8 +152,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
   }
 
   async evaluate(code: string, envLabel: EnvLabel, options: EvaluateOptions = this.options) {
-    // Early return if code is undefined, null, or if we're not evaluating
-    if (code == null || !options.include) {
+    if (code == null) {
       return null;
     }
 

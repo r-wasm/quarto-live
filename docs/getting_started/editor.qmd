@@ -168,6 +168,39 @@ n_sd <- 5
 # Type "n_" to see context aware suggestions
 ```
 
+## Execute without output
+
+Setting the cell option `include: false` will execute code in the WebAssembly engine without adding its source code or any output to the resulting document. The option is equivalent to setting `echo: false`, `output: false`.
+
+#### Source
+
+````markdown
+```{{webr}}
+#| include: false
+123
+456
+include_false_n <- 789
+```
+
+```{{webr}}
+print(include_false_n)
+```
+````
+
+#### Output
+
+```{webr}
+#| include: false
+123
+456
+include_false_n <- 789
+```
+
+```{webr}
+print(include_false_n)
+```
+
+
 ## Storing and recalling code
 
 Initial editor contents are stored and can be recalled at any time by clicking the "Start Over" button. If required, the "Start Over" button can be disabled by setting the `startover: false` cell option.
