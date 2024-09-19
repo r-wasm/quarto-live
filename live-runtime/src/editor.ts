@@ -107,7 +107,7 @@ abstract class ExerciseEditor {
 
     // Default editor options
     this.options = Object.assign({
-      autorun: true,
+      autorun: false,
       completion: true,
       runbutton: true,
       startover: true,

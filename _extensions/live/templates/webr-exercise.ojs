@@ -9,7 +9,6 @@ viewof _webr_editor_{{block_id}} = {
       id: "webr-{{block_id}}-contents",
       envir: `exercise-env-${block.attr.exercise}`,
       error: false,
-      autorun: false,
       caption: 'Exercise',
     },
     block.attr

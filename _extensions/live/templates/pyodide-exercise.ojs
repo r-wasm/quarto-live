@@ -10,7 +10,6 @@ viewof _pyodide_editor_{{block_id}} = {
       id: "pyodide-{{block_id}}-contents",
       envir: `exercise-env-${block.attr.exercise}`,
       error: false,
-      autorun: false,
       caption: 'Exercise',
     },
     block.attr

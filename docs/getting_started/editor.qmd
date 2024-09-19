@@ -90,15 +90,13 @@ In this mode only the source code will be shown when the page initially loads. A
 
 ## Autorun
 
-Initial code cell contents will be automatically executed[^ex] once the WebAssembly engine has loaded into the page. That is, you do not need to click "Run Code" to see the initial evaluation output. However, this autorun feature can be disabled by setting `autorun: false`.
-
-[^ex]: Note that code exercises do not autorun by default, see [Exercises and Grading](../exercises/exercises.qmd) for details.
+Setting `autorun: true` evaluates initial code cell contents automatically, once the WebAssembly engine has loaded into the page. That is, you do not need to click "Run Code" to see the initial output.
 
 #### Source
 
 ````markdown
 ```{{webr}}
-#| autorun: false
+#| autorun: true
 123 + 456
 ```
 ````
@@ -106,7 +104,7 @@ Initial code cell contents will be automatically executed[^ex] once the WebAssem
 #### Output
 
 ```{webr}
-#| autorun: false
+#| autorun: true
 123 + 456
 ```
 
@@ -119,6 +117,7 @@ Setting `runbutton: false` will remove the "Run Code" button from the editor UI.
 ````markdown
 ```{{webr}}
 #| caption: Immediate Execution
+#| autorun: true
 #| runbutton: false
 foo <- 123
 bar <- 246
@@ -130,6 +129,7 @@ foo + bar
 
 ```{webr}
 #| caption: Immediate Execution
+#| autorun: true
 #| runbutton: false
 foo <- 123
 bar <- 246
@@ -144,12 +144,13 @@ This might be distracting and confusing for new learners, and so this mode shoul
 
 ## Autocomplete
 
-Autocompletion code suggestions can be enabled with the code cell option `completion: true`.
+Context aware autocomplete suggestions are shown in the code editor. This can be disabled by setting the cell option `completion: false`.
 
 #### Source
 
 ````markdown
 ```{{webr}}
+#| autorun: true
 #| completion: true
 n_mean <- 120
 n_sd <- 5
@@ -161,6 +162,7 @@ n_sd <- 5
 #### Output
 
 ```{webr}
+#| autorun: true
 #| completion: true
 n_mean <- 120
 n_sd <- 5
@@ -257,7 +259,6 @@ The default time limit is 30 seconds and setting `timelimit: 0` will disable the
 
 ````markdown
 ```{{webr}}
-#| autorun: false
 #| timelimit: 3
 while (TRUE) {
   # Loop, infinitely
@@ -268,7 +269,6 @@ while (TRUE) {
 #### Output
 
 ```{webr}
-#| autorun: false
 #| timelimit: 3
 while (TRUE) {
   # Loop, infinitely
