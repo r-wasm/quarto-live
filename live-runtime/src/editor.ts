@@ -95,6 +95,8 @@ abstract class ExerciseEditor {
   indicator: Indicator;
   completionMethods: Promise<ExerciseCompletionMethods>;
 
+  abstract languageExtensions(): Extension[];
+
   constructor(code: string, options: ExerciseOptions) {
     if (typeof code !== "string") {
       throw new Error("Can't create editor, `code` must be a string.");
@@ -116,15 +118,9 @@ abstract class ExerciseEditor {
 
     const extensions = [
       basicSetup,
-      this.extensions(),
+      this.languageExtensions(),
       EditorView.updateListener.of((update) => this.onViewUpdate(update)),
     ];
-
-    if (options.completion) {
-      extensions.push(
-        autocompletion({ override: [(...args) => this.doCompletion(...args)] })
-      );
-    }
 
     // Load previous edits to editor from browser storage
     if (this.options.persist) {
@@ -183,42 +179,6 @@ abstract class ExerciseEditor {
     });
   }
 
-  extensions(): Extension[] {
-    const language = new Compartment();
-    const tabSize = new Compartment();
-    return [
-      syntaxHighlighting(tagHighlighterTok),
-      language.of(r()),
-      tabSize.of(EditorState.tabSize.of(2)),
-      Prec.high(
-        keymap.of([
-          {
-            key: 'Mod-Enter',
-            run: () => {
-              this.container.dispatchEvent(new CustomEvent('input', {
-                detail: { commit: true }
-              }));
-              return true;
-            },
-          },
-          {
-            key: 'Mod-Shift-m',
-            run: () => {
-              this.view.dispatch({
-                changes: {
-                  from: 0,
-                  to: this.view.state.doc.length,
-                  insert: this.view.state.doc.toString().trimEnd() + " |> ",
-                }
-              });
-              return true;
-            },
-          },
-        ]
-        )),
-    ];
-  }
-
   onInput(ev: CustomEvent) {
     // When using run button, prevent firing of reactive ojs updates until `manual: true`.
     if (this.options.runbutton && !ev.detail.commit) {
@@ -245,9 +205,6 @@ abstract class ExerciseEditor {
       new CustomEvent('input', { detail: { commit: false } })
     );
   }
-
-  abstract setupCompletion(): Promise<any>;
-  abstract doCompletion(context: CompletionContext): Promise<any>;
 
   renderButton(spec: ExerciseButtonSpec) {
     // TODO: Fix: we use <a> because Quarto adds its own styling to <button>
@@ -482,6 +439,44 @@ export class WebRExerciseEditor extends ExerciseEditor {
     this.completionMethods = this.setupCompletion();
   }
 
+  languageExtensions(): Extension[] {
+    const language = new Compartment();
+    const tabSize = new Compartment();
+
+    return [
+      syntaxHighlighting(tagHighlighterTok),
+      autocompletion({ override: [(...args) => this.doCompletion(...args)] }),
+      language.of(r()),
+      tabSize.of(EditorState.tabSize.of(2)),
+      Prec.high(
+        keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: () => {
+              this.container.dispatchEvent(new CustomEvent('input', {
+                detail: { commit: true }
+              }));
+              return true;
+            },
+          },
+          {
+            key: 'Mod-Shift-m',
+            run: () => {
+              this.view.dispatch({
+                changes: {
+                  from: 0,
+                  to: this.view.state.doc.length,
+                  insert: this.view.state.doc.toString().trimEnd() + " |> ",
+                }
+              });
+              return true;
+            },
+          },
+        ]
+        )),
+    ];
+  }
+
   render() {
     this.defaultCaption = 'R Code';
     return super.render();
@@ -501,6 +496,8 @@ export class WebRExerciseEditor extends ExerciseEditor {
   }
 
   async doCompletion(context: CompletionContext) {
+    if (!this.options.completion) return null;
+
     const completionMethods = await this.completionMethods;
     const line = context.state.doc.lineAt(context.state.selection.main.head).text;
     const { from, to, text } = context.matchBefore(/[a-zA-Z0-9_.:]*/) ?? { from: 0, to: 0, text: '' };
@@ -530,7 +527,6 @@ export class PyodideExerciseEditor extends ExerciseEditor {
   constructor(pyodidePromise: Promise<PyodideInterface>, code: string, options: ExerciseOptions) {
     super(code, options);
     this.pyodidePromise = pyodidePromise;
-    this.setupCompletion();
   }
 
   render() {
@@ -538,10 +534,11 @@ export class PyodideExerciseEditor extends ExerciseEditor {
     return super.render();
   }
 
-  extensions() {
+  languageExtensions() {
     const language = new Compartment();
     const tabSize = new Compartment();
-    return [
+
+    const extensions = [
       syntaxHighlighting(tagHighlighterTok),
       language.of(python()),
       tabSize.of(EditorState.tabSize.of(2)),
@@ -559,15 +556,14 @@ export class PyodideExerciseEditor extends ExerciseEditor {
         ]
       )),
     ];
-  }
 
-  async setupCompletion() {
-    // TODO: Configurable autocomplete for python
-    const pyodide = await this.pyodidePromise;
-  }
+    // Explicitly disable autocompletion if requested
+    if (!this.options.completion) {
+      extensions.push(
+        autocompletion({ override: [(...args) => null] })
+      );
+    }
 
-  async doCompletion(context: CompletionContext) {
-    return null;
+    return extensions;
   }
-
 }

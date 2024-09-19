@@ -16,6 +16,8 @@
 
 * Better handle `echo: false` and `include: false` cell options (#62).
 
+* Fixed applying the `completion` cell option to `pyodide` cells (#2).
+
 # Quarto Live 0.1.1
 
 Initial release.
