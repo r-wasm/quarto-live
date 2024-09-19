@@ -5,10 +5,26 @@ format:
 title: Example Slides
 webr:
   cell-options:
+    autorun: true
     fig-width: 11
-    fig-height: 6
-    max-lines: 5
+    fig-height: 5
 ---
+
+{{< include ../_extensions/live/_knitr.qmd >}}
+
+## Editable examples
+
+```{webr}
+plot(rnorm(1000))
+```
+
+## Scrollable output
+
+```{webr}
+mod <- lm(mpg ~ cyl, data = mtcars)
+plot(mod)
+summary(mod)
+```
 
 ## Read Only
 
@@ -18,15 +34,7 @@ mod <- lm(mpg ~ cyl, data = mtcars)
 summary(mod)
 ```
 
----
-
-```{webr}
-#| runbutton: false
-#| startover: false
-plot(rnorm(1000))
-```
-
----
+## Exercises
 
 ```{webr}
 #| exercise: ex1

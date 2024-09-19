@@ -24,6 +24,11 @@ pyodideOjs = {
     document.querySelector(".reveal > .slides").appendChild(revealStatus);
   }
 
+  // Make any reveal slides with live cells scrollable
+  document.querySelectorAll(".reveal .exercise-cell").forEach((el) => {
+    el.closest('section.slide').classList.add("scrollable");
+  })
+
   // Pyodide supplemental data and options
   const dataContent = document.querySelector(`script[type=\"pyodide-data\"]`).textContent;
   const data = JSON.parse(b64Decode(dataContent));

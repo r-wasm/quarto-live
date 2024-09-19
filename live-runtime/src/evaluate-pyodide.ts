@@ -30,9 +30,10 @@ export class PyodideEvaluator implements ExerciseEvaluator {
   pyodide: PyodideInterfaceWorker;
   nullResult: EvaluateValue;
   constructor(pyodide: PyodideInterfaceWorker, context: EvaluateContext) {
-    this.container = document.createElement('div');
+    this.container = this.newContainer();
     this.nullResult = { result: null, evaluate_result: null, evaluator: this };
     this.container.value = this.nullResult;
+    this.container.className = 'cell-output-container';
     this.pyodide = pyodide;
     this.context = context;
     this.envManager = new EnvironmentManager(PyodideEnvironment.instance(pyodide), context);
@@ -51,6 +52,13 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       },
       context.options
     );
+  }
+
+  newContainer() {
+    const container = document.createElement('div');
+    container.classList.add('cell-output-container');
+    container.classList.add('cell-output-container-pyodide');
+    return container;
   }
 
   getSetupCode(): string | undefined {
@@ -114,7 +122,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
         if (!this.options.output) {
           // Don't show any output in HTML, but return a value
           const value = this.container.value;
-          this.container = document.createElement("div");
+          this.container = this.newContainer();
           this.container.value = value;
         }
       }
@@ -217,7 +225,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
     result: Awaited<ReturnType<PyodideEvaluator["evaluate"]>>,
     options: EvaluateOptions = this.options
   ) {
-    const container: OJSEvaluateElement = document.createElement("div");
+    const container: OJSEvaluateElement = this.newContainer();
     container.value = this.nullResult;
 
     if (!result) {

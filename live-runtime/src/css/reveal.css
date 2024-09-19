@@ -175,6 +175,13 @@
   animation: 0.75s linear infinite spinner-grow;
 }
 
+/* Scrollable Output */
+.reveal .cell-output-container pre code {
+  overflow: auto;
+  max-height: initial;
+}
+
+/* Alerts */
 .reveal .alert.exercise-grade {
   font-size: .55em;
   position: relative;

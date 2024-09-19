@@ -272,7 +272,7 @@ function PyodideCodeBlock(code)
   append_ojs_template(ojs_source, ojs_vars)
 
   return pandoc.Div({
-    pandoc.Div({}, pandoc.Attr("pyodide-" .. block_id)),
+    pandoc.Div({}, pandoc.Attr("pyodide-" .. block_id, { 'exercise-cell' })),
     pandoc.RawBlock(
       "html",
       "<script type=\"pyodide-" .. block_id .. "-contents\">\n" ..
@@ -388,7 +388,7 @@ function WebRCodeBlock(code)
   HTMLWidget(block_id)
 
   return pandoc.Div({
-    pandoc.Div({}, pandoc.Attr("webr-" .. block_id)),
+    pandoc.Div({}, pandoc.Attr("webr-" .. block_id, { 'exercise-cell' })),
     pandoc.RawBlock(
       "html",
       "<script type=\"webr-" .. block_id .. "-contents\">\n" ..

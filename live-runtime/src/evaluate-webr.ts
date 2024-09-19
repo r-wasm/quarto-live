@@ -47,7 +47,7 @@ export class WebREvaluator implements ExerciseEvaluator {
   webR: WebR;
 
   constructor(webR: WebR, context: EvaluateContext) {
-    this.container = document.createElement('div');
+    this.container = this.newContainer();
     this.nullResult = { result: null, evaluate_result: null, evaluator: this };
     this.container.value = this.nullResult;
     this.webR = webR;
@@ -69,6 +69,13 @@ export class WebREvaluator implements ExerciseEvaluator {
       },
       context.options
     );
+  }
+
+  newContainer() {
+    const container = document.createElement('div');
+    container.classList.add('cell-output-container');
+    container.classList.add('cell-output-container-webr');
+    return container;
   }
 
   async purge() {
@@ -139,7 +146,7 @@ export class WebREvaluator implements ExerciseEvaluator {
         if (!this.options.output) {
           // Don't show any output in HTML, but return a value
           const value = this.container.value;
-          this.container = document.createElement("div");
+          this.container = this.newContainer();
           this.container.value = value;
         }
       }
@@ -232,7 +239,7 @@ export class WebREvaluator implements ExerciseEvaluator {
 
   async asHtml(value: RList, options: EvaluateOptions = this.options) {
     const sourceLines: string[] = [];
-    const container: OJSEvaluateElement = document.createElement("div");
+    const container: OJSEvaluateElement = this.newContainer();
     container.value = this.nullResult;
 
     const appendSource = () => {

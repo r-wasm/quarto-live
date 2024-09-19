@@ -4,6 +4,8 @@
 
 * Setup blocks may now be attached to multiple exercises by providing a list for the `exercise` cell option.
 
+* Reveal.js slides containing live cells are now automatically made scrollable (#67).
+
 ## Breaking changes
 
 * Previously the cell option `autorun` defaulted to `true` for "sandbox" type cells, but `false` for exercises. This has been found to be confusing, and so `autorun: false` is now always the default state. Autorun may still be enabled by setting the cell option directly, or set document-wide using the `cell-options` YAML header.
