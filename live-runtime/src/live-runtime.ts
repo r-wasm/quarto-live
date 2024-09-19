@@ -12,6 +12,7 @@ import { comlinkTransfer, imageBitmapTransfer, mapTransfer, proxyTransfer } from
 import { b64Encode, b64Decode, collapsePath } from './utils';
 import './css/live-runtime.css';
 import './css/highlighting.css';
+import './css/reveal.css';
 
 type WebRInitData = {
   packages: {
