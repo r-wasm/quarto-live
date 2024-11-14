@@ -4,7 +4,7 @@
 
 # We'll handle `include: false` in Lua, always include cell in knitr output
 knitr::opts_hooks$set(include = function(options) {
-  if (options$engine == "webr" || options$engine == "pyodide" ) {
+  if (options$engine == "webr" || options$engine == "pyodide") {
     options$include <- TRUE
   }
   options
