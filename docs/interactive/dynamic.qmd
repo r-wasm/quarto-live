@@ -131,7 +131,7 @@ my_function <- function(x) {
 ```
 :::
 
-## Example: Penquins
+## Example: Penguins
 
 This is an example of a dynamic exercise using input from the learner to change the details in the exercise later.
 
