@@ -112,7 +112,7 @@ For both R and Python, the default [`canvas`](https://developer.mozilla.org/en-U
 
 ### R
 
-For webR graphics, there is a fallback bitmap device based on a WebAssembly build the of [Cairo](https://www.cairographics.org/) graphics library. This works well, but will be slower and invoke an additional resource download as the page is loaded.
+For webR graphics, there is a fallback bitmap device based on a WebAssembly build of the [Cairo](https://www.cairographics.org/) graphics library. This works well, but will be slower and invokes an additional resource download as the page is loaded.
 
 ### Python
 
