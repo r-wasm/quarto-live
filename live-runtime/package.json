@@ -19,7 +19,7 @@
     "esbuild-plugin-copy": "^2.1.1",
     "pyodide": "^0.28.1",
     "tsx": "^4.8.2",
-    "webr": "^0.5.2"
+    "webr": "^0.5.8"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.1.6",
