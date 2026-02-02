@@ -37,10 +37,6 @@ webROjs = {
   const filesContent = document.querySelector(`script[type=\"vfs-file\"]`).textContent;
   const files = JSON.parse(b64Decode(filesContent));
 
-  // Use PostMessage channel for async communication
-  // We do not expect to take nested prompt input in Quarto Live cells
-  data.options.channelType = ChannelType.PostMessage;
-
   // Initialise webR and setup for R code evaluation
   let webRPromise = (async (webR) => {
     statusText.textContent = `Downloading webR`;
