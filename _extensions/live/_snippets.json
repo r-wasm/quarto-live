@@ -1,0 +1,38 @@
+{
+  "Live HTML setup": {
+    "prefix": "live-html",
+    "body": [
+      "format: live-html"
+    ],
+    "description": "Enable live-html output format."
+  },
+  "Live knitr setup": {
+    "prefix": "live-knitr",
+    "body": [
+      "format: live-html",
+      "engine: knitr",
+      "",
+      "{{< include ./_extensions/r-wasm/live/_knitr.qmd >}}"
+    ],
+    "description": "Configure live-html with knitr setup include."
+  },
+  "Live WebR cell": {
+    "prefix": "webr",
+    "body": [
+      "```{webr}",
+      "${1:summary(lm(mpg ~ am, data = mtcars))}",
+      "```"
+    ],
+    "description": "Insert an interactive WebR code cell."
+  },
+  "Live Pyodide cell": {
+    "prefix": "pyodide",
+    "body": [
+      "```{pyodide}",
+      "${1:import math}",
+      "${2:math.sqrt(16)}",
+      "```"
+    ],
+    "description": "Insert an interactive Pyodide code cell."
+  }
+}
