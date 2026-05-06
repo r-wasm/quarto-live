@@ -1,0 +1,36 @@
+$schema: https://m.canouil.dev/quarto-wizard/assets/schema/v1/extension-schema.json
+
+formats:
+  live-html:
+    engine:
+      type: string
+      enum: [jupyter, knitr]
+      description: Rendering engine used for live-html documents.
+  live-revealjs:
+    engine:
+      type: string
+      enum: [jupyter, knitr]
+      description: Rendering engine used for live-revealjs slides.
+  live-dashboard:
+    engine:
+      type: string
+      enum: [jupyter, knitr]
+      description: Rendering engine used for live dashboard output.
+
+options:
+  live:
+    type: object
+    description: Runtime toggles for exercise UI features.
+    properties:
+      show-solutions:
+        type: boolean
+        default: true
+        description: Show solution blocks for exercises.
+      show-hints:
+        type: boolean
+        default: true
+        description: Show hint blocks for exercises.
+      grading:
+        type: boolean
+        default: true
+        description: Enable grading checks for exercises.
