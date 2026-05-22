@@ -266,31 +266,27 @@ export class WebREvaluator implements ExerciseEvaluator {
     }
 
     const ansi = new AnsiConvert({ escapeXML: true });
-    const appendStdout = (content: string) => {
-      const outputDiv = document.createElement("div");
-      outputDiv.className = "exercise-cell-output cell-output cell-output-webr cell-output-stdout";
-      outputDiv.innerHTML = "<pre><code></code></pre>";
-      const codeDiv = outputDiv.querySelector('code');
-      codeDiv.textContent = content;
-      codeDiv.innerHTML = ansi.toHtml(codeDiv.textContent);
+    let lastOutputDiv: HTMLDivElement | null = null;
 
-      if (options.output) {
-        appendSource();
+    const appendOutput = (content: string, type: "stdout" | "stderr") => {
+      if (!options.output) return;
+      appendSource();
+
+      const temp = document.createElement("span");
+      temp.textContent = content;
+      const html = `<span class="cell-output-${type}">${ansi.toHtml(temp.textContent)}</span>`;
+
+      if (lastOutputDiv && lastOutputDiv.parentNode === container) {
+        const codeDiv = lastOutputDiv.querySelector('code');
+        codeDiv.innerHTML += html;
+      } else {
+        const outputDiv = document.createElement("div");
+        outputDiv.className = "exercise-cell-output cell-output cell-output-webr";
+        outputDiv.innerHTML = "<pre><code></code></pre>";
+        const codeDiv = outputDiv.querySelector('code');
+        codeDiv.innerHTML = html;
         container.appendChild(outputDiv);
-      }
-    }
-
-    const appendStderr = (content: string) => {
-      const errorDiv = document.createElement("div");
-      errorDiv.className = "exercise-cell-output cell-output cell-output-webr cell-output-stderr";
-      errorDiv.innerHTML = "<pre><code></code></pre>";
-      const codeDiv = errorDiv.querySelector('code');
-      codeDiv.textContent = content;
-      codeDiv.innerHTML = ansi.toHtml(codeDiv.textContent);
-
-      if (options.output) {
-        appendSource();
-        container.appendChild(errorDiv);
+        lastOutputDiv = outputDiv;
       }
     }
 
@@ -309,6 +305,7 @@ export class WebREvaluator implements ExerciseEvaluator {
       if (options.output) {
         appendSource();
         container.appendChild(outputDiv);
+        lastOutputDiv = null;
       }
     }
 
@@ -351,6 +348,7 @@ export class WebREvaluator implements ExerciseEvaluator {
         `;
         elem.querySelector(".callout-body pre").appendChild(document.createTextNode(body));
         container.appendChild(elem);
+        lastOutputDiv = null;
       }
     }
 
@@ -367,6 +365,7 @@ export class WebREvaluator implements ExerciseEvaluator {
         // Add HTML output to the DOM
         appendSource();
         container.appendChild(outputDiv);
+        lastOutputDiv = null;
 
         // Dynamically load any dependencies into page (await & maintain ordering)
         if (isRList(meta)) {
@@ -387,6 +386,7 @@ export class WebREvaluator implements ExerciseEvaluator {
         imageDiv.style.maxWidth = "100%";
         outputDiv.appendChild(imageDiv);
         container.appendChild(outputDiv);
+        lastOutputDiv = null;
       }
     };
 
@@ -397,7 +397,7 @@ export class WebREvaluator implements ExerciseEvaluator {
       const classes = await (await result[i].class()).toArray();
       switch (type) {
         case 'character': {
-          appendStdout(await result[i].toString());
+          appendOutput(await result[i].toString(), "stdout");
           break;
         }
         case 'list': {
@@ -407,7 +407,7 @@ export class WebREvaluator implements ExerciseEvaluator {
             await appendCondition(result[i], "important", "Error");
           } else if (classes.includes('condition')) {
             const message = await result[i].get("message");
-            appendStderr(await message.toString());
+            appendOutput(await message.toString(), "stderr");
           }
 
           // Source code - save for concatenation

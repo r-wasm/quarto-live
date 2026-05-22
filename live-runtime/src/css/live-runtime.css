@@ -1,6 +1,7 @@
 /* Colours: Bootstrap, revealjs, fallback */
 .quarto-light {
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #212529));
+  --exercise-output-color: var(--bs-black, #000000);
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #ffffff));
   --exercise-primary-rgb: var(--bs-primary-rgb, 13, 110, 253);
   --exercise-gray: var(--bs-gray-300, #dee2e6);
@@ -13,6 +14,7 @@
 
 .quarto-dark {
   --exercise-main-color: var(--bs-body-color, var(--r-main-color, #ffffff));
+  --exercise-output-color: var(--bs-body-color, #ffffff);
   --exercise-main-bg: var(--bs-body-bg, var(--r-background-color, #222222));
   --exercise-primary-rgb: var(--bs-primary-rgb, 55, 90, 127);
   --exercise-gray: var(--bs-gray-700, #434343);
@@ -322,13 +324,20 @@ pre>code.sourceCode span.tok-function-attributeName,
 }
 
 /* Output cells */
+div.exercise-cell-output.cell-output pre code,
 div.exercise-cell-output.cell-output-stdout pre code,
 div.exercise-cell-output.cell-output-stderr pre code {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-div.exercise-cell-output.cell-output-stderr pre code {
+div.exercise-cell-output.cell-output-stdout pre code,
+div.exercise-cell-output pre code span.cell-output-stdout {
+  color: var(--exercise-output-color, #000000);
+}
+
+div.exercise-cell-output.cell-output-stderr pre code,
+div.exercise-cell-output pre code span.cell-output-stderr {
   color: var(--exercise-editor-hl-er, #AD0000);
 }
 
