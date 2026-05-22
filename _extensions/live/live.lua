@@ -596,7 +596,7 @@ function setupWebR(doc)
 
   -- Initial webR startup options
   local webr_options = {
-    baseUrl = "https://webr.r-wasm.org/v0.5.8/",
+    baseUrl = "https://webr.r-wasm.org/v0.6.0/",
   }
   if (webr["engine-url"]) then
     webr_options["baseUrl"] = pandoc.utils.stringify(webr["engine-url"])

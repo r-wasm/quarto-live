@@ -207,7 +207,7 @@ export async function renderHtmlDependency(ctx: WebR, depRObject: RObject): Prom
       const elem = document.createElement("link");
       if (dep.src.file) {
         const data = await ctx.FS.readFile(`${root}/${dep.src.file}/${css.href}`);
-        css.href = `data:text/css;base64,${arrayBufferToBase64(data)}`;
+        css.href = `data:text/css;base64,${arrayBufferToBase64(data.buffer as ArrayBuffer)}`;
       } else {
         css.href = `${dep.src.href}/${css.href}`;
       }
@@ -227,7 +227,7 @@ export async function renderHtmlDependency(ctx: WebR, depRObject: RObject): Prom
       const elem = document.createElement("script");
       if (dep.src.file) {
         const data = await ctx.FS.readFile(`${root}/${dep.src.file}/${script.src}`);
-        script.src = `data:text/javascript;base64,${arrayBufferToBase64(data)}`;
+        script.src = `data:text/javascript;base64,${arrayBufferToBase64(data.buffer as ArrayBuffer)}`;
       } else {
         script.src = `${dep.src.href}/${script.src}`;
       }

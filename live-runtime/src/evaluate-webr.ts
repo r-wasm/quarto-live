@@ -66,6 +66,7 @@ export class WebREvaluator implements ExerciseEvaluator {
     // Default evaluation options
     this.options = Object.assign(
       {
+        canvas: true,
         envir: "global",
         eval: true,
         echo: false,
@@ -457,8 +458,8 @@ export class WebREvaluator implements ExerciseEvaluator {
                 filesize <- file.info(filename)[["size"]]
                 readBin(filename, "raw", n = filesize)
               `, { env: { plot: result[i], width, height } }) as RRaw;
-              const bytes = await data.toTypedArray();
-              appendDataUrlImage("image/png", arrayBufferToBase64(bytes));
+              const bytes = await data.toTypedArray() as Uint8Array<ArrayBuffer>;
+              appendDataUrlImage("image/png", arrayBufferToBase64(bytes.buffer));
             }
           }
           break;
@@ -546,9 +547,9 @@ export class WebREvaluator implements ExerciseEvaluator {
             `) as RRaw | RNull;
 
             if (isRRaw(data)) {
-              const bytes = await data.toTypedArray();
+              const bytes = await data.toTypedArray() as Uint8Array<ArrayBuffer>;
               const imageDiv = document.createElement("img");
-              imageDiv.src = `data:image/png;base64, ${arrayBufferToBase64(bytes)}`;
+              imageDiv.src = `data:image/png;base64, ${arrayBufferToBase64(bytes.buffer)}`;
               images = [imageDiv];
             }
           }
@@ -620,8 +621,18 @@ export class WebREvaluator implements ExerciseEvaluator {
           result[key] = await this.asOjs(shallow.values[i]);
         }
         return result;
-      };
-
+      }
+      case "s4":{
+        // Handle ggplot by returning the captured image, otherwise fall through.
+        const attrs = await robj.attrs();
+        const cls = await attrs.get('class') as RCharacter;
+        if (!isRNull(cls) && (await cls.toArray()).includes('gg')) {
+          if (capture.images.length) {
+            return await this.asOjs(capture.images[capture.images.length - 1]);
+          }
+        }
+        break;
+      }
       default:
         throw new Error(`Unsupported type: ${value._payload.obj.type}`);
     }

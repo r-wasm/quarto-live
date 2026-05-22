@@ -17,6 +17,7 @@ export class ExerciseGrader {
 
     // Fixed grading options
     this.options = {
+      canvas: true,
       envir: this.evaluator.options.envir,
       eval: true,
       echo: false,

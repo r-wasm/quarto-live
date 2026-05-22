@@ -1,5 +1,9 @@
 # Quarto Live (development version)
 
+# Quarto Live 0.2.0
+
+- webR upgraded to v0.6.0
+
 # Quarto Live 0.1.3
 
 - webR upgraded to v0.5.8
