@@ -25,8 +25,11 @@ The `quarto-live` extension has support for displaying several types of IPython 
 from IPython.display import HTML
 from IPython.display import Image
 display(HTML("<h3>Hello from <code>IPython</code>!</h3>"))
-display(HTML("<p>This is HTML output, and below is an image.</p>"))
-Image(filename='images/python-logo.png') 
+display(HTML("<p>This is HTML output, and below is an image at full size.</p>"))
+display(Image(filename='images/python-logo.png'))
+
+display(HTML("<p>The same image as a retina rendering:</p>"))
+Image(filename='images/python-logo.png', retina=True)
 ```
 
 ## Example: Altair interactive visualisation
