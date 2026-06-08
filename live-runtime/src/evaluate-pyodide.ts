@@ -186,6 +186,7 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       width,
       height,
       environment: await this.envManager.get(envLabel),
+      show_warnings: options.warning,
     });
 
     const resultObject = await this.pyodide.runPythonAsync(
