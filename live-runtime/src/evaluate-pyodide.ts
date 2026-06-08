@@ -326,12 +326,22 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       }
     };
 
-    const appendDataUrlImage = async (mime: string, data: string) => {
+    const appendDataUrlImage = async (
+      mime: string,
+      data: string,
+      metadata: Record<string, any> = {}
+    ) => {
       if (options.output) {
         const outputDiv = document.createElement("div");
         const imageDiv = document.createElement("img");
         outputDiv.className = "cell-output-display cell-output-pyodide";
         imageDiv.src = `data:${mime};base64, ${data}`;
+        if (typeof metadata.width === "number") {
+          imageDiv.width = metadata.width;
+        }
+        if (typeof metadata.height === "number") {
+          imageDiv.height = metadata.height;
+        }
         outputDiv.appendChild(imageDiv);
         container.appendChild(outputDiv);
       }
@@ -369,6 +379,28 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       container.appendChild(errorDiv);
     }
 
+    // For an image, `_repr_mime_` returns the base64 data, or a (data, metadata)
+    // tuple when the bundle carried metadata (e.g. retina images). Unwrap the
+    // tuple and read out the size hints.
+    const reprMime = async (
+      item: PyProxy,
+      mime: string
+    ): Promise<{ data: any; metadata: Record<string, any> }> => {
+      const result = await item._repr_mime_(mime);
+      if (result && typeof result !== "string") {
+        const data = await result.get(0);
+        const meta = await result.get(1);
+        const metadata = {
+          width: await meta.get("width"),
+          height: await meta.get("height"),
+        };
+        meta.destroy();
+        result.destroy();
+        return { data, metadata };
+      }
+      return { data: result, metadata: {} };
+    };
+
     for (let i = 0; i < await result.outputs.length; i++) {
       const item = await result.outputs.get(i);
       const imagebitmap = await item._repr_mime_("application/html-imagebitmap");
@@ -376,9 +408,9 @@ export class PyodideEvaluator implements ExerciseEvaluator {
       const widget = await item._repr_mime_("application/vnd.jupyter.widget-view+json");
       const plotly = await item._repr_mime_("application/vnd.plotly.v1+json");
       const plain = await item._repr_mime_("text/plain");
-      const png = await item._repr_mime_("image/png");
-      const jpeg = await item._repr_mime_("image/jpeg");
-      const gif = await item._repr_mime_("image/gif");
+      const png = await reprMime(item, "image/png");
+      const jpeg = await reprMime(item, "image/jpeg");
+      const gif = await reprMime(item, "image/gif");
       const svg = await item._repr_mime_("image/svg+xml");
       if (imagebitmap) {
         appendImageBitmap(imagebitmap);
@@ -388,12 +420,12 @@ export class PyodideEvaluator implements ExerciseEvaluator {
         appendJupyterWidget(widget);
       } else if (plotly) {
         appendPlotlyFigure(plotly);
-      } else if (png) {
-        appendDataUrlImage("image/png", png);
-      } else if (jpeg) {
-        appendDataUrlImage("image/jpeg", jpeg);
-      } else if (gif) {
-        appendDataUrlImage("image/gif", gif);
+      } else if (png.data) {
+        appendDataUrlImage("image/png", png.data, png.metadata);
+      } else if (jpeg.data) {
+        appendDataUrlImage("image/jpeg", jpeg.data, jpeg.metadata);
+      } else if (gif.data) {
+        appendDataUrlImage("image/gif", gif.data, gif.metadata);
       } else if (svg) {
         appendHtml(svg);
       } else if (plain) {
