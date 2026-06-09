@@ -1,6 +1,7 @@
 
 import pyodide # type: ignore[attr-defined]
 import sys
+import warnings
 
 # Cleanup any leftover matplotlib plots
 try:
@@ -18,10 +19,13 @@ InteractiveShell().instance()
 
 with capture.capture_output() as output:
   value = None
-  try:
-    value = await pyodide.code.eval_code_async(code, globals = environment) # type: ignore[attr-defined]
-  except Exception as err:
-    print(err, file=sys.stderr)
+  with warnings.catch_warnings():
+    if not show_warnings: # type: ignore[name-defined]
+      warnings.simplefilter("ignore")
+    try:
+      value = await pyodide.code.eval_code_async(code, globals = environment) # type: ignore[attr-defined]
+    except Exception as err:
+      print(err, file=sys.stderr)
   if (value is not None):
     display(value)
 
