@@ -1,0 +1,22 @@
+name: Check runtime bundles
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Build and check committed bundles
+        run: |
+          cd live-runtime
+          npm ci
+          npm run build
+          # A diff means the committed bundles are stale -> rebuild locally and commit
+          git diff --exit-code --stat -- ../_extensions/live/resources

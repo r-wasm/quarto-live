@@ -1,0 +1,53 @@
+---
+title: Pyodide integration test
+format: live-html
+engine: markdown
+pyodide:
+  cell-options:
+    autorun: true
+  packages:
+    - matplotlib
+---
+
+```{.pyodide}
+import sys
+print(sys.version)
+print("Quarto Python integration: OK")
+```
+
+```{.pyodide}
+#| exercise: addition
+6 * 7
+```
+
+```{.pyodide}
+#| exercise: addition
+#| check: true
+{"correct": result == 42, "message": "Grading integration: OK"}
+```
+
+```{ojs}
+number = 21
+```
+
+```{.pyodide}
+#| input: [number]
+#| define: answer
+answer = number * 2
+answer
+```
+
+```{ojs}
+answer
+```
+
+```{.pyodide}
+import matplotlib.pyplot as plt
+plt.plot([1, 2, 3], [2, 4, 3])
+plt.show()
+```
+
+```{.webr}
+#| autorun: true
+cat("Quarto R integration: OK")
+```

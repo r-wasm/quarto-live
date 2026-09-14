@@ -1,5 +1,7 @@
 # Quarto Live (development version)
 
+- Pyodide upgraded to v314.0.7 (Python 3.14.2).
+
 # Quarto Live 0.2.0
 
 - webR upgraded to v0.6.0

@@ -528,7 +528,7 @@ function setupPyodide(doc)
 
   -- Initial Pyodide startup options
   local pyodide_options = {
-    indexURL = "https://cdn.jsdelivr.net/pyodide/v0.28.1/full/",
+    indexURL = "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/",
     env = {
       PLOTLY_RENDERER = 'plotly_mimetype',
     }

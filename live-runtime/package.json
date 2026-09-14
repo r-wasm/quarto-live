@@ -17,7 +17,7 @@
     "ansi-to-html": "^0.7.2",
     "esbuild": "^0.25.0",
     "esbuild-plugin-copy": "^2.1.1",
-    "pyodide": "^0.28.1",
+    "pyodide": "314.0.7",
     "tsx": "^4.8.2",
     "webr": "^0.6.0"
   },
