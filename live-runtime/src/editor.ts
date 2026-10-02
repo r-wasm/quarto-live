@@ -221,7 +221,15 @@ abstract class ExerciseEditor {
     dom.innerHTML = icons[spec.icon];
     dom.appendChild(label);
     dom.onclick = spec.onclick || null;
-    dom.onkeydown = spec.onclick || null;
+    // Activate on Enter or Space only, like a native <button>. Using the click
+    // handler for every keydown meant any key on a focused button, even a bare
+    // modifier such as Cmd, re-ran the cell or reset the editor.
+    dom.onkeydown = (ev: KeyboardEvent) => {
+      if (!spec.onclick || ev.repeat || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+      if (ev.key !== "Enter" && ev.key !== " ") return;
+      ev.preventDefault();
+      spec.onclick.call(dom, ev);
+    };
     return dom;
   }
 
