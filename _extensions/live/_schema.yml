@@ -34,3 +34,10 @@ options:
         type: boolean
         default: true
         description: Enable grading checks for exercises.
+      translations:
+        type: object
+        description: >-
+          Interface strings for this document, overriding the built-in
+          translation for the document language (`lang`). Keys: run-code,
+          start-over, show-hint, next-hint, show-solution, caption-exercise,
+          caption-r, caption-python.

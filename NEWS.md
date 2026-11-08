@@ -1,5 +1,9 @@
 # Quarto Live (development version)
 
+## New features
+
+- The interface of interactive code blocks and exercises -- the "Run Code", "Start Over", "Show Hint", "Next Hint" and "Show Solution" buttons and the "Exercise", "R Code" and "Python Code" captions -- is now translated to match the document language set by Quarto's `lang` YAML key, using i18next. English and French are included; translations for other languages are welcome. The `live: translations:` document option overrides individual strings (#3, #74).
+
 # Quarto Live 0.2.0
 
 - webR upgraded to v0.6.0

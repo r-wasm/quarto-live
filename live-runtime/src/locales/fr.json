@@ -1,0 +1,10 @@
+{
+  "run-code": "Exécuter le code",
+  "start-over": "Recommencer",
+  "show-hint": "Afficher l'indice",
+  "next-hint": "Indice suivant",
+  "show-solution": "Afficher la solution",
+  "caption-exercise": "Exercice",
+  "caption-r": "Code R",
+  "caption-python": "Code Python"
+}
