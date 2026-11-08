@@ -639,6 +639,19 @@ function Pandoc(doc)
     "<script type=\"ojs-module-contents\">\n" .. json_as_b64(ojs_definitions) .. "\n</script>"
   ))
 
+  -- Per-document interface translations (`live: translations:`), applied by
+  -- the runtime on top of its built-in strings for the document language
+  if (type(live_options.translations) == "table") then
+    local translations = {}
+    for k, v in pairs(live_options.translations) do
+      translations[k] = pandoc.utils.stringify(v)
+    end
+    doc.blocks:insert(pandoc.RawBlock(
+      "html",
+      "<script type=\"live-translations\">\n" .. json_as_b64(translations) .. "\n</script>"
+    ))
+  end
+
   -- Loading indicator
   doc.blocks:insert(
     pandoc.Div({

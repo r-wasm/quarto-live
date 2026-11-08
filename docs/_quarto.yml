@@ -37,6 +37,7 @@ website:
           - other/htmlwidgets.qmd
           - other/py_output.qmd
           - other/slides.qmd
+          - other/localisation.qmd
       - text: "---"
       - section: Reference
         contents:

@@ -1,0 +1,78 @@
+---
+format: live-html
+title: Localisation
+subtitle: Translating the interface of interactive code blocks and exercises
+engine: knitr
+toc: true
+lang: fr
+---
+
+{{< include ../_extensions/live/_knitr.qmd >}}
+
+The buttons and captions that `quarto-live` adds to a document -- "Run Code", "Start Over", "Show Hint", "Next Hint", "Show Solution", and the "Exercise", "R Code" and "Python Code" captions -- follow the document language. Set the language with Quarto's own `lang` key in the YAML header, which also translates Quarto's table of contents, code-copy tooltip and other interface text:
+
+````{.yaml}
+---
+title: Un exemple
+format: live-html
+engine: knitr
+lang: fr
+---
+````
+
+This page is rendered with `lang: fr`, so the code block below has French buttons:
+
+```{webr}
+#| exercise: ex1
+1 + 1
+```
+
+::: { .hint exercise="ex1" }
+Essayez `2 + 2`.
+:::
+
+::: { .solution exercise="ex1" }
+```r
+2 + 2
+```
+:::
+
+Regional language tags such as `fr-CA` fall back to the base language. A language with no translation falls back to English.
+
+## Available languages
+
+Translations are bundled with the extension, in `live-runtime/src/locales/`:
+
+| `lang` | Language |
+|--------|----------|
+| `en`   | English (default) |
+| `fr`   | French |
+
+To add a language, copy `en.json` to `<lang>.json` in that directory, translate each value, register the file in `live-runtime/src/i18n.ts`, and open a pull request.
+
+## Overriding strings for one document
+
+To change the wording in a single document, or to write a document in a language that is not yet bundled, set the strings under the `live: translations:` YAML key. They are applied on top of the built-in translation for the document's `lang`:
+
+````{.yaml}
+---
+title: Um exemplo
+format: live-html
+engine: knitr
+lang: pt
+live:
+  translations:
+    run-code: Executar código
+    start-over: Recomeçar
+    show-hint: Mostrar dica
+    next-hint: Próxima dica
+    show-solution: Mostrar solução
+    caption-exercise: Exercício
+    caption-r: Código R
+    caption-python: Código Python
+---
+````
+
+The keys are those of the translation files. Any key left out keeps its built-in string.
+
+The `caption` cell option still overrides the caption of an individual code block, as before.

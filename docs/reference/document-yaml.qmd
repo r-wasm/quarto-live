@@ -39,6 +39,7 @@ For a single document, the config options can be set at the top level in your do
 | `show-hints` | Boolean | Include exercise hints in document output. |
 | `show-solutions` | Boolean | Include exercise solutions in document output. |
 | `show-grading` | Boolean | Include exercise grading in document output. |
+| `translations` | Object | Interface strings for this document, overriding the built-in translation for the document's `lang`. See [Localisation](../other/localisation.qmd). |
 : {tbl-colwidths="[25,5,70]"}
 
 ## Example

@@ -1,0 +1,10 @@
+{
+  "run-code": "Run Code",
+  "start-over": "Start Over",
+  "show-hint": "Show Hint",
+  "next-hint": "Next Hint",
+  "show-solution": "Show Solution",
+  "caption-exercise": "Exercise",
+  "caption-r": "R Code",
+  "caption-python": "Python Code"
+}
