@@ -39,6 +39,11 @@ declare global {
   }
 }
 
+// The latest evaluation of each exercise, by exercise label. OJS discards any
+// earlier evaluation of an exercise that is still running when a new one starts
+// (e.g. after Run Code is pressed twice), so that one is never graded.
+const latestExerciseEvaluation = new Map<string, WebREvaluator>();
+
 export class WebREvaluator implements ExerciseEvaluator {
   container: OJSEvaluateElement;
   shelter: Promise<Shelter>;
@@ -108,6 +113,9 @@ export class WebREvaluator implements ExerciseEvaluator {
 
   // Setup environment, execute setup code, execute user code, define outputs
   async process(inputs: { [key: string]: any }) {
+    const exercise = this.options.exercise;
+    if (exercise) latestExerciseEvaluation.set(exercise, this);
+
     // If we're not evaluating, just print the source directly
     if (!this.options.eval) {
       this.container = this.asSourceHTML(this.context.code);
@@ -129,6 +137,9 @@ export class WebREvaluator implements ExerciseEvaluator {
     }
     ind.running();
 
+    // Whether this exercise's grader will read the results below after we return,
+    // in which case the grader purges the Shelter once it has finished.
+    let keepForGrader = false;
     try {
       // Set OJS inputs in "prep" environment
       await Promise.all(
@@ -191,8 +202,10 @@ export class WebREvaluator implements ExerciseEvaluator {
 
       // Clean up OJS values from R environment
       await this.webR.evalRVoid("rm(list = ls(.webr_ojs), envir = .webr_ojs)");
+
+      keepForGrader = !!exercise && latestExerciseEvaluation.get(exercise) === this;
     } finally {
-      this.purge();
+      if (!keepForGrader) this.purge();
       ind.finished();
       if (!this.context.indicator) ind.destroy();
     }

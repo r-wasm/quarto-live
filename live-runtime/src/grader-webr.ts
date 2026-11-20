@@ -16,6 +16,17 @@ export class WebRGrader extends ExerciseGrader {
   }
 
   async gradeExercise() {
+    try {
+      return await this.grade();
+    } finally {
+      // Grading reads R objects held in the evaluator's Shelter: the learner's
+      // evaluation results, the solution, and the checker's result as the
+      // feedback is built. Release them only once grading has finished.
+      await this.evaluator.purge();
+    }
+  }
+
+  private async grade() {
     const user_code = this.context.code;
 
     // If there's no code to be evaluated yet, return blank feedback
@@ -101,8 +112,6 @@ export class WebRGrader extends ExerciseGrader {
         location: "append",
         type: "error",
       })
-    } finally {
-      shelter.purge();
     }
   }
 
@@ -143,55 +152,51 @@ export class WebRGrader extends ExerciseGrader {
   async evaluateExercise() {
     await this.envManager.create("grading", "result");
     const shelter = await this.evaluator.shelter;
-    try {
-      const envir_result = await this.envManager.get("result");
-      const evaluate_result = this.evaluator.container.value.evaluate_result;
-      const envir_prep = await this.envManager.get("prep");
-      const last_value = this.evaluator.container.value.result;
+    const envir_result = await this.envManager.get("result");
+    const evaluate_result = this.evaluator.container.value.evaluate_result;
+    const envir_prep = await this.envManager.get("prep");
+    const last_value = this.evaluator.container.value.result;
 
-      const args: {[key: string]: any} = {
-        user_code: this.context.code,
-        stage: "check",
-        engine: "r",
-        label: this.context.options.exercise || this.webR.objs.null,
-        check_code: this.getCheckingAlgorithm() || this.webR.objs.null,
-        envir_result,
-        evaluate_result,
-        envir_prep,
-        last_value,
-        solution_code: this.webR.objs.null,
-        solution_code_all: this.webR.objs.null,
-        envir_solution: this.webR.objs.null,
-        solution: this.webR.objs.null,
-      }
-    
-      // Find the a solution for this exercise, if it exists
-      const solution = await this.evaluateSolution();
-      if (solution) {
-        args.solution_code = solution.code;
-        args.solution_code_all = [solution.code];
-        args.envir_solution = solution.envir;
-        args.solution = solution.result;
-      }
-
-      const argsObj = await new shelter.RList(args);
-      await this.envManager.bind(".checker_args", argsObj, "grading");
-      const options = { ...this.options };
-      options.error = false;
-      options.output = true;
-      const result = await this.evaluator.evaluate(
-        `.checker <- getOption('webr.exercise.checker')
-        environment(.checker) <- environment()
-        do.call(.checker, .checker_args)`,
-        "grading",
-        options
-      );
-      // debug exercise checker
-      // this.evaluator.webR.evalR("print(result)", { env: { result }})
-      return result;
-    } finally {
-      shelter.purge();
+    const args: {[key: string]: any} = {
+      user_code: this.context.code,
+      stage: "check",
+      engine: "r",
+      label: this.context.options.exercise || this.webR.objs.null,
+      check_code: this.getCheckingAlgorithm() || this.webR.objs.null,
+      envir_result,
+      evaluate_result,
+      envir_prep,
+      last_value,
+      solution_code: this.webR.objs.null,
+      solution_code_all: this.webR.objs.null,
+      envir_solution: this.webR.objs.null,
+      solution: this.webR.objs.null,
     }
+    
+    // Find the a solution for this exercise, if it exists
+    const solution = await this.evaluateSolution();
+    if (solution) {
+      args.solution_code = solution.code;
+      args.solution_code_all = [solution.code];
+      args.envir_solution = solution.envir;
+      args.solution = solution.result;
+    }
+
+    const argsObj = await new shelter.RList(args);
+    await this.envManager.bind(".checker_args", argsObj, "grading");
+    const options = { ...this.options };
+    options.error = false;
+    options.output = true;
+    const result = await this.evaluator.evaluate(
+      `.checker <- getOption('webr.exercise.checker')
+      environment(.checker) <- environment()
+      do.call(.checker, .checker_args)`,
+      "grading",
+      options
+    );
+    // debug exercise checker
+    // this.evaluator.webR.evalR("print(result)", { env: { result }})
+    return result;
   }
 
   async feedbackAsHtmlAlert(grade: RObject): Promise<HTMLElement> {

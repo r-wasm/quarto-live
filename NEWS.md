@@ -1,5 +1,9 @@
 # Quarto Live (development version)
 
+## Bug fixes
+
+- Fixed webR exercise grading reading the learner's results after they had been released from their webR Shelter. If R's garbage collector ran first, a correct answer could be graded wrong, the checking code could error, or no feedback could appear.
+
 # Quarto Live 0.2.0
 
 - webR upgraded to v0.6.0
